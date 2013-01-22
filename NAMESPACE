@@ -1,0 +1,48 @@
+export(
+  acquireAuditData,
+  asRules,
+  binning,
+  calcInitialDigitDistr,
+  calculateAUC,
+  centers.hclust,
+  copyPlotToClipboard,
+  doRiskChart,
+  drawTreesAda,
+  drawTreeNodes,
+  evaluateRisk,
+  fancyRpartPlot,
+  generateAprioriSummary,
+  genPlotTitleCmd,
+  listAdaVarsUsed,
+  listTreesAda,
+  listVersions,
+  modalvalue,
+  plotBenfordsLaw,
+  plotNetwork,
+  plotOptimalLine,
+  plotRisk,
+  predict.kmeans,
+  predict.hclust,
+  printPlot,
+  printRandomForests,
+  print.summary.nnet.rattle,
+  randomForest2Rules,
+  rattle,
+  rattleInfo,
+  rattle.print.summary.multinom,
+  rescale.by.group,
+  riskchart,
+  # 120117 Remove for now - could be harmful.
+  # overwritePackageFunction,
+  savePlotToFile,
+  setupDataset,
+  toga,
+  treeset.randomForest,
+  whichNumerics,
+  ada.formula,
+  crs,crv
+  )
+
+exportPattern("_") # Needed for the Glade interface
+
+S3method(asRules, rpart)

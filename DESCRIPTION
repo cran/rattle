@@ -1,0 +1,47 @@
+Package: rattle
+Type: Package
+Title: Graphical user interface for data mining in R
+Version: 2.6.25
+Date: 2013-01-22
+Authors@R: c(person("Graham", "Williams", role=c("aut", "cph", "cre"),
+        email="Graham.Williams@togaware.com"), person("Mark", "Vere
+        Culp", role="cph"), person("Ed", "Cox", role="ctb"),
+        person("Anthony", "Nolan", role="ctb"), person("Denis",
+        "White", role="cph"), person("Daniele", "Medri", role="ctb"))
+Depends: R (>= 2.12.1)
+Suggests: RGtk2, pmml (>= 1.2.13), bitops, colorspace, ada, amap,
+        arules, arulesViz, biclust, cairoDevice, cba, Deducer, descr,
+        doBy, e1071, ellipse, fBasics, foreign, fpc, gdata, ggplot2,
+        gplots, graph, grid, gtools, gWidgetsRGtk2, hmeasure, Hmisc,
+        kernlab, latticist, Matrix, methods, mice, network, nnet,
+        odfWeave, party, playwith, psych, randomForest, RBGL,
+        RColorBrewer, reshape, rggobi, RGtk2Extras, ROCR, RODBC, rpart,
+        rpart.plot, survival, timeDate, verification, weightedKmeans,
+        XML, pkgDepTools, Rgraphviz
+Description: Rattle (the R Analytic Tool To Learn Easily) provides a
+        Gnome (RGtk2) based interface to R functionality for data
+        mining.  The aim is to provide a simple and intuitive interface
+        that allows a user to quickly load data from a CSV file (or via
+        ODBC), transform and explore the data, build and evaluate
+        models, and export models as PMML (predictive modelling markup
+        language) or as scores. All of this with knowing little about
+        R. All R commands are logged and commented through the log tab.
+        Thus they are available to the user as a script file or as an
+        aide for the user to learn R or to copy-and-paste directly into
+        R itself.  Rattle also exports a number of utility functions
+        and the graphical user interface, invoked as rattle(), does not
+        need to be run to deploy these.
+License: GPL (>= 2)
+LazyLoad: yes
+LazyData: yes
+URL: http://rattle.togaware.com/
+Packaged: 2013-01-21 19:01:08 UTC; gjw
+Author: Graham Williams [aut, cph, cre], Mark Vere Culp [cph], Ed Cox
+        [ctb], Anthony Nolan [ctb], Denis White [cph], Daniele Medri
+        [ctb]
+Maintainer: Graham Williams <Graham.Williams@togaware.com>
+X-CRAN-Comment: Earlier versions of this package have been removed: it
+        contained copies of copyright code used contrary to its license
+        and with no acknowledgment of copyright.
+Repository: CRAN
+Date/Publication: 2013-01-22 14:38:12
