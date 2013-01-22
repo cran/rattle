@@ -1,0 +1,22 @@
+citHeader("Please cite the 'rattle' package in publications using:")
+
+year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", meta$Date)
+vers <- paste("R package version", meta$Version)
+
+citEntry(entry="Book",
+	title=paste("Data Mining with {Rattle} and {R}:",
+                    "The art of excavating data for knowledge discovery"),
+	author=personList(as.person("Graham J. Williams")),
+	publisher="Springer",
+	series="Use R!",
+	year="2011",
+	url=paste("http://www.amazon.com/gp/product/1441998896/",
+                  "ref=as_li_qf_sp_asin_tl?ie=UTF8&tag=togaware-20&",
+                  "linkCode=as2&camp=217145&creative=399373&creativeASIN=1441998896",
+                  sep=""),
+	textVersion=
+	paste("Williams, G. J. (2011), Data Mining with Rattle and R: ",
+	      "The Art of Excavating Data for Knowledge Discovery, ",
+	      "Use R!, Springer.",
+	      sep=""))
+

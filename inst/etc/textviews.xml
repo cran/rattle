@@ -1,0 +1,242 @@
+<?xml version="1.0"?>
+<rattle-textviews>
+  <textview widget="summary_textview">Univariate Dataset Summary
+
+It is useful to understand how our data is distributed.
+
+The summary here will include more details depending on which check
+buttons you choose.
+
+The Summary option provides a very brief summary.
+
+The Describe option provides comprehensive summaries of each variable.
+
+Kurtosis and Skewness allow these measures to be compared across the
+available numeric variables.</textview>
+  <textview widget="interactive_textview">Interactive Data Exploration
+
+Latticist and GGobi are independent applications which provide highly
+dynamic and interactive graphic data visualisation for exploratory
+data analysis.
+
+Latticist is based on R whilst GGobi is written in C.
+
+Specialist tools include tours, scatterplots, barcharts and parallel
+coordinates plots.
+
+Plots allow points to be identified and linked with brushing across
+multiple plots.</textview>
+  <textview widget="correlation_textview">Numeric Variable Correlation
+
+A correlation analysis provides insights into the independence of the
+numeric input variables. Modelling often assumes independence, and 
+better models will result when using independent input variables.
+
+A table of the correlations between each of the numeric variables
+will be listed, and a correlation plot will be displayed. The
+variables can be ordered to obtain a more pleasant looking plot.
+
+If Hierarchical is checked the dendrograms will be used to provide a
+visual clue to the degree of closeness between variables.
+
+The hierarchical correlation dendrogram produced here presents a view
+of the variables of the dataset showing their relationships (correlations).
+Depending on the data, you may find groupings of variables that are highly
+correlated. These will be fairly obvious in most cases.
+
+The length of the lines in the dendrogram provide a visual indication of
+the degree of correlation (or the tightness of the correlation - shorter
+lines indicate more tighly correlated variables).
+
+Once you have identified the groups of variables that are correlated,
+you may want to reduce the number of variables you are including in your
+modelling.</textview>
+  <textview widget="prcomp_textview">Principal Components Analysis
+
+Principal Components Analysis can provide insights into the importance
+of variables in explaining the variation found within a dataset. A
+principal component is a numeric linear combination of the values of
+other variables in the dataset that captures maximal variation in the data.
+
+Two approaches to deriving principal components are supported. The
+singular value decomposition (SVD) of the (centered and possibly
+scaled) data matrix is preferred for numeric accuracy. An alternative
+approach is to determine the eigenvalues of the covariance matrix.
+
+Two plots will be displayed. The bar chart shows the significance of
+each of the derived components, whilst the biplot remaps the data
+points from their original coordinates to coordinates of the first two
+principal coordinates.</textview>
+  <textview widget="test_textview">Statistical Tests
+
+These tests apply to two samples. The paired two sample tests assume
+that we have two samples or observations, and that we are testing for
+a change, usually from one time period to another.
+
+Distribution of the Data
+
+* Kolomogorov-Smirnov     Non-parametric    Are the distributions the same?
+* Wilcoxon Signed Rank    Non-parametric    Do paired samples have the same distribution?
+
+Location of the Average
+
+* T-test               Parametric        Are the means the same?
+* Wilcoxon Rank-Sum    Non-parametric    Are the medians the same?
+
+Variation in the Data
+
+* F-test    Parametric    Are the variances the same?
+
+Correlation
+
+* Correlation    Pearsons    Are the values from the paired samples correlated?</textview>
+  <textview widget="kmeans_textview">KMeans Clustering
+
+A cluster analysis will identify groups within a dataset. The KMeans
+clustering algorithm will search for K clusters (which you specify).
+The resulting K clusters are represented by the mean or average
+values of each of the variables.
+
+By default KMeans only works with numeric variables.</textview>
+  <textview widget="hclust_textview">Hierarchical Clustering</textview>
+  <textview widget="associate_textview">Association Rule Analysis
+
+Association analysis identifies relationships or affinities between
+observations and/or between variables. These relationships are then
+expressed as a collection of association rules. The approach has been
+particularly successful in mining very large transaction databases. It
+is also often referred to as basket (as in shopping basket) analysis.</textview>
+  <textview widget="rpart_textview">Decision Tree Model
+
+A decision tree model is one of the most common data mining models. It
+is popular because the resulting model is easy to understand. The
+algorithms use a recursive partitioning approach.
+
+The traditional algorithm is implemented in the rpart package. It is
+comparable to CART and ID3/C4.
+
+The conditional tree algorithm is implemented in the party package. It
+builds trees in a conditional inference framework.
+
+Note that the ensemble approaches (boosting and random forests) tend
+to produce models that exhibit less bias and variance than a single
+decision tree.</textview>
+  <textview widget="glm_textview">Linear and Generalised Linear Models
+
+A linear regression model is the traditional method for fitting a
+statistical model to data. It is appropriate when the target variable
+is numeric and continuous.
+
+The family of generalized linear models extends traditional linear
+regression to targets with non-normal (non-gaussian)
+distributions. Linear regression models are iteratively fit to the
+data after transforming the target variable to a continuous numeric.
+
+Generalized linear regression, applied to a dataset with a numeric,
+continuous target variable, will build the same model, using a
+different algorithm.
+
+The generalised algorithm is parameterised by the distribution of the
+target variable and a link function relating the mean of the target to
+the inputs. These two parameters describe what we often refer to as a
+family, such as Poisson, Logistic, etc.
+
+If the target has just two possible outcomes it is transformed using a
+logistic or probit function.  A probit regression gives similar
+results to the logistic regression, but often with smaller
+coefficients.</textview>
+  <textview widget="ada_textview">Adaptive Boosting Model
+
+The basic idea of boosting is to associate a weight with each observation
+in the dataset. A series of models are built and the weights are
+increased (boosted) if a model incorrectly classifies the observation.</textview>
+  <textview widget="rf_textview">Random Forest Model
+
+A random forest is an ensemble (i.e., a collection) of un-pruned
+decision trees. Ensemble models are often robust to variance and bias.
+
+Random forests are often used when we have large training datasets and
+particularly a very large number of input variables (hundreds or even
+thousands of input variables). The algorithm is efficient with respect
+to a large number of variables since it repeatedly subsets the
+variables available. Use the Importance button to view the relative
+importance of each variable.
+
+A random forest model is typically made up of tens or hundreds of
+decision trees. Use the Errors button to view the rate of decrease of
+the model error as the number of trees increases.</textview>
+  <textview widget="esvm_textview">Support Vector Machine Model</textview>
+  <textview widget="ksvm_textview">Support Vector Machine Model
+
+A Support Vector Machine (SVM) searches for so called support vectors
+which are data points that are found to lie at the edge of an area in
+space which is a boundary from one class of points to another. In the
+terminology of SVM we talk about the space between regions containing
+data points in different classes as being the margin between those
+classes. The support vectors are used to identify a hyperplane (when
+we are talking about many dimensions in the data, or a line if we were
+talking about only two dimensional data) that separates the classes.</textview>
+  <textview widget="nnet_textview">Neural Network Model
+
+Build a model that is based on the idea of multiple layers of neurons
+connected to each other, feeding the numeric data through the network,
+combining the numbers, to produce a final answer.</textview>
+  <textview widget="model_survival_textview">Survival Regression Model
+
+Build a regression model taking into account the censoring of the
+data. Censoring is the phenomenon of having data relating to some
+event occurring, but at the point of time when the data was
+collected, we do not know whether that event might occur to others
+in the data. That event might be death.</textview>
+  <textview widget="confusion_textview">Error Matrix
+
+An error matrix shows the true outcomes against the predicted
+outcomes. Two tables will be presented here. The first will be the
+count of observations and the second will be the proportions.
+
+For a binary classification model the cells of the error matrix are
+referred to, from the top left going clockwise, as the True Negatives,
+False Positives, True Positives, and False Negatives.
+
+An error matrix is also known as a confusion matrix.</textview>
+  <textview widget="risk_textview">Risk Chart
+
+A risk chart provides an effective approach to presenting the performance of a model. 
+
+The default chart displays caseload versus performance.</textview>
+  <textview widget="lift_textview">Lift Chart
+
+A lift chart identifies the gain in performance offered by the model.</textview>
+  <textview widget="roc_textview">ROC Curve
+
+An ROC (receiver operator characteristic) curve compares the false
+positive rate to the true positive rate. We can access the trade off
+the number of observations that are incorrectly classified
+as positives against the number of observations that are correctly
+classified as positives.</textview>
+  <textview widget="precision_textview">Precision Chart</textview>
+  <textview widget="sensitivity_textview">Sensitivity Chart</textview>
+  <textview widget="costcurve_textview">Cost Curve Chart</textview>
+  <textview widget="pvo_textview">Probability Versus Observed</textview>
+  <textview widget="score_textview">Score
+
+A model can be deployed on a dataset to obtain scores or
+classifications for each observation in the dataset.
+
+By default the testing dataset (if any) will be scored. Otherwise the
+training dataset is scored. As an alternative, a CSV file can be
+loaded and scored. This choice of what is scored is controlled by the
+radio button options.
+
+For binary models a probability score can be recorded. For regression
+models a value is recorded for each observation. Otherwise a class
+will be recorded for each observation. This can be controlled by the
+Class and Probability radio buttons.
+
+The resulting CSV file will include just those variables having a role
+as Identifier (plus the Target and the Score), or else all of the
+variables.
+
+The name of a CSV file into which the results will be written will be
+prompted for.</textview>
+</rattle-textviews>

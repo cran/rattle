@@ -1,0 +1,552 @@
+<?xml version="1.0"?>
+<rattle-tooltips>
+  <tooltip widget="quit_menu">Quit from the application.</tooltip>
+  <tooltip widget="execute_menu">Execute the current tab to have it
+    take effect (shortcut is F2).</tooltip>
+  <tooltip widget="verbose_menuitem">If enabled, display timestamps in
+    plots.</tooltip>
+  <tooltip widget="tooltips_menuitem">Enable tooltips under
+    GNU/Linux.</tooltip>
+  <tooltip widget="ggplot2_menuitem">Experimental: Enable the use of
+    the ggplot2 graphs where they have been implemented. Support for
+    ggplot2 is on-going and not yet implemented for all plots.</tooltip>
+  <tooltip widget="use_cairo_graphics_device">The Cairo graphics
+    device is a newer plotting device. Uncheck this to use the default
+    R graphics device for your installation.</tooltip>
+  <tooltip widget="rattle_menu">Double click to browse to the Rattle
+    home page.</tooltip>
+  <tooltip widget="execute_button">Execute the current tab to have it
+    take effect (shortcut is F2).</tooltip>
+  <tooltip widget="new_button">Start a new project.</tooltip>
+  <tooltip widget="open_button">Open an existing project from file.</tooltip>
+  <tooltip widget="save_button">Save the current project to
+    file.</tooltip>
+  <tooltip widget="report_toolbutton">Export the information in the
+    current tab as an OpenOffice.org report.</tooltip>
+  <tooltip widget="export_button">Export the current tab in an
+    appropriate form.</tooltip>
+  <tooltip widget="stop_button">Attempt to interrupt the current
+    process.</tooltip>
+  <tooltip widget="quit_button">Quit the application, closing all
+    graphics displays and the R console.</tooltip>
+  <tooltip widget="data_csv_radiobutton">Load data from a comma
+    separated value (CSV) file, as might be exported from a
+    spreadsheet or database.</tooltip>
+  <tooltip widget="data_arff_radiobutton">Load data from an ARFF file
+    (CSV with data types) as is used with the Weka data mining
+    tool.</tooltip>
+  <tooltip widget="data_rdataset_radiobutton">Associate a pre-existing
+    R dataset for use.</tooltip>
+  <tooltip widget="associate_rules_button">List the rules textually
+    in the text view.</tooltip>
+  <tooltip widget="associate_plot_button">Plot each rule showing the
+    support, confidence and the lift.</tooltip>
+  <tooltip widget="data_library_radiobutton">Choose one of the
+    datasets supplied by any of the installed R packages.</tooltip>
+  <tooltip widget="data_rdata_radiobutton">Load data from a R
+    datafile, which is usually a binary file, possibly containing
+    multiple datasets.</tooltip>
+  <tooltip widget="data_odbc_radiobutton">Identify a data source
+    through an ODBC connection.</tooltip>
+  <tooltip widget="data_corpus_radiobutton">Load a collection of
+    documents for text mining.</tooltip>
+  <tooltip widget="data_script_radiobutton">Run a script to generate
+    the CSV file to be loaded.</tooltip>
+  <tooltip widget="data_filechooserbutton">Open a file chooser to
+    select a dataset file to load.</tooltip>
+  <tooltip widget="data_separator_entry">The default field separator
+    is a comma, but the semicolon (;) is common in Europe where the
+    comma is the decimal point. Another common separator is the tab
+    (\t) as used in .txt files.</tooltip>
+  <tooltip widget="data_decimal_entry">The default decimal point is a
+    period, but the comma (,) is common in Europe.</tooltip>
+  <tooltip widget="data_header_checkbutton">Indicates whether the
+    first row of the datafile is the names of the columns. Otherwise,
+    random names will be made up.</tooltip>
+  <tooltip widget="data_odbc_dsn_entry">Enter a known ODBC
+    data source name (DSN). Then press the Enter key to query the
+    database for a list of available tables.</tooltip>
+  <tooltip widget="data_odbc_table_combobox">After specifying a DSN a
+  list of available tables will appear here. One table is to be chosen
+  to be loaded.</tooltip>
+  <tooltip widget="data_odbc_limit_spinbutton">Number of rows to
+    retrieve from the table.</tooltip>
+  <tooltip widget="data_odbc_believeNRows_checkbutton">Some ODBC
+  drivers use pre-fetching which confuses the row counts (often by
+  returning a fetch limit rather than a row count). If not all rows are
+  retrieved after Execution, uncheck this option to not believe the
+  reported row count.</tooltip>
+  <tooltip widget="data_corpus_location_filechooserbutton">Folder
+    containing the corpus and optionally a target.csv file.</tooltip>
+  <tooltip widget="data_corpus_strip_checkbutton">Remove extra
+    whitespace from the document.</tooltip>
+  <tooltip widget="data_corpus_lowercase_checkbutton">Convert all
+    words to lowercase.</tooltip>
+  <tooltip widget="data_corpus_stopwords_checkbutton">Remove English
+    (for now) stop words.</tooltip>
+  <tooltip widget="data_corpus_stem_checkbutton">Perform word
+    stemming, replacing each word with its stem.</tooltip>
+  <tooltip widget="data_sample_entry">Specify how the partitioning is to
+  occur. One or two numbers separated by '/' will create a training
+  and testing dataset. Three numbers separated by '/' will create a
+  training, validation, and testing dataset, in that order. The
+  numbers are percentages, and must add up to 100.</tooltip>
+  <tooltip widget="data_sample_checkbutton">Randomly partition the whole
+    dataset into train/validate/test datasets. Note that the partition is
+    created each time this tab is executed, and thus changing the seed
+    will generate a different partitioning.
+    
+    If partitioning is enabled, then any clustering and modelling is
+    performed over the training dataset. In the Evaluation tab the
+    default dataset for evaluation will be the validate dataset. The
+    test dataset is used to obtain an unbiased error
+    estimate.</tooltip>
+  <tooltip widget="sample_seed_button">Update the seed with a random
+    number.</tooltip>
+  <tooltip widget="sample_seed_spinbutton">Random number generator
+    seed. Change this for different partitions.</tooltip>
+  <tooltip widget="variables_set_input_button">To select multiple
+    variables for input (perhaps you have previously set them to
+    ignore), simply select the required variables in the list below
+    and click this Input button.</tooltip>
+  <tooltip widget="variables_set_ignore_button">To select multiple
+    variables to ignore, simply select the required variables in the
+    list below and click this Ignore button.</tooltip>
+  <tooltip widget="weight_entry">Enter an R formula for calculating a
+    weight for each observation. Variables can be named in the
+    formula.</tooltip>
+  <tooltip widget="data_target_auto_radiobutton">Determine target type
+    automatically as either Categoric or Numeric.</tooltip>
+  <tooltip widget="data_target_categoric_radiobutton">Set target type to be
+    categoric for Classification.</tooltip>
+  <tooltip widget="data_target_numeric_radiobutton">Set target type to be
+    numeric for Regression.</tooltip>
+  <tooltip widget="data_target_survival_radiobutton">Set target type to be
+    suitable for Survival Analysis, requiring both Time and Status
+    variables to be identified.</tooltip>
+  <tooltip widget="kmeans_plots_label">Once a clustering has been built
+  we can display various plots.</tooltip>
+  <tooltip widget="summary_radiobutton">Summarise the dataset.</tooltip>
+  <tooltip widget="explore_distr_radiobutton">Generate various plots
+  to explore the distribution of the data.</tooltip>
+  <tooltip widget="explore_interactive_radiobutton">Interactively
+    explore the data.</tooltip>
+  <tooltip widget="explore_interactive_latticist_radiobutton">Run the
+  interactive plot builder called PlayWith, which is based on lattice
+  graphics. The user interface is built using GTK2, in common with
+  Rattle.</tooltip>
+  <tooltip widget="explore_interactive_ggobi_radiobutton">Run the
+  external GGobi data visualisation application, if available. The
+  GGobi application is independent of R/Rattle and the rggobi package
+  provides a connection to it.</tooltip>
+  <tooltip widget="explore_interactive_plotbuilder_radiobutton">Run
+  the interactive plot builder to generate ggplot2 based plots. The
+  Plot Builder uses a Java-based user interface and it has been
+  observed to cause R to crash at times.</tooltip>
+  <tooltip widget="explore_correlation_radiobutton">Show the pairwise
+    correlations between each numeric variable.</tooltip>
+  <tooltip widget="prcomp_radiobutton">Perform a principal components
+    analysis of the numeric data in the dataset.</tooltip>
+  <tooltip widget="explore_sample_label">To turn sampling off, uncheck
+    the Partition checkbox in the Data tab.</tooltip>
+  <tooltip widget="summary_checkbutton">Summary, including Min,
+    Quartiles, Mean, Max for numerics and top levels for
+    factors.</tooltip>
+  <tooltip widget="describe_checkbutton">Concise description including
+    missing, unique, sum, mean, and the lowest and highest
+    values.</tooltip>
+  <tooltip widget="basics_checkbutton">Various basic measures of
+    numeric data, including missing, min, max, quartiles, mean, sum,
+    skewness, kurtosis.</tooltip>
+  <tooltip widget="kurtosis_checkbutton">Summarise just the kurtosis -
+    useful for comparing between all numeric variables at
+    once.</tooltip>
+  <tooltip widget="skewness_checkbutton">Summarise just the skewness -
+    useful for comparing between all numeric variables at
+    once.</tooltip>
+  <tooltip widget="missing_checkbutton">Generate a table that records
+    the pattern of missing values reports the frequency of each
+    pattern.</tooltip>
+  <tooltip widget="explore_crosstab_checkbutton">Generate cross
+    tabulations for each categoric variable with the target
+    variable.</tooltip>
+  <tooltip widget="explore_correlation_na_checkbutton">Whether we should
+    display the correlation between missing values.</tooltip>
+  <tooltip widget="benford_bars_checkbutton">Generate a bar plot
+    instead of lines.</tooltip>
+  <tooltip widget="benford_digits_spinbutton">The digit to plot - 1st
+    to 9th are allowed.</tooltip>
+  <tooltip widget="benford_abs_radiobutton">Plot the distribution of
+    the absolute values.</tooltip>
+  <tooltip widget="benford_pos_radiobutton">Plot distribution of only
+    the positive values.</tooltip>
+  <tooltip widget="benford_neg_radiobutton">Plot distribution of only
+    the negative values.</tooltip>
+  <tooltip widget="explore_correlation_ordered_checkbutton">Order the
+    variables according to strength of correlation.</tooltip>
+  <tooltip widget="explore_correlation_method_combobox">Which
+    correlation coefficient (or covariance) is to be computed. Pearson
+    for bivariate normal distribution. Otherwise Kendall&apos;s tau or
+    Spearman&apos;s rho rank based methods may be more
+    robust</tooltip>
+  <tooltip widget="continuous_clear_button">Clear all check boxes of
+    selected rows.</tooltip>
+  <tooltip widget="plots_per_page_spinbutton">The number of plots to
+    draw per page.</tooltip>
+  <tooltip widget="explot_annotate_checkbutton">Include numeric values
+    within the plots.</tooltip>
+  <tooltip widget="categorical_clear_button">Clear all check boxes of
+    selected rows.</tooltip>
+  <tooltip widget="label7">Explore the data to identify how it is
+    distributed.</tooltip>
+  <tooltip widget="test_variance_radiobutton">Two sample t-test to
+    test whether the variances are different.</tooltip>
+  <tooltip widget="test_kw_radiobutton">Two sample test of means when
+    distributions are not known to be normal.</tooltip>
+  <tooltip widget="test_ttest_radiobutton">Two sample t-test to test
+    whether the means are different.</tooltip>
+  <tooltip widget="test_wilcoxon_radiobutton">Two sample Wilcoxon
+    rank-sum test, also known as the Mann-Whitney U test, to test
+    whether the two distributions are the same.</tooltip>
+  <tooltip widget="test_distr_radiobutton">Test whether the two
+    distributions are different.</tooltip>
+  <tooltip widget="normalise_radiobutton">Transform numeric data to
+    standard scales.</tooltip>
+  <tooltip widget="impute_radiobutton">Impute missing
+    values.</tooltip>
+  <tooltip widget="remap_radiobutton">Remap variables through binning
+    or type changes.</tooltip>
+  <tooltip widget="cleanup_radiobutton">Delete observations or
+    variables.</tooltip>
+  <tooltip widget="transform_notebook">Multiply out the selected
+    categorics into a new single variable.</tooltip>
+  <tooltip widget="rescale_matrix_radiobutton">For the selected
+    numeric variables (one or more variables, considered as a matrix)
+    divide each cell by the matrix total.</tooltip>
+  <tooltip widget="rescale_log_radiobutton">Rescale variables using a
+    natural log transform.</tooltip>
+  <tooltip widget="rescale_log10_radiobutton">Rescale variables using a
+    log10 transform.</tooltip>
+  <tooltip widget="normalise_medianad_radiobutton">Rescale (robustly)
+    so that the median is 0 and the median absolute deviation is
+    1.</tooltip>
+  <tooltip widget="normalise_scale01_radiobutton">Rescale to the range
+    0-1.</tooltip>
+  <tooltip widget="normalise_interval_radiobutton">Rescale to an integer
+    in the range 0 to 99 (using the default of 100 groups).</tooltip>
+  <tooltip widget="normalise_rank_radiobutton">Change the values into
+    a rank order.</tooltip>
+  <tooltip widget="normalise_recenter_radiobutton">Rescale so that the
+    mean is 0 and the standard deviation is 1.</tooltip>
+  <tooltip widget="impute_zero_radiobutton">Replace missing numeric
+    with 0 and categoric with 'missing'.</tooltip>
+  <tooltip widget="impute_mean_radiobutton">Replace missing values
+    with the population mean.</tooltip>
+  <tooltip widget="impute_median_radiobutton">Replace missing values
+    with the population median.</tooltip>
+  <tooltip widget="impute_mode_radiobutton">Replace missing values
+    with the population mode.</tooltip>
+  <tooltip widget="impute_constant_radiobutton">Replace missing values
+    with a specified value.</tooltip>
+  <tooltip widget="impute_constant_entry">Specify a value to replace
+    missing values with.</tooltip>
+  <tooltip widget="label156">Replace missing numeric with 0 and
+    categroic with 'missing';.</tooltip>
+  <tooltip widget="label14">Partition a numeric variable into a number
+    of bins.</tooltip>
+  <tooltip widget="remap_quantiles_radiobutton">Each bin will have
+  approximately the same number of observations. If the Data tab
+  includes a Weight variable then the observations are weighted when
+  performing the binning.</tooltip>
+  <tooltip widget="remap_kmeans_radiobutton">A kmeans clustering will
+    be used to bin the variable.</tooltip>
+  <tooltip widget="remap_eqwidth_radiobutton">The min to max range
+    will be split into equal width bins.</tooltip>
+  <tooltip widget="label15">Set the number of bins to
+    construct.</tooltip>
+  <tooltip widget="remap_bins_spinbutton">Number of bins.</tooltip>
+  <tooltip widget="remap_indicator_radiobutton">Turn a categoric
+    into a collection of numeric (0,1) variables.</tooltip>
+  <tooltip widget="remap_joincat_radiobutton">Combine multiple
+    categoric variables into just one.</tooltip>
+  <tooltip widget="delete_ignored_radiobutton">Delete any variables
+    that are marked as having role Ignore.</tooltip>
+  <tooltip widget="delete_selected_radiobutton">Delete those variables
+    selected below.</tooltip>
+  <tooltip widget="delete_navars_radiobutton">Delete any variable with
+    any missing values.</tooltip>
+  <tooltip widget="delete_naents_radiobutton">Delete any observations with
+    any missing value.</tooltip>
+  <tooltip widget="sample_tab_label">Transform the data in various
+    ways.</tooltip>
+  <tooltip widget="kmeans_radiobutton">Generate clusters using a
+    kmeans algorithm.</tooltip>
+  <tooltip widget="ewkm_radiobutton">Generate clusters using a
+    kmeans algorithm with subspaces selected by entropy weighting.</tooltip>
+  <tooltip widget="hclust_radiobutton">Build an agglomerative
+    hierarchical cluster.</tooltip>
+  <tooltip widget="biclust_radiobutton">Cluster by identifying
+    suitable subsets of both the variables and the
+    observations.</tooltip>
+  <tooltip widget="kmeans_seed_button">Update the seed with a random
+    number.</tooltip>
+  <tooltip widget="kmeans_seed_spinbutton">Random number generator
+    seed. Change this for different random starting points for the
+    clustering.</tooltip>
+  <tooltip widget="kmeans_runs_spinbutton">Randomly restart the
+    clustering and select the best.</tooltip>
+  <tooltip widget="kmeans_hclust_centers_checkbutton">If you have
+    performed a hierarchical cluster you can use it to provide initial
+    centers for your kmeans cluster.</tooltip>
+  <tooltip widget="kmeans_iterate_checkbutton">Iterate over the number
+    of clusters, up to the number specified above.</tooltip>
+  <tooltip widget="kmeans_stats_button">After a clustering has been
+  built generate a list of various measures of the goodness of the
+  clustering.</tooltip>
+  <tooltip widget="kmeans_data_plot_button">After a clustering has
+  been built display a plot of the data and the cluster to which each
+  data point belongs.</tooltip>
+  <tooltip widget="kmeans_discriminant_plot_button">After a clustering
+  has been built display a discriminant plot.</tooltip>
+  <tooltip widget="kmeans_weights_plot_button">After an ewkm
+  clustering has been built display a plot of the relative weights
+  associated with each variable for each cluster, as well as a
+  dendrogram showing the correlation between variables and onee
+  between clusters.</tooltip>
+  <tooltip widget="label30">These options apply when building the
+  hierarchy.</tooltip>
+  <tooltip widget="label32">These options apply to the constructed
+    hierarchy.</tooltip>
+  <tooltip widget="hclust_dendrogram_button">Display a dendrogram plot
+    of the hierarchical cluster.</tooltip>
+  <tooltip widget="associate_baskets_checkbutton">If checked, baskets are
+    identified by the ident variable and items in the basket by the
+    target variable. Otherwise a basket is the collection of input
+    variables.</tooltip>
+  <tooltip widget="associate_plot_frequency_button">Plot the frequency
+    of the more common items. The support value is used. This includes
+    the items that have enough support to appear in the association
+    rules.</tooltip>
+  <tooltip widget="rpart_radiobutton">Build a model using the popular
+    decision tree algorithm.</tooltip>
+  <tooltip widget="rf_radiobutton">Build many decision trees using
+    random subsets of data and variables.</tooltip>
+  <tooltip widget="svm_radiobutton">Build a support vector machine
+    model.</tooltip>
+  <tooltip widget="model_linear_radiobutton">Build a Linear (numeric
+    target) or Logist (binary target) model with lm/glm
+    respectively.</tooltip>
+  <tooltip widget="nnet_radiobutton">Build a Regression (numeric
+    target) or Classification (categoric target) model with
+    nnet/multinom respectively.</tooltip>
+  <tooltip widget="model_survival_radiobutton">Build a model for
+    survival times.</tooltip>
+  <tooltip widget="all_models_radiobutton">Build one model of each
+    type (except Survival) using the specified parameters.</tooltip>
+  <tooltip widget="boost_radiobutton">Build multiple simple models,
+    boosting observations hard to classify, combined into an
+    ensemble.</tooltip>
+  <tooltip widget="model_tree_priors_label">prior</tooltip>
+  <tooltip widget="model_tree_loss_label">loss</tooltip>
+  <tooltip widget="label39">minsplit</tooltip>
+  <tooltip widget="rpart_minsplit_spinbutton">This is the minimum
+    number of observations that must exist in a node resulting from a
+    split before a split will be performed. The default is
+    20.</tooltip>
+  <tooltip widget="model_tree_priors_entry">Set the prior
+    probabilities for each class. E.g. for two classes: 0.5,0.5. Must
+    add up to 1.</tooltip>
+  <tooltip widget="model_tree_loss_entry">Weight the outcome classes
+    differently. E.g., 0,10,1,0 (TN, FN, FP, TP).</tooltip>
+  <tooltip widget="label84">minbucket</tooltip>
+  <tooltip widget="rpart_minbucket_spinbutton">This is the minimum
+    number of observations allowed in any leaf node of the decision
+    tree. The default value is one thrid of the Min Split.</tooltip>
+  <tooltip widget="model_tree_cp_label">cp</tooltip>
+  <tooltip widget="label57">maxdepth</tooltip>
+  <tooltip widget="model_tree_cp_spinbutton">The complexity parameter
+    (cp) is used to control the size of the decision tree and to
+    select the optimal tree size. If the cost of adding another
+    variable to the decision tree from the current node is above the
+    value of cp, then tree building does not continue. We could also
+    say that tree construction does not continue unless it would
+    decrease the overall lack of fit by a factor of cp.
+    
+    Setting this to zero will build a tree to its maximum depth (and
+    perhaps will build a very, very, large tree). This is useful if
+    you want to look at the values for CP for various tree sizes. This
+    information will be in the text view window. You will look for the
+    number of splits where the sum of the xerror (cross validation
+    error, relative to the root node error) and xstd is minimum. This
+    is usually early in the list.</tooltip>
+  <tooltip widget="rpart_maxdepth_spinbutton">This is the maximum
+    depth of any node of the final tree. The root node is considered
+    to be depth 0. Note that a depth beyond 30 will give nonsense
+    results on 32-bit machines. The default is 30.</tooltip>
+  <tooltip widget="rpart_plot_button">Draw the decision tree as a
+    plot.</tooltip>
+  <tooltip widget="model_tree_include_missing_checkbutton">Check this
+    box to use surrogate variables when confronted with missing
+    values.</tooltip>
+  <tooltip widget="ada_stumps_checkbutton">When active, build
+    stumps. Deactivating results in default values.</tooltip>
+  <tooltip widget="ada_ntree_spinbutton">The number of trees to
+    build. Generally 500 (the default) is good, and the resulting
+    model is fairly insensitive to changes here.</tooltip>
+  <tooltip widget="ada_maxdepth_spinbutton">This is the maximum
+    depth of any node of the final tree. The root node is considered
+    to be depth 0. Note that a depth beyond 30 will give nonsense
+    results on 32-bit machines. The default is 30.</tooltip>
+  <tooltip widget="ada_minsplit_spinbutton">This is the minimum
+    number of observations that must exist in a dataset at any node in
+    order for a split of that node to be attempted. The default is
+    20.</tooltip>
+  <tooltip widget="ada_cp_spinbutton">The complexity parameter
+    (cp) is used to control the size of the decision tree and to
+    select the optimal tree size. If the cost of adding another
+    variable to the decision tree from the current node is above the
+    value of cp, then tree building does not continue. We could also
+    say that tree construction does not continue unless it would
+    decrease the overall lack of fit by a factor of cp.
+    
+    Setting this to zero will build a tree to its maximum depth (and
+    perhaps will build a very, very, large tree). This is useful if
+    you want to look at the values for CP for various tree sizes. This
+    information will be in the text view window. You will look for the
+    number of splits where the sum of the xerror (cross validation
+    error, relative to the root node error) and xstd is minimum. This
+    is usually early in the list.</tooltip>
+  <tooltip widget="ada_draw_spinbutton">Which tree to
+    display.</tooltip>
+  <tooltip widget="ada_list_button">List the decision trees in the
+    textview.</tooltip>
+  <tooltip widget="ada_errors_button">Plot error rate progressively for
+    the number of trees built. Useful for deciding the optimal number
+    of trees to build. </tooltip>
+  <tooltip widget="ada_importance_button">Show the relative importance
+    of variables. Useful to see which variables play the most
+    important roles in the model.</tooltip>
+  <tooltip widget="ada_defaults_button">Reset the options to
+    correspond to the default values.</tooltip>
+  <tooltip widget="ada_continue_button">You can build further trees by
+    increasing the number of trees to build then click here.</tooltip>
+  <tooltip widget="rf_ntree_spinbutton">The number of trees to
+    build. Generally 500 (the default) is good, and the resulting
+    model is fairly insensitive to changes here.</tooltip>
+  <tooltip widget="rf_mtry_spinbutton">The number of variables that
+    will be considered at any time in deciding how to partition the
+    dataset. For classification the default is the square root of the
+    number of variables. The model is generally not very sensitive to
+    this value.</tooltip>
+  <tooltip widget="model_rf_sample_entry">Specify a single sample size
+    or a sample size for each class (e.g., '500,500') which may be
+    useful in balancing class predictions.</tooltip>
+  <tooltip widget="rf_importance_checkbutton">Enable this check button
+    to display a measure of the importance of each variable. This is
+    estimated by considering the increase in prediction error when any
+    variable is permuted while all others remain constant. Four
+    measures are actually computed, and the resulting plot can be used
+    to decide to remove irrelevant variables to achieve model
+    reduction (building simpler and more readily interpretable
+    models), and to achieve more accurate models.
+    
+    THIS IS BEING REPLACED BY A Importance Button</tooltip>
+  <tooltip widget="rf_proximity_checkbutton">THIS IS BEING REMOVE - IS
+    IT NEEDED?</tooltip>
+  <tooltip widget="rf_importance_button">Show the relative importance
+    of variables. Useful to see which variables play the most
+    important roles.</tooltip>
+  <tooltip widget="rf_errors_button">Plot error rate prgressively for
+    the number of trees built. Useful for deciding the optimal number
+    of trees to build.</tooltip>
+  <tooltip widget="rf_oob_roc_button">Plot the ROC curve based on the
+  out-of-bag (OOB) predictions for each observation in the training
+  dataset.</tooltip>
+  <tooltip widget="rf_print_tree_button">Display a collection of rules
+  obtained from a specific tree from the random forest of
+  trees.</tooltip>
+  <tooltip widget="rf_print_tree_spinbutton">Which tree to
+    display.</tooltip>
+  <tooltip widget="kernlab_radiobutton">Use ksvm from the kernlab
+    package.</tooltip>
+  <tooltip widget="e1071_radiobutton">Use svm from the e1071 package
+    (recommended).</tooltip>
+  <tooltip widget="svm_classweights_entry">Entry class weights in the
+    form: c('0'=4, '1'=1)</tooltip>
+  <tooltip widget="model_svm_options_entry">Enter other options passed
+    to the ksvm function.</tooltip>
+  <tooltip widget="glm_target_label">removed - Makes whole window too
+    wide</tooltip>
+  <tooltip widget="model_tab_label">Build predictive models.</tooltip>
+  <tooltip widget="evaluate_confusion_radiobutton">An error matrix simply lists
+    in tabular form the number of predicted cases that are correct
+    (true positives and true negatives) and incorrect (false positives
+    and false negatives). Both the raw numbers and the proportions
+    will be displayed in two tables.</tooltip>
+  <tooltip widget="evaluate_risk_radiobutton">A risk chart is used in Analytics
+    to plot caseload versus performance data. While traditional plots
+    (e.g., ROC Curves) plot false positives against true positives,
+    this Risk Chart plots additional information, replacing the x-axis
+    with Caseload (the number of cases predicted as hits by the model)
+    and the y-axis with Performance. A Risk Variable is identified from
+    the dataset. This is a measure of the amount of risk associated
+    with each case (e.g., dollars recovered from a fraudulent claim)
+    and the plot shows how much of the total risk is recovered for any
+    particular caseload. The number of cases recovered (the precision)
+    and the strike rate are also shown.</tooltip>
+  <tooltip widget="evaluate_lift_radiobutton">A lift chart plots the
+    lift against the rate of positive predictions
+    (TP+FP)/TOTAL.</tooltip>
+  <tooltip widget="evaluate_roc_radiobutton">An ROC curve plots the true
+    positive rate against the false positive rate. A better model is
+    one with larger area under the curve (better AUC).</tooltip>
+  <tooltip widget="evaluate_precision_radiobutton">Plot precision (the positive
+    predictive value) against recall (the true positive
+    rate).</tooltip>
+  <tooltip widget="evaluate_sensitivity_radiobutton">This plots sensitivity
+    (the true positive rate, also called recall) against the
+    specificity (the true negative rate).</tooltip>
+  <tooltip widget="evaluate_score_radiobutton">Score the data and save to
+    file.</tooltip>
+  <tooltip widget="label132">Choose one or more available models to
+    evaluate.</tooltip>
+  <tooltip widget="evaluate_training_radiobutton">Evaluate the model
+    using the training dataset. This will give an optimistic estimate
+    of the performance of the model.</tooltip>
+  <tooltip widget="evaluate_validation_radiobutton">Evaluate the model
+    using the validation dataset. This is used whilst the model
+    parameters are still being tuned but not for the final unbiased
+    estimate of error. This option is only available if
+    partitioning is enabled in the Data tab and a validation dataset
+    is specified.</tooltip>
+  <tooltip widget="evaluate_testing_radiobutton">Evaluate the
+    performance of the model over the testing dataset, which is the
+    remainder of the dataset not used for building, and so will
+    provide an unbiased estimate. This option is only available if
+    partitioning is enabled in the Data tab and a testing dataset is
+    specified.</tooltip>
+  <tooltip widget="evaluate_csv_radiobutton">Load a new dataset from a
+    CSV file and evaluate the model on this dataset. The dataset must
+    have the same columns in the same order as the training
+    dataset.</tooltip>
+  <tooltip widget="evaluate_rdataset_radiobutton">Use a pre-existing R
+    dataset (defined in the R Console) to evaluate the model. The
+    dataset must have the same columns in the same order as the
+    training dataset.</tooltip>
+  <tooltip widget="score_idents_radiobutton">The scores and
+    identifiers are written to file.</tooltip>
+  <tooltip widget="score_all_radiobutton">The scores and all columns
+    are written to file.</tooltip>
+  <tooltip widget="evaluate_tab_label">Evaluate the models.</tooltip>
+  <tooltip widget="log_tab_label">Show a complete log of all R
+    commands. Useful to save as an R script for documentation and
+    repeatability.</tooltip>
+  <tooltip widget="log_export_comments_checkbutton">When unchecked,
+    only the actual R commands will be exported to file, otherwise
+    everything we see in the Log is exported.</tooltip>
+  <tooltip widget="log_export_rename_checkbutton">Internal variables are
+  prefixed with the string 'crs$'. You can choose to use your own
+  string to prefix your variables on exporting the Log.</tooltip>
+<tooltip widget="log_export_rename_entry">Choose the prefix to be used
+  to identify internal variables when this Log is exported.</tooltip>
+</rattle-tooltips>

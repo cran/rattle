@@ -1,0 +1,142 @@
+% \VignetteIndexEntry{Rattle Quick Start Guide}
+% \VignetteDepends{rattle}
+% \VignetteKeywords{data mining}
+% \VignettePackage{rattle}
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage[pdftex]{graphicx}
+\usepackage{color}
+\usepackage{xspace}
+\usepackage{fancyvrb}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{algorithm2e}
+\usepackage[
+         colorlinks=true,
+         linkcolor=blue,
+         citecolor=blue,
+         urlcolor=blue]
+         {hyperref}
+\usepackage{Sweave}         
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% define new colors for use
+\definecolor{darkgreen}{rgb}{0,0.6,0}
+\definecolor{darkred}{rgb}{0.6,0.0,0}
+\definecolor{lightbrown}{rgb}{1,0.9,0.8}
+\definecolor{brown}{rgb}{0.6,0.3,0.3}
+\definecolor{darkblue}{rgb}{0,0,0.8}
+\definecolor{darkmagenta}{rgb}{0.5,0,0.5}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\Rattle}{\textsf{Rattle}\xspace}
+\newcommand{\pkg}[1]{{\tt #1}\xspace}
+
+\setlength{\oddsidemargin}{-.25 truein}
+\setlength{\evensidemargin}{0truein}
+\setlength{\topmargin}{-0.2truein}
+\setlength{\textwidth}{7 truein}
+\setlength{\textheight}{8.5 truein}
+\setlength{\parindent}{0.20truein}
+\setlength{\parskip}{0.10truein}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagestyle{fancy}
+\lhead{}
+\chead{Rattle}
+\rhead{}
+\lfoot{}
+\cfoot{}
+\rfoot{\thepage\ of \pageref{LastPage}}
+\renewcommand{\headrulewidth}{1pt}
+\renewcommand{\footrulewidth}{1pt}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{The Rattle Package: Quick Start Guide}
+\author{Graham Williams \\ Graham.Williams@togaware.com}
+
+\begin{document}
+
+\maketitle
+
+\thispagestyle{empty}
+	
+\section{Introduction}
+
+\Rattle (Williams, 2011) is a package written in R providing a
+graphical user interface to very many other R packages that provide
+functionality for data mining.
+
+This quick start guide is under development. See
+\url{http://rattle.togaware.com} for extensive documentation
+
+\section{Requirements}
+
+\Rattle depends on over 40 other R packages and a couple of other
+software applications/libraries that are independent of R. The first
+thing to ensure is that you have installed the GTK+ libraries and the
+GGobi application. This is operating system independent. Details are
+available for each of the major operating systems:
+
+\begin{itemize}
+\item GNU/Linux: \url{http://datamining.togaware.com/survivor/Install_GNU_Linux.html}
+\item MS/Windows: \url{http://datamining.togaware.com/survivor/Install_MS_Windows.html}
+\item Mac OS/X: \url{http://datamining.togaware.com/survivor/Install_Macintosh.html}
+\end{itemize}
+
+Only a couple of R packages are dependencies for \Rattle. Most are
+suggestions, but without them functionality is quite limited. At a
+minimum, be sure to have the
+\href{http://cran.r-project.org/package=RGtk2}{\pkg{RGtk2}} package
+installed. Others that you might like to install include: 
+\href{http://cran.r-project.org/package=ada}{\pkg{ada}},
+\href{http://cran.r-project.org/package=arules}{\pkg{arules}},
+\href{http://cran.r-project.org/package=doBy}{\pkg{doBy}},
+\href{http://cran.r-project.org/package=ellipse}{\pkg{ellipse}},
+\href{http://cran.r-project.org/package=fBasics}{\pkg{fBasics}},
+\href{http://cran.r-project.org/package=fpc}{\pkg{fpc}},
+\href{http://cran.r-project.org/package=gplots}{\pkg{gplots}},
+\href{http://cran.r-project.org/package=Hmisc}{\pkg{Hmisc}},
+\href{http://cran.r-project.org/package=kernlab}{\pkg{kernlab}},
+\href{http://cran.r-project.org/package=mice}{\pkg{mice}},
+\href{http://cran.r-project.org/package=network}{\pkg{network}},
+\href{http://cran.r-project.org/package=party}{\pkg{party}},
+\href{http://cran.r-project.org/package=playwith}{\pkg{playwith}},
+\href{http://cran.r-project.org/package=pmml}{\pkg{pmml}},
+\href{http://cran.r-project.org/package=randomForest}{\pkg{randomForest}},
+\href{http://cran.r-project.org/package=reshape}{\pkg{reshape}},
+\href{http://cran.r-project.org/package=rggobi}{\pkg{rggobi}},
+\href{http://cran.r-project.org/package=RGtk2}{\pkg{RGtk2}},
+\href{http://cran.r-project.org/package=ROCR}{\pkg{ROCR}},
+\href{http://cran.r-project.org/package=RODBC}{\pkg{RODBC}}, and
+\href{http://cran.r-project.org/package=rpart}{\pkg{rpart}}.
+
+The packages can usually be installed with:
+
+<<install, eval=FALSE>>=
+install.packages(rattle, dependencies=c("Depends", "Suggests"))
+@ 
+
+\section{First Steps}
+
+Start up rattle:
+<<start_up, eval=FALSE>>=
+library(rattle)
+rattle()
+@ 
+
+\section{References}
+
+\begin{description}
+\item Williams, G. J. (2009). {\em Rattle: A Data Mining GUI for R}.
+  The R Journal, 1(2), 45-55. URL:
+  \href{http://journal.r-project.org/archive/2009-2/RJournal_2009-2_Williams.pdf}
+  {http://journal.r-project.org/archive/2009-2/RJournal\_2009-2\_Williams.pdf}.
+\item Williams, G. J. (2011). {\em Data Mining with Rattle and R: The
+    Art of Excavating Data for Knowledge Discovery}. Use R!
+  series. Springer. \href{http://www.amazon.com/gp/product/1441998896/ref=as_li_qf_sp_asin_tl?ie=UTF8&tag=togaware-20&linkCode=as2&camp=217145&creative=399373&creativeASIN=1441998896}{http://www.amazon.com/gp/product/1441998896}.
+\end{description}
+
+\end{document}

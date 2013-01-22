@@ -1,0 +1,36 @@
+Additional Dependencies
+-----------------------
+
+Rattle depends on the GTK+ libraries being installed. You may also
+like to install the ggobi application. These are external to R
+itself. For each of the major operating systems refer to the
+appropriate installation guides:
+
+For GNU/Linux see
+  http://datamining.togaware.com/survivor/Install_GNU_Linux.html 
+
+For MS/Windows, see
+  http://datamining.togaware.com/survivor/Install_MS_Windows.html
+
+For Mac OS/X, see
+  http://datamining.togaware.com/survivor/Install_Macintosh.html
+
+R Dependencies
+--------------
+
+The rattle package is built on top of more than 40 other R packages,
+all available from CRAN.
+
+Instead of each of these other packages being a dependency (Depend:)
+they are listed as suggested packages (Suggests:). This way, they will
+not all be loaded when rattle is started. This can take some time.
+
+Many of the packages are only required for specific
+functionality. Rattle will check the availability of a package and
+notify the user of its absence. You may then choose to install that
+package.
+
+Alternatively, when installing the rattle package, include the
+Suggests dependencies:
+
+> install.packages("rattle", dependencies=c("Depends", "Suggests"))
