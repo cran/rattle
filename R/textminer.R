@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2011-10-20 21:04:07 Graham Williams>
+# Time-stamp: <2013-03-11 13:43:09 Graham Williams>
 #
 # 080921 TEXT MINING DATA
 #
@@ -70,6 +70,7 @@
 ## ## The others dont yet work:
 ## ##
 
+
 ## crs$ada <- ada(target ~ ., data=crs$dataset[crs$sample,c(2:60,62:237,239:285)])
 
 ## crs$ksvm <- ksvm(as.factor(target) ~ .,
@@ -88,6 +89,12 @@ executeDataCorpus <- function()
   # classification, for example 0 or 1. I use the name ".target.csv"
   # so that the corpus loader will ignore it as a hidden file.
 
+  # 130310 For now, each time we Execute, reload the dataset. Effect
+  # this with the following:
+
+  crs$dataset <- NULL
+  theWidget("select_treeview")$getModel()$clear()
+  
   # Obtain interface information.
 
   location <- theWidget("data_corpus_location_filechooserbutton")$getFilename()
@@ -114,6 +121,7 @@ executeDataCorpus <- function()
   corpus.cmd <- sprintf('my.corpus <- Corpus(DirSource("%s"))',
                         gsub("\\\\", "/", location))
   appendLog("Load the document corpus.", corpus.cmd)
+  setStatusBar(Rtxt("Loading corpus from the documents found in"), location, "...")
   eval(parse(text=corpus.cmd))
 
   # Process the documents.
@@ -128,7 +136,15 @@ executeDataCorpus <- function()
     map.cmd <- sprintf(paste("%s\nmy.corpus <- tm_map(my.corpus,",
                              'removeWords, stopwords("english"))'), map.cmd)
   if (stemw)
-    map.cmd <- sprintf("%s\nmy.corpus <- tm_map(my.corpus, stemDoc)", map.cmd)
+  {
+    lib.cmd <- "require(Snowball, quietly=TRUE)"
+    if (! packageIsAvailable("Snowball", "word stemming")) return(FALSE)
+    appendLog(packageProvides("Snowball", "stemDocument"), lib.cmd)
+    eval(parse(text=lib.cmd))
+
+    map.cmd <- sprintf("%s\nmy.corpus <- tm_map(my.corpus, stemDocument)", map.cmd)
+  }
+  
 
   # 111020 For now, always remove punctuation and numbers.
   
@@ -176,6 +192,7 @@ executeDataCorpus <- function()
 
   
   appendLog("Transform the documents.", sub("^\n", "", map.cmd))
+  setStatusBar(Rtxt("Transforming the documents"), "...")
   eval(parse(text=map.cmd))
 
   # Convert into a keyword count dataset.
@@ -194,6 +211,17 @@ executeDataCorpus <- function()
     appendLog("Read in the targets.", read.cmd)
     eval(parse(text=read.cmd))
 
+    if (nrow(crs$dataset) != nrow(target))
+    {
+      errorDialog(Rtxt("The number of targets is different to the",
+                       "number of documents:"),
+                  sprintf("%s %s %s.", nrow(target), Rtxt("versus"), nrow(crs$dataset)),
+                  Rtxt("You may need to update the file"),
+                  target.fname,
+                  Rtxt("to match the number of documents in the corpus."))
+      return(FALSE)
+    }
+    
     target.cmd <- "crs$dataset <- cbind(crs$dataset, TARGET=target[[2]])"
     appendLog("Add the targets to the dataset.", target.cmd)
     eval(parse(text=target.cmd))
@@ -206,6 +234,12 @@ executeDataCorpus <- function()
 
   # For now, always succeed.
   
+  setStatusBar(Rtxt("Corpus has been loaded from the documents in"),
+               location,
+               ifelse(file.exists(target.fname),
+                      paste(Rtxt("with targets from"), ".target.csv"),
+                      ""))
+
   return(TRUE)
 }
 

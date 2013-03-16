@@ -8,7 +8,7 @@ loadTooltips <- function()
 
   require(XML, quietly=TRUE)
 
-  result <- try(etc <- file.path(.path.package(package="rattle")[1], "etc"),
+  result <- try(etc <- file.path(path.package(package="rattle")[1], "etc"),
                 silent=TRUE)
   if (inherits(result, "try-error"))
     doc <- xmlTreeParse("tooltips.xml", useInternalNodes=TRUE)

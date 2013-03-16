@@ -217,7 +217,7 @@ classified as positives.</textview>
   <textview widget="precision_textview">Precision Chart</textview>
   <textview widget="sensitivity_textview">Sensitivity Chart</textview>
   <textview widget="costcurve_textview">Cost Curve Chart</textview>
-  <textview widget="pvo_textview">Probability Versus Observed</textview>
+  <textview widget="pvo_textview">Predicted Versus Observed</textview>
   <textview widget="score_textview">Score
 
 A model can be deployed on a dataset to obtain scores or

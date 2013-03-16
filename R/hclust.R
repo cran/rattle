@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-01-19 11:22:40 Graham Williams>
+# Time-stamp: <2013-03-11 10:04:20 Graham Williams>
 #
 # Implement hclust functionality.
 #
@@ -35,7 +35,10 @@ on_hclust_radiobutton_toggled <- function(button)
 
 on_hclust_dendrogram_button_clicked <- function(button)
 {
-  plotDendrogram()
+  if (theWidget("use_ggplot2")$getActive())
+    plotDendrogram2()
+  else
+    plotDendrogram()
 }
 
 on_hclust_stats_button_clicked <- function(button)
@@ -317,6 +320,66 @@ centers.hclust <- function(x, h, nclust=10, use.median=FALSE)
   return(centres)
 }
 
+plotDendrogram2 <- function()
+{
+
+  # Make sure there is a hclust object first.
+
+  if (is.null(crs$hclust))
+  {
+    errorDialog(Rtxt("No Hierarchical Cluster to plot."), crv$support.msg)
+    return()
+  }
+
+  startLog(Rtxt("Dendrogram Plot"))
+  
+  # Load the required package into the library.
+
+  lib.cmd <- "require(ggplot2, quietly=TRUE)"
+  if (! packageIsAvailable("ggplot2", Rtxt("plot a dendrogram"))) return(FALSE)
+  appendLog(packageProvides("ggplot2", "ggplot"), lib.cmd)
+  eval(parse(text=lib.cmd))
+
+  lib.cmd <- "require(ggdendro, quietly=TRUE)"
+  if (! packageIsAvailable("ggdendro", Rtxt("plot a dendrogram"))) return(FALSE)
+  appendLog(packageProvides("ggdendro", "dendro_data"), lib.cmd)
+  eval(parse(text=lib.cmd))
+
+  # Show a busy cursor whilst drawing the plot.
+
+  set.cursor("watch", Rtxt("Rendering the hierarchical cluster dendrogram...."))
+  on.exit(set.cursor("left-ptr", ""))
+  
+  ttl <- genPlotTitleCmd(Rtxt("Cluster Dendrogram"), crs$dataname, vector=TRUE)
+  plot.cmd <- paste('ddata <- dendro_data(crs$hclust, type="rectangle")',
+                    'g <- ggplot(segment(ddata))',
+                    'g <- g + geom_segment(aes(x = y, y = x, xend = yend, yend = xend))',
+                    'g <- g + scale_y_discrete(labels = ddata$label$label)',
+                    'g <- g + labs(x="Height", y="Observation")',
+                    paste("g <- g +",
+                          sprintf('ggtitle(expression(atop("%s", atop(italic("%s")))))',
+                                  ttl[1], ttl[2])),
+                    "print(g)",
+                    sep="\n")
+
+  # Log the R command and execute.
+  
+  appendLog(Rtxt("Generate the dendrogram plot."), plot.cmd)
+  newPlot()
+  eval(parse(text=plot.cmd))
+
+  # TODO 130311 How to identify the clusters in the plot, if
+  # specified.
+
+  ## nclust <- theWidget("hclust_clusters_spinbutton")$getValue()
+  ## if (nclust > 1 && nclust <= length(crs$hclust$height))
+  ## {
+  ##   rect.cmd <- sprintf("rect.hclust(crs$hclust, k=%d)", nclust)
+  ##   appendLog(Rtxt("Add in rectangles to show the clusters."), rect.cmd)
+  ##   eval(parse(text=rect.cmd))
+  ## }
+}
+
 plotDendrogram <- function()
 {
 
@@ -369,7 +432,7 @@ plotDendrogram <- function()
     appendLog(Rtxt("Add in rectangles to show the clusters."), rect.cmd)
     eval(parse(text=rect.cmd))
   }
-  }
+}
 
 displayHClustStats <- function()
 {

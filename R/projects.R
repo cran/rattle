@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2012-05-17 20:58:57 Graham Williams>
+# Time-stamp: <2013-03-06 18:43:18 Graham Williams>
 #
 # Project functionality.
 #
@@ -315,9 +315,9 @@ saveProject <- function()
 
 loadProject <- function()
 {
-  # Check if crs exists and if so warn about losing the current project.
+  # Check if models exist and if so warn about losing the current project.
 
-  if ( not.null(listBuiltModels()) )
+  if (not.null(listBuiltModels()))
   {
     if (! questionDialog(Rtxt("You have chosen to load a project.\n\n",
                               "This will clear the old project (dataset and",
@@ -348,7 +348,7 @@ loadProject <- function()
   
   ff <- gtkFileFilterNew()
   ff$setName(Rtxt("RData Files"))
-  ff$addPattern("*.Rdata")
+  ff$addPattern("*.RData")
   dialog$addFilter(ff)
 
   ff <- gtkFileFilterNew()
@@ -368,10 +368,11 @@ loadProject <- function()
   }
 
   if (!file.exists(load.name))
-    if (! questionDialog(sprintf(Rtxt("The project file '%s' does not exist?"), load.name)))
+    if (!questionDialog(sprintf(Rtxt("The project file '%s' does not exist?"),
+                                load.name)))
       return()
   
-  # Load the file
+  # Load the file.
 
   set.cursor("watch")
   on.exit(set.cursor())
@@ -380,17 +381,15 @@ loadProject <- function()
 
   crv$NOTEBOOK$setCurrentPage(0)
 
-  # 090317 Trying to figure out how to place the save environment into
-  # the crs environment. This seems to do the trick.
-  
+  # 090317 Trying to figure out how to place the saved environment
+  # into the crs environment. This seems to do the trick.
+
   ocrs <- crs
   load(load.name)
   for (o in objects(crs))
     assign(o, get(o, envir=crs), envir=ocrs)
   rm(crs)
-      
-  #crs <<- crs # 090317 Ensure we place the environment into the global crs
-  
+
   # Record the cwd for projects.
   
   crs$pwd <- dirname(load.name)

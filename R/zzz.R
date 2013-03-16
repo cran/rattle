@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-01-07 11:44:24 Graham Williams>
+# Time-stamp: <2013-03-09 20:09:54 Graham Williams>
 #
 # Copyright (c) 2009-2013 Togaware Pty Ltd
 
@@ -109,10 +109,11 @@ on_aboutdialog_response <- function(object, ...)
 
   # 111204 Fix issue of Mac OS/X not ignoring warnings in the .ui
   # file, so use an alternative one for now until work out permanent
-  # fix.
+  # fix. 130309 No longer an issue since the ubuntu string is no
+  # longer inserted into the .ui file. So use the standard .ui file.
   
   crv$rattleUI <- "rattle.ui"
-  if (Sys.info()["sysname"] == "Darwin") crv$rattleUI <- "rattle_macosx.ui"
+  # if (Sys.info()["sysname"] == "Darwin") crv$rattleUI <- "rattle_macosx.ui"
 
   crv$log.intro <- paste("#", sprintf(Rtxt("%s is Copyright (c) 2006-2013 %s."),
                                       "Rattle", "Togaware Pty Ltd"))
@@ -229,7 +230,7 @@ on_aboutdialog_response <- function(object, ...)
   # 090309 We set some other environment variables for convenience.
 
   # 121212 No Longer required since using environments 
-  #crs$rattleGUI <- NULL
+  #crv$rattleGUI <- NULL
   #Global_.rattleGUI <<- NULL
   #viewdataGUI <- NULL
   #on_aboutdialog_response <<- NULL

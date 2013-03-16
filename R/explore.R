@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-01-19 11:19:51 Graham Williams>
+# Time-stamp: <2013-03-16 20:39:19 Graham Williams>
 #
 # Implement EXPLORE functionality.
 #
@@ -3881,7 +3881,7 @@ executeExplorePlaywith <- function(dataset)
 
 executeExplorePlotBuilder <- function()
 {
-  # 8 Mar 2012 Currently don;t know how to tell Plot builder the
+  # 8 Mar 2012 Currently don't know how to tell Plot builder the
   # default dataset to use. Nor how to extract from plot builder the
   # actual ggplot2 command that is generated - would like to capture
   # that and place it in the Log.
@@ -3895,17 +3895,40 @@ executeExplorePlotBuilder <- function()
   eval(parse(text=lib.cmd))
 
   # This use of ds is a hack - not sure how else to do this as Plot
-  # builder does not notice crs$dataset, presumably only checking for
+  # Builder does not notice crs$dataset, presumably only checking for
   # data frames in .GlobalEnv
 
   # 121210 As of now, remove the assign to global env - it is a bad
-  # idea and against CRAN policy, and iritates nasty riples.
+  # idea and against CRAN policy. But then Plot Builder will not
+  # notice the dataset? Perhaps at least check first if 'ds' exists
+  # and if not then assign in the global environment. Ripley suggests
+  # (121210) using environments but not sure he understands the
+  # specific issue here.
 
-  # assign("ds", crs$dataset, envir=.GlobalEnv)
+  # 130126 Deducer in
+  # Deducer/javasrc/deducer/data/DataViewerController.java, function
+  # refreshData, uses get.objects('data.frame',
+  # includeInherited=FALSE) to get the datasets to select from. This
+  # only uses the global environment. So perhaps an acceptable
+  # solution is to inform the user and to ask their permission.
+
+  var.name <- paste("ds", format(Sys.time(), format="%y%m%d%H%M%S"), sep="_")
+  if (!questionDialog(sprintf(Rtxt("To use Plot Builder the Rattle dataset needs to",
+                                   "be available in the global environment (the",
+                                   "user's workspace). To do this Rattle will copy",
+                                   "its internal dataset to the variable '%s'.",
+                                   "This will overwrite any variable of the same",
+                                   "name. The copy of the dataset will be removed",
+                                   "after you exit from Plot Builder.\n\n",
+                                   "Are you okay with Rattle doing this?"),
+                              var.name)))
+    return()
+  #130316 Break this for now until figure out how to avoid global env.
+  # assign(var.name, crs$dataset, envir=.GlobalEnv)
   plot.cmd <- 'deducer(cmd="Plot builder")'
   appendLog(Rtxt("Start up Plot builder dialog."), plot.cmd)
   eval(parse(text=plot.cmd))
-  # rm(ds, envir=.GlobalEnv)
+  eval(parse(text=sprintf("rm(%s, envir=.GlobalEnv)", var.name)))
 }
 
 ########################################################################

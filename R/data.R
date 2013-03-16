@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2012-12-14 06:02:47 Graham Williams>
+# Time-stamp: <2013-03-16 20:39:58 Graham Williams>
 #
 # DATA TAB
 #
@@ -42,12 +42,12 @@ overwriteModel <- function()
   # kind of opration that replaces the current model.
 
   if (not.null(listBuiltModels()))
-    return(questionDialog(Rtxt("You have chosen to load a new dataset.",
+    return(questionDialog(Rtxt("You have chosen to load/reload the dataset.",
                                "This will clear the current project",
                                "(dataset and models).",
                                "If you choose not to continue",
                                "you can then save the current project before",
-                               "loading the new dataset.",
+                               "loading the dataset.",
                                "\n\nDo you wish to continue and so overwrite",
                                "the current project?")))
   else
@@ -117,30 +117,29 @@ dataNeedsLoading <- function()
   # reload unless there is nothing loaded - that won't work when user
   # changes Filename we want to load.
 
-  if (is.null(crs$dataname))
-    return(TRUE)
+  if (is.null(crs$dataname)) return(TRUE)
 
   # 080712 Check what data source is active, and act
   # appropriately. For those I have yet to work on, simply return TRUE
   # so that at least the data always gets loaded. But this does then
   # wipe out any changes the user makes to selections.
 
-  if (theWidget("data_csv_radiobutton")$getActive()
-      || theWidget("data_arff_radiobutton")$getActive())
+  if (theWidget("data_csv_radiobutton")$getActive() ||
+      theWidget("data_arff_radiobutton")$getActive())
   {
-
-    filename <- theWidget("data_filechooserbutton")$getUri()
 
     # 100409 Do the URLdecode here, then encode as UTF-8. Previously
     # no UTF-8 and the URLdecode was done 5 separate times below. The
     # mtime below did not URLdecode, but do so now, and make sure it
     # still works. Seems okay.
 
+    filename <- theWidget("data_filechooserbutton")$getUri()
+    if (is.null(filename)) return(TRUE)
+
     filename <- URLdecode(filename)
     Encoding(filename) <- "UTF-8"
 
-    if (is.null(filename) || is.null(crs$dwd))
-      return(TRUE)
+    if (is.null(crs$dwd)) return(TRUE)
 
     if (isWindows())
     {
@@ -167,14 +166,16 @@ dataNeedsLoading <- function()
       return(TRUE)
 
   }
-  else if (theWidget("data_rdataset_radiobutton")$getActive())
+
+  if (theWidget("data_rdataset_radiobutton")$getActive())
   {
     dataname <- theWidget("data_name_combobox")$getActiveText()
 
     if (is.null(dataname) || crs$dataname != dataname)
       return(TRUE)
   }
-  else if (theWidget("data_library_radiobutton")$getActive())
+
+  if (theWidget("data_library_radiobutton")$getActive())
   {
     dataname <- theWidget("data_name_combobox")$getActiveText()
     if (is.null(crs$datapkg) || is.null(dataname))
@@ -185,19 +186,29 @@ dataNeedsLoading <- function()
         || crs$datapkg != dspkg)
       return(TRUE)
   }
-  else if (theWidget("data_rdata_radiobutton")$getActive())
+
+  if (theWidget("data_rdata_radiobutton")$getActive())
   {
     dataname <- theWidget("data_name_combobox")$getActiveText()
 
     if (is.null(dataname) || crs$dataname != dataname) return(TRUE)
   }
-  else if (theWidget("data_odbc_radiobutton")$getActive())
+
+  if (theWidget("data_odbc_radiobutton")$getActive())
   {
    table <- theWidget("data_odbc_table_combobox")$getActiveText()
 
    if (is.null(table) || crs$dataname != table) return(TRUE)
   }
-  else if (theWidget("data_script_radiobutton")$getActive())
+
+  if (theWidget("data_corpus_radiobutton")$getActive())
+  {
+    filename <- theWidget("data_corpus_location_filechooserbutton")$getUri()
+    if (is.null(filename)) return(TRUE)
+    return(TRUE) # Always reload for now.
+  }
+  
+  if (theWidget("data_script_radiobutton")$getActive())
   {
     return(TRUE)
   }
@@ -561,6 +572,8 @@ updateRDatasets <- function(current=NULL, cbox.name="data_name_combobox")
 
   set.cursor("watch", Rtxt("Determining the available datasets...."))
 
+  # 130126 We might be able to use get.objects("data.frame") here?
+  
   dl <- unlist(sapply(ls(sys.frame(0)),
                       function(x)
                       {
@@ -623,6 +636,8 @@ executeDataTab <- function(csvname=NULL)
   # data type label is not sensitive (i.e., we have loaded a project),
   # simply update the variable roles without reloading the data.
 
+  
+  
 #  if (not.null(csvname))
 #  {
 #    if (! executeDataCSV(csvname)) return(FALSE)
@@ -1116,10 +1131,9 @@ updateRDataNames <- function(filename=NULL)
 
   startLog()
 
-  appendLog(Rtxt("Load an Rdata file containing R objects."), load.cmd)
-  set.cursor("watch")
+  appendLog(Rtxt("Load an RData file containing R objects."), load.cmd)
+  set.cursor("watch", Rtxt("Loading the RData file..."))
   eval(parse(text=load.cmd), .GlobalEnv) # Env so datasets are globally available.
-  set.cursor()
 
   # Add new data frames to the combo box.
 
@@ -1712,18 +1726,43 @@ viewData <- function()
 {
   startLog("View the dataset - edits are ignored.")
 
-  if (packageIsAvailable("RGtk2Extras", Rtxt("view data in a spreadsheet")))
+  # 130127 Would like to do this but must edit a specific data frame
+  # in the users workspace and then move it to crs$dataset. Seems that
+  # data.viewer freezes on the second call to it, sometimes?
+
+  if (packageIsAvailable("Deducer", Rtxt("view data in a spreadsheet")))
+  {
+    require(Deducer)
+    var.name <- paste("ds", format(Sys.time(), format="%y%m%d%H%M%S"), sep="_")
+    if (!questionDialog(sprintf(Rtxt("To use Plot Builder the Rattle dataset needs to",
+                                     "be available in the global environment (the",
+                                     "user's workspace). To do this Rattle will copy",
+                                     "its internal dataset to the variable '%s'.",
+                                     "This will overwrite any variable of the same",
+                                     "name. The copy of the dataset will be removed",
+                                     "after you exit from Plot Builder.\n\n",
+                                     "Are you okay with Rattle doing this?"),
+                                var.name)))
+    #130316 Break this for now until figure out how to avoid global env.
+    #assign(var.name, crs$dataset, envir=.GlobalEnv)
+    view.cmd <- 'data.viewer()'
+    appendLog("Use data.viewer() from Deducer.", view.cmd)
+    eval(parse(text=view.cmd))
+    eval(parse(text=sprintf("rm(%s, envir=.GlobalEnv)", var.name)))
+
+  }   
+  else if (packageIsAvailable("RGtk2Extras", Rtxt("view data in a spreadsheet")))
   {
     require(RGtk2Extras)
     view.cmd <- paste('dfedit(crs$dataset,\n',
                       '      dataset.name=Rtxt("Rattle Dataset"),\n',
                       '      size=c(800, 400))')
-    appendLog("Use dfedit from RGtk2Extras.", view.cmd)
+    appendLog("Use dfedit() from RGtk2Extras.", view.cmd)
     eval(parse(text=view.cmd))
   }
   else
   {
-    result <- try(etc <- file.path(.path.package(package="rattle")[1], "etc"),
+    result <- try(etc <- file.path(path.package(package="rattle")[1], "etc"),
                   silent=TRUE)
     if (inherits(result, "try-error"))
       crs$viewdataGUI <- gladeXMLNew("rattle.glade", root="viewdata_window")
@@ -1752,6 +1791,15 @@ editData <- function()
 
   if (is.null(crs$dataset))
     assign.cmd <- 'crs$dataset <- edit(data.frame())'
+  # 130127 Would like to do this but must edit a specific data frame
+  # in the users workspace and then move it to crs$dataset.
+  # else if (packageIsAvailable("Deducer", Rtxt("edit data in a spreadsheet")))
+  # {
+  #   require(Deducer)
+  #   view.cmd <- 'data.viewer()'
+  #   appendLog("Use data.viewer() from Deducer.", view.cmd)
+  #   eval(parse(text=view.cmd))
+  # }   
    else if (packageIsAvailable("RGtk2Extras"))
     {
       require(RGtk2Extras)
@@ -2105,6 +2153,8 @@ executeSelectTab <- function(resample=TRUE)
 
   if (noDatasetLoaded()) return()
 
+  set.cursor("watch", Rtxt("Determining variable roles and characteristics..."))
+  
   startLog(Rtxt("Note the user selections."))
 
   if (resample) executeSelectSample()
@@ -3056,6 +3106,8 @@ createVariablesModel <- function(variables, input=NULL, target=NULL,
   # mosplot, arguments should be lists of variable names (list of
   # strings).
 
+  set.cursor("watch", Rtxt("Summarising the variables..."))
+  
   # Retrieve the models.
 
   model <- theWidget("select_treeview")$getModel()

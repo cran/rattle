@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-01-07 12:43:39 Graham Williams>
+# Time-stamp: <2013-03-06 18:42:56 Graham Williams>
 #
 # Implement LOG functionality.
 #
@@ -92,7 +92,7 @@ startLog <- function(msg=NULL)
   # an optional MSG, display that message, as an introduction to this
   # section.
   
-  if (is.null(crs$rattleGUI)) return()
+  if (is.null(crv$rattleGUI)) return()
 
   appendLog(paste("\n\n#",
                   paste(rep("=", 60), collapse=""),
@@ -112,7 +112,7 @@ appendLog <- function(start, cont=NULL, ..., sep=" ", no.start=FALSE)
   # crv$end.log.comment otherwise there is too much white space in the
   # log.
   
-  if (is.null(crs$rattleGUI)) return()
+  if (is.null(crv$rattleGUI)) return()
 
   if (no.start)
     msg <- paste(sep=sep, start, cont, ...)

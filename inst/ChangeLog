@@ -1,3 +1,79 @@
+rattle (2.6.26) unstable; urgency=low
+
+  * Replace .path.package with path.package as requested by Ripley. The
+    hidden version will disappear soon and the new version has been
+    available since 2.13.0.
+  
+  * Update boost help to note that it is available only for binary
+    classification.
+  
+  * Default stemming for textmining of a corpus is no active if the
+    Snowball package is available.
+
+  * For Advanced Graphics introduce a dendrogram plot using ggplot2.
+  
+  * Various text mining improvements. Bug fix in checking if data needs
+    reloading.  Support checking if corpus needs reloading.  Add extra
+    cursor and status bar messages.  For corpus, set default folder to be
+    getwd().  Check for mismatch between number of docs in corpus and the
+    number of targets in .targets.csv. For the Corpus file dialog, do not
+    offer folder creation.
+
+  * Remove macosx special rattle.ui. The ubuntu specific text no longer
+    appears in the saved ui file.
+  
+  * Internally: Move rattleGUI to crv from crs. The crs is saved as the
+    state, and this was confusing the GUI on a project restore.  Had to
+    ensure we restored rattleGUI with the current rattleGUI - this fixes
+    loadProject bug.  Also, in Load project, filter on .RData not .Rdata.
+  
+  * Add newdata= to call to predict, in line with the standard approach by
+    party (reference Torston). Remove the OOB= for predict for
+    cforest. With a new dataset OOB makes no sense. It was in there
+    because newdata= was not being used and positionally having issues.
+
+  * Update fancy rpart plot to reduce colour intensity for printing and a
+    nicer tree structure. Add all class probs to fancy tree.
+  
+  * Define paste0 if it is not defined. It was introduced in 2.15.0 but is
+    too early to assume the world is with us.
+  
+  * Replace siatclust with weightedKmeans.
+  
+  * Bug fix in OOB plot when impute is off - need to omit missing values.
+    Update message regarding random forest and na.omit() removing all
+    rows, noting the option to use na.roughfix().
+
+  * Fix bug identified by Brian Feeny 121209 - score a RF test dataset
+    without a target variable tries to add one in all NA but fails if it
+    is the last variable.
+
+  * Experimentally add Deducer's data.viewer to View data.  Ensure we ask
+    user if when using Plot Builder it is okay to create a dataset in
+    their work space. Hopefully keeps us in line, if not strictly in
+    copmliance, with CRAN policy.
+
+  * Remove SVG support - RSvgDevice is no longer available.
+
+ -- Graham Williams <Graham.Williams@togaware.com>  Sat, 16 Mar 2013 13:27:05 +1100
+
+rattle (2.6.25) unstable; urgency=low
+
+  * Review all of the code and remove two instances of using copyrighted
+    code without attribution. One was a copy or print.rpart, where rattle
+    added a translation wrapper to the text message. Another was code
+    copied from the Internet from David Hand - use the Hmeasure package
+    now. Note in drawTreeNode() reference to the original author and lack
+    of copyright. Note author in Authors@R. ggcorplot is now available
+    from Deducer. Remove it from Rattle. Replace Hand measure with
+    HMeasure from hmeasure. Add Mark Vere Culp as aux author. Remove
+    commented out code. Remove lss and cranSearch - not really part of
+    Rattle.
+
+  * Update to new style Authors@R.
+
+ -- Graham Williams <Graham.Williams@togaware.com>  Sat, 23 Jan 2013 13:12:43 +1100
+
 rattle (2.6.24) unstable; urgency=low
 
   * Bug fix for box plot using ggplot2.

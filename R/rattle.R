@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-01-22 05:58:34 Graham Williams>
+# Time-stamp: <2013-03-16 08:50:53 Graham Williams>
 #
 #
 # Copyright (c) 2009-2013 Togaware Pty Ltd
@@ -40,6 +40,10 @@ if (version$major>="2" && version$minor>="15.1")
                            "ignore"
                            ))
 
+# The function paste0() was introduced in 2.15.0
+
+if (! exists("paste0")) paste0 <- function(...) paste(..., sep="")
+
 Rtxt <- function(...)
 {
   # 100130 Currently, on Windows we are waiting for 2.12.17 of  RGtk2 with
@@ -56,9 +60,9 @@ Rtxt <- function(...)
 
 RtxtNT <- Rtxt
 
-VERSION <- "2.6.25"
-DATE <- "2013-01-22"
-REVISION <- "42"
+VERSION <- "2.6.26"
+DATE <- "2013-03-16"
+REVISION <- "77"
 
 # 091223 Rtxt does not work until the rattle GUI has started, perhaps?
 COPYRIGHT <- paste(Rtxt("Copyright"), "(C) 2006-2013 Togaware Pty Ltd.")
@@ -515,23 +519,23 @@ rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=NULL)
 
   if (crv$useGtkBuilder)
   {
-    crs$rattleGUI <- gtkBuilderNew()
-    crs$rattleGUI$setTranslationDomain("R-rattle")
+    crv$rattleGUI <- gtkBuilderNew()
+    crv$rattleGUI$setTranslationDomain("R-rattle")
   }
   
-  result <- try(etc <- file.path(.path.package(package="rattle")[1], "etc"),
+  result <- try(etc <- file.path(path.package(package="rattle")[1], "etc"),
                 silent=TRUE)
   if (inherits(result, "try-error"))
     if (crv$useGtkBuilder)
-      crs$rattleGUI$addFromFile(crv$rattleUI)
+      crv$rattleGUI$addFromFile(crv$rattleUI)
     else
-      crs$rattleGUI <- gladeXMLNew("rattle.glade",
+      crv$rattleGUI <- gladeXMLNew("rattle.glade",
                                 root="rattle_window", domain="R-rattle")
   else
     if (crv$useGtkBuilder)
-      crs$rattleGUI$addFromFile(file.path(etc, crv$rattleUI))
+      crv$rattleGUI$addFromFile(file.path(etc, crv$rattleUI))
     else
-      crs$rattleGUI <- gladeXMLNew(file.path(etc,"rattle.glade"),
+      crv$rattleGUI <- gladeXMLNew(file.path(etc,"rattle.glade"),
                                 root="rattle_window", domain="R-rattle")
 
   if (crv$useGtkBuilder)
@@ -542,11 +546,11 @@ rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=NULL)
     # then set crv$useGtkBuilder to FALSE in that case so we don't get
     # here.
     
-    crs$rattleGUI$getObject("rattle_window")$show()
+    crv$rattleGUI$getObject("rattle_window")$show()
   
-  # Really need an second untouched crs$rattleGUI
+  # Really need an second untouched crv$rattleGUI
 
-  #121212 DO WE NEED THIS NOW? Global_.rattleGUI <-crs$rattleGUI
+  #121212 DO WE NEED THIS NOW? Global_.rattleGUI <-crv$rattleGUI
 
   set.cursor("watch")
   on.exit(set.cursor())
@@ -968,9 +972,9 @@ rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=NULL)
   # Connect the callbacks.
 
   if (crv$useGtkBuilder)
-    crs$rattleGUI$connectSignals()
+    crv$rattleGUI$connectSignals()
   else
-    gladeXMLSignalAutoconnect(crs$rattleGUI)
+    gladeXMLSignalAutoconnect(crv$rattleGUI)
 
   # Enable the tooltips Settings option on GNU/Linux. Under MS/Windows
   # tooltips have always worked so this option is not relevant. 110409
@@ -1206,7 +1210,7 @@ configureGUI <- function()
   #
   # setResizable(TRUE) is the default but we stillget this problem.
   
-   suppressWarnings(crs$rattleGUI$getObject("rattle_window")$setPolicy(TRUE, TRUE, TRUE))
+   suppressWarnings(crv$rattleGUI$getObject("rattle_window")$setPolicy(TRUE, TRUE, TRUE))
 
 }
 
@@ -1743,6 +1747,9 @@ resetRattle <- function(new.dataset=TRUE)
 ##   theWidget("odbc_limit_spinbutton")$setValue(0)
 ##   theWidget("odbc_believeNRows_checkbutton")$setActive(FALSE)
 
+  if (packageIsAvailable("Snowball"))
+    theWidget("data_corpus_stem_checkbutton")$setActive(TRUE)
+
   if (new.dataset)
   {
     # Clear the treeviews.
@@ -1756,6 +1763,10 @@ resetRattle <- function(new.dataset=TRUE)
     theWidget("model_tree_rpart_weights_label")$
     setText("")
 
+    # Data -> Corpus
+
+    theWidget("data_corpus_location_filechooserbutton")$setCurrentFolder(getwd())
+    
     # Reset Test
 
     theWidget("test_distr_radiobutton")$setActive(TRUE)
@@ -2268,12 +2279,12 @@ collectOutput <- function(command, use.print=FALSE, use.cat=FALSE,
 
 theWidget <- function(widget)
 {
-  #crs$rattleGUI <- Global_.rattleGUI # Global - to avoid a "NOTE" from "R CMD check"
+  #crv$rattleGUI <- Global_.rattleGUI # Global - to avoid a "NOTE" from "R CMD check"
 
   if (crv$useGtkBuilder)
-    return(crs$rattleGUI$getObject(widget))
+    return(crv$rattleGUI$getObject(widget))
   else
-    return(crs$rattleGUI$getWidget(widget))
+    return(crv$rattleGUI$getWidget(widget))
 }
 
 getNotebookPageLabel <- function(nb, page)
@@ -2540,7 +2551,7 @@ newPlot <- function(pcnt=1)
       plotGUI$setTranslationDomain("R-rattle")
     }
 
-    result <- try(etc <- file.path(.path.package(package="rattle")[1], "etc"),
+    result <- try(etc <- file.path(path.package(package="rattle")[1], "etc"),
                   silent=TRUE)
     if (inherits(result, "try-error"))
       if (crv$useGtkBuilder)
@@ -3053,10 +3064,10 @@ closeRattle <- function(ask=FALSE)
   # rattle script on GNU/Linux using the littler package which allows
   # one to use R as a scripting language. But rattle dispatches
   # itself from R, and so normally the script immediately
-  # terminates. Instead we can have a loop that checks if crs$rattleGUI
+  # terminates. Instead we can have a loop that checks if crv$rattleGUI
   # is NULL, and when it is we finish! Seems to work.
 
-  crs$rattleGUI <- NULL
+  crv$rattleGUI <- NULL
 
   # 080511 Restore options to how they were when Rattle was started.
 
@@ -3097,7 +3108,7 @@ on_cut1_activate <- notImplemented
 
 on_about_menu_activate <-  function(action, window)
 {
-  result <- try(etc <- file.path(.path.package(package="rattle")[1], "etc"),
+  result <- try(etc <- file.path(path.package(package="rattle")[1], "etc"),
                 silent=TRUE)
   if (crv$useGtkBuilder)
   {

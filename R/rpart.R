@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-01-19 12:44:14 Graham Williams>
+# Time-stamp: <2013-02-09 14:30:26 Graham Williams>
 #
 # RPART TAB
 #
@@ -588,16 +588,18 @@ fancyRpartPlot <- function(model, main="", ...)
 
   # Generate a colour pallete, with a range of 5 (palsize) colours for
   # each of the 6 (numpals) palettes. The pallete is collapsed into
-  # one list. We index it according to the class.
+  # one list. We index it according to the class. Keep to the lighter
+  # end of the pallete to ensure printing is okay otherwise the black
+  # text is hard to read.
 
   numpals <- 6
   palsize <- 5
-  pals <- c(brewer.pal(9, "Greens")[3:7],
-            brewer.pal(9, "Blues")[2:6],
-            brewer.pal(9, "Oranges")[2:6],
-            brewer.pal(9, "Purples")[2:6],
-            brewer.pal(9, "Reds")[2:6],
-            brewer.pal(9, "Greys")[2:6])
+  pals <- c(brewer.pal(9, "Greens")[1:5],
+            brewer.pal(9, "Blues")[1:5],
+            brewer.pal(9, "Oranges")[1:5],
+            brewer.pal(9, "Purples")[1:5],
+            brewer.pal(9, "Reds")[1:5],
+            brewer.pal(9, "Greys")[1:5])
   
   # Extract the scores/percentages for each of the nodes for the
   # majority decision.  The decisions are in column 1 of yval2 and the
@@ -618,7 +620,7 @@ fancyRpartPlot <- function(model, main="", ...)
   }
   
   # The conversion of a tree in CORElearn to an rpart tree results in these
-  # being character, so ensure wwe have numerics.
+  # being character, so ensure we have numerics.
   
   per <- as.numeric(per)
   
@@ -631,17 +633,21 @@ fancyRpartPlot <- function(model, main="", ...)
 
   # Define the contents of the tree nodes.
  
-  my.node.fun <- function(x, labs, digits, varlen)
-    paste(labs, "\n", round(100*per), "% of ",
-          format(x$frame$n, big.mark=","),
-          sep="")
+  ## my.node.fun <- function(x, labs, digits, varlen)
+  ##   paste(labs, "\n", round(100*per), "% of ",
+  ##         format(x$frame$n, big.mark=","),
+  ##         sep="")
 
   # Generate the plot and title.
  
-  prp(model, type=1, extra=0,
-    box.col=pals[col.index],
-    nn=TRUE, varlen=0, shadow.col="grey",
-    node.fun=my.node.fun, ...)
+  prp(model, type=2, extra=104,
+      box.col=pals[col.index],
+      nn=TRUE,
+      varlen=0, faclen=0,
+      shadow.col="grey",
+      fallen.leaves=TRUE,
+      branch.lty=3, ...)
+##      node.fun=my.node.fun, ...)
   
   title(main=main,
     sub=paste("Rattle", format(Sys.time(), "%Y-%b-%d %H:%M:%S"), 

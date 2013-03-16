@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-01-19 10:37:34 Graham Williams>
+# Time-stamp: <2013-02-07 05:29:40 Graham Williams>
 #
 # Implement biclust functionality.
 #
@@ -60,10 +60,10 @@ executeClusterEwkm <- function(include)
 
   # Load the required package.
   
-  lib.cmd <- "require(siatclust, quietly=TRUE)"
-  if (! packageIsAvailable("siatclust", Rtxt("perform subspace cluster analysis")))
+  lib.cmd <- "require(weightedKmeans, quietly=TRUE)"
+  if (! packageIsAvailable("weightedKmeans", Rtxt("perform subspace cluster analysis")))
     return(FALSE)
-  appendLog(packageProvides('siatclust', 'ewkm'), lib.cmd)
+  appendLog(packageProvides('weightedKmeans', 'ewkm'), lib.cmd)
   eval(parse(text=lib.cmd))
 
   # Set the seed so we can repeat.
@@ -162,11 +162,11 @@ weightsPlotEwkm <- function()
 
   startLog(sprintf("Plot variable weights from the %s algorithm.", commonName(crv$EWKM)))
 
-  # The siatclust package provides the plot and levelplot methods.
+  # The weightedKmeans package provides the plot and levelplot methods.
   
-  if (!packageIsAvailable("siatclust", "plot variable weights")) return()
-  lib.cmd <- "require(siatclust, quietly=TRUE)"
-  appendLog(packageProvides("siatclust", "plot"), lib.cmd)
+  if (!packageIsAvailable("weightedKmeans", "plot variable weights")) return()
+  lib.cmd <- "require(weightedKmeans, quietly=TRUE)"
+  appendLog(packageProvides("weightedKmeans", "plot"), lib.cmd)
   eval(parse(text=lib.cmd))
 
   advancedPlot <- theWidget("use_ggplot2")$getActive() # Not really ggplot2 but convenient.
