@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2012-08-30 06:48:26 Graham Williams>
+# Time-stamp: <2013-01-29 17:03:38 Graham Williams>
 #
 # RANDOM FOREST TAB
 #
@@ -258,9 +258,10 @@ executeModelRF <- function(traditional=TRUE, conditional=!traditional)
                        "To fix this problem, you might, for example, Ignore any",
                        "variable with many or any missing values.",
                        "Or else enable the Impute check button to impute",
-                       "the medium (numeric) of most frequent (categoric) value.",
+                       "the medium (numeric) or most frequent (categoric) value",
+                       "using randomForests' na.roughfix().",
                        "You could also use imputation to fill in default or modelled",
-                       "values for the missing values."))
+                       "values for the missing values manually."))
       return()
     }
   }
@@ -606,18 +607,28 @@ plotRandomForestOOBROC <- function()
 
   # 111115 Akbar Waljee suggested using roc.plot from
   # verification. Would also like a confidence interval but not sure
-  # how to.
-
+  # how to. 130129 Akbar noted that when Impute button is disabled
+  # then the OOB plot fails. It fails because ommitted observations
+  # for the model are not being ommitted from the attempted plot.
+  # Need to add na.omit around the dataset conditional on naimpute.
+  
+  naimpute <- theWidget("model_rf_impute_checkbutton")$getActive()
   plot.cmd <- paste('require(verification)',
                     # 111116 the as.integer as.factor to ensure
                     # 0/1. Need to fix to ensure button is only
                     # avilable for binary classification.
-                    '\naucc <- roc.area(as.integer(as.factor(crs$dataset[',
+                    '\naucc <- roc.area(as.integer(as.factor(',
+                    if (!naimpute) 'na.omit(',
+                    'crs$dataset[',
                     if (not.null(crs$sample)) 'crs$sample',
+                    if (!naimpute) ',])[',
                     ', crs$target]))-1,',
                     '\n                 crs$rf$votes[,2])$A',
-                    '\nroc.plot(as.integer(as.factor(crs$dataset[',
+                    '\nroc.plot(as.integer(as.factor(',
+                    if (!naimpute) 'na.omit(',
+                    'crs$dataset[',
                     if (not.null(crs$sample)) 'crs$sample',
+                    if (!naimpute) ',])[',
                     ', crs$target]))-1,',
                     '\n         crs$rf$votes[,2], main="")',
                     '\nlegend("bottomright", bty="n",',

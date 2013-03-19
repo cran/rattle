@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2012-12-12 20:38:40 Graham Williams>
+# Time-stamp: <2013-03-06 18:44:29 Graham Williams>
 #
 # Reporting support
 #
@@ -138,5 +138,5 @@ reportTreeModel <- function(model)
   
   odfWeave(summary, ofile, control=odfWeaveControl(verbose=FALSE))
 
-  if (! is.null(crs$rattleGUI)) setStatusBar(sprintf("Report written to %s.", ofile))
+  if (! is.null(crv$rattleGUI)) setStatusBar(sprintf("Report written to %s.", ofile))
 }

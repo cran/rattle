@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2010-09-20 19:53:12 Graham Williams>
+# Time-stamp: <2013-03-16 08:51:04 Graham Williams>
 #
 # Textview widget support
 #
@@ -25,9 +25,10 @@
 #
 #	We are in the middle of migrating from using a string to
 #	identify the widget, and assuming theWidget will get the
-#	actual widget (which only works for the main .rattleGUI window)
-#	to passing the actual widget itself, which is much more
-#	general. For now, allow both, through the use of getTextview.
+#	actual widget (which only works for the main crv$rattleGUI
+#	window) to passing the actual widget itself, which is much
+#	more general. For now, allow both, through the use of
+#	getTextview.
 #
 #       071128 New version of R (since about 6.2.0) have a default
 #       value for useFancyFonts that does not work with textviews in
@@ -218,7 +219,7 @@ resetTextviews <- function(tv=NULL)
 
   require(XML, quietly=TRUE)
 
-  result <- try(etc <- file.path(.path.package(package="rattle")[1], "etc"),
+  result <- try(etc <- file.path(path.package(package="rattle")[1], "etc"),
                 silent=TRUE)
   if (inherits(result, "try-error"))
     doc <- xmlTreeParse("textviews.xml", useInternalNodes=TRUE)

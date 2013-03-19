@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-01-19 10:23:42 Graham Williams>
+# Time-stamp: <2013-03-05 22:30:28 Graham Williams>
 #
 # Implement evaluate functionality.
 #
@@ -708,7 +708,12 @@ executeEvaluateTab <- function()
   # those with different levels.
 
   if (not.null(crs$testname) && crs$testname != crs$dataname)
-    for (cn in colnames(crs$dataset))
+    # 130128 Why do we need to add the target variable back in?
+    # Especially when adding it in and setting it to NA, na.omit for
+    # RF has a particular issue!!!! So don't add target back in if it
+    # is missing. TODO The code around here has evolved poorly and
+    # could really do with quite a cleanup.
+    for (cn in setdiff(colnames(crs$dataset), crs$target))
       if (is.factor(crs$dataset[[cn]]))
       {
         # 100701 If the categoric variable is missing (like it might
@@ -720,10 +725,14 @@ executeEvaluateTab <- function()
         if (! cn %in% colnames(crs$testset))
         {
           place <- which(cn == colnames(crs$dataset))
-          cmd <- sprintf(paste("crs$testset <- cbind(crs$testset[1:%d],",
-                               "%s=rep(NA, nrow(crs$testset)),",
-                               "crs$testset[%d:ncol(crs$testset)])"),
-                         place-1, cn, place)
+          cmd <- sprintf(paste("crs$testset <- cbind(crs$testset[1:%d], ",
+                               "%s=rep(NA, nrow(crs$testset))",
+                               ifelse(place < ncol(crs$testset),
+                                      ", crs$testset[%d:ncol(crs$testset)]",
+                                      "%s"),
+                               ")", sep=""),
+                         place-1, cn,
+                         ifelse(place < ncol(crs$testset), place, ""))
           appendLog(sprintf(Rtxt("Add missing column `%s'",
                                  "to the testing dataset"), cn),
                           cmd)
@@ -826,7 +835,7 @@ executeEvaluateTab <- function()
     # logistic for nnet, so that we don't use linout in the model
     # building.
 
-    predcmd[[crv$NNET]] <- sprintf("crs$pr <- predict(crs$nnet, %s)",
+    predcmd[[crv$NNET]] <- sprintf("crs$pr <- predict(crs$nnet, newdata=%s)",
                                    testset[[crv$NNET]])
 
     if (binomialTarget())
@@ -859,7 +868,7 @@ executeEvaluateTab <- function()
     if (! length(cond.tree)) cond.tree <- FALSE
     
     testset[[crv$RPART]] <- testset0
-    predcmd[[crv$RPART]] <- sprintf("crs$pr <- predict(crs$rpart, %s)",
+    predcmd[[crv$RPART]] <- sprintf("crs$pr <- predict(crs$rpart, newdata=%s)",
                                 testset[[crv$RPART]])
 
     # For crv$RPART, the default is to generate class probabilities for
@@ -894,7 +903,7 @@ executeEvaluateTab <- function()
       probcmd[[crv$RPART]] <- sub("<- ", "<- data.frame(",
                                sub(")$",
                                    sprintf(paste("), rpart=predict(crs$rpart,",
-                                                 "%s, type='class'))"),
+                                                 "newdata=%s, type='class'))"),
                                            testset[[crv$RPART]]),
                                    probcmd[[crv$RPART]]))
     }
@@ -914,7 +923,7 @@ executeEvaluateTab <- function()
     # 090301 testset[[crv$RF]] <- testset0
     testset[[crv$RF]] <- sprintf("na.omit(%s)", testset0)
 
-    predcmd[[crv$RF]] <- sprintf("crs$pr <- predict(crs$rf, %s)",
+    predcmd[[crv$RF]] <- sprintf("crs$pr <- predict(crs$rf, newdata=%s)",
                              testset[[crv$RF]])
 
     # The default for crv$RF is to predict the class, so no
@@ -922,11 +931,6 @@ executeEvaluateTab <- function()
 
     respcmd[[crv$RF]] <- predcmd[[crv$RF]]
 
-    # 120319 For some reason without OOB  we get a party error.
-    
-    if (cond.rf)
-      respcmd[[crv$RF]] <- sub(')$', ', OOB=TRUE)',  respcmd[[crv$RF]])
-    
     # For RF we request a probability with the type argument, and as
     # with RPART we extract the column of interest (the last column).
 
@@ -995,7 +999,7 @@ executeEvaluateTab <- function()
 
     testset[[crv$KSVM]] <- sprintf("na.omit(%s)", testset0)
 
-    predcmd[[crv$KSVM]] <- sprintf("crs$pr <- predict(crs$ksvm, %s)",
+    predcmd[[crv$KSVM]] <- sprintf("crs$pr <- predict(crs$ksvm, newdata=%s)",
                                testset[[crv$KSVM]])
 
     ## The default for KSVM is to predict the class, so no
@@ -1029,7 +1033,7 @@ executeEvaluateTab <- function()
     if ("multinom" %in% class(crs$glm))
     {
       testset[[crv$GLM]] <- testset0
-      predcmd[[crv$GLM]] <- sprintf("crs$pr <- predict(crs$glm, %s)",
+      predcmd[[crv$GLM]] <- sprintf("crs$pr <- predict(crs$glm, newdata=%s)",
                                      testset[[crv$GLM]])
       respcmd[[crv$GLM]] <- predcmd[[crv$GLM]]
       probcmd[[crv$GLM]] <- sub(")$", ', type="prob")', predcmd[[crv$GLM]])
@@ -1040,7 +1044,8 @@ executeEvaluateTab <- function()
 
       probcmd[[crv$GLM]] <- sub("<- ", "<- cbind(",
                                 sub(")$",
-                                    sprintf("), crs$glm$lab[predict(crs$glm, %s)])",
+                                    sprintf(paste("), crs$glm$lab[predict(crs$glm,",
+                                                  "newdata=%s)])"),
                                             testset[[crv$GLM]]),
                                     probcmd[[crv$GLM]]))
 
@@ -1060,7 +1065,7 @@ executeEvaluateTab <- function()
       testset[[crv$GLM]] <- testset0
 
       predcmd[[crv$GLM]] <- sprintf(paste("crs$pr <- predict(crs$glm,",
-                                          'type="response", %s)'),
+                                          'type="response", newdata=%s)'),
                                     testset[[crv$GLM]])
 
       # For GLM, a response is a figure close to the class, either close
@@ -1952,7 +1957,7 @@ riskchart <- function(data,
 
         geom_text(data=scores, aes(x=100*pos, y=100*1.015, label=ticks),
                   colour="purple", size=3) +
-        geom_text(aes(x=0, y=101.5, label="Score"), size=3, colour="purple") +
+        annotate("text", x=0, y=101.5, label="Score", size=3, colour="purple") +
 
         geom_line(aes(y=100*Caseload)) +
         ggtitle(title) +

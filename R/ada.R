@@ -2,7 +2,7 @@
 #
 # This is a model or template "module" for rattle.
 #
-# Time-stamp: <2013-01-19 16:19:57 Graham Williams>
+# Time-stamp: <2013-03-15 06:38:56 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -289,7 +289,7 @@ genPredictAda <- function(dataset)
   # Generate a command to obtain the prediction results when applying
   # the model to new data.
   
-  return(sprintf("crs$pr <- predict(crs$ada, %s)", dataset))
+  return(sprintf("crs$pr <- predict(crs$ada, newdata=%s)", dataset))
 }
 
 genResponseAda <- function(dataset)
@@ -387,7 +387,7 @@ drawTreesAda <- function(model,
 
 displayHelpAda <- function()
 {
-  if (showHelpPlus(Rtxt("Boosting builds multiple, but generally simple, models. The",
+  if (showHelpPlus(Rtxt("Boosting builds multiple models for binary classification. The",
                         "models might be decision trees that have just one split -",
                         "these are often called decision stumps. After building each",
                         "model any training entities that the model misclassifies",
