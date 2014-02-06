@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2012-02-19 12:14:46 Graham Williams>
+# Time-stamp: <2013-11-14 06:14:20 Graham Williams>
 #
 # MODEL TAB
 #
@@ -739,7 +739,11 @@ executeModelGLM <- function()
                        if (subsetting) ",",
                        if (including) included,
                        if (subsetting) "]",
-                       ")", sep="")
+                       if (! is.null(crs$weights))
+                       sprintf(",\n    weights=(%s)%s",
+                               crs$weights,
+                               ifelse(sampling, "[crs$train]", "")),
+                      ")", sep="")
 
     summary.cmd <- paste("print(summary(crs$glm))",
                          "cat('==== ANOVA ====\n\n')",
@@ -1394,20 +1398,22 @@ exportModelTab <- function()
   # warning but continue. RStat may decide to not continue, but Rattle
   # should since perhaps the PMML is provided as a template to then
   # allow a user to edit.
-  
-  if (any(!sapply(crs$input, pmmlCanExport)))
-  {
-    if (!questionDialog(Rtxt("In exporting the model the following variables appear",
-                             "to be transformations that are not currently supported",
-                             "for export. Be aware that the results will not",
-                             "perform the transformations."),
-                        "\n\n",
-                        paste(names(which(!sapply(crs$input, pmmlCanExport))),
-                              collapse=", "),
-                        "\n\n",
-                        Rtxt("Do you wish to continue?")))
-      return()
-  }
+
+  ## 131114 pmmlCanExport no longer available in pmml package.
+  ##
+  ## if (any(!sapply(crs$input, pmmlCanExport)))
+  ## {
+  ##   if (!questionDialog(Rtxt("In exporting the model the following variables appear",
+  ##                            "to be transformations that are not currently supported",
+  ##                            "for export. Be aware that the results will not",
+  ##                            "perform the transformations."),
+  ##                       "\n\n",
+  ##                       paste(names(which(!sapply(crs$input, pmmlCanExport))),
+  ##                             collapse=", "),
+  ##                       "\n\n",
+  ##                       Rtxt("Do you wish to continue?")))
+  ##     return()
+  ## }
   
   if (theWidget("rpart_radiobutton")$getActive())
   {

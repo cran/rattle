@@ -11,14 +11,15 @@
 
 }
 \usage{
-calcInitialDigitDistr(l, digit=1,
- split=c("none", "positive", "negative"))
+calcInitialDigitDistr(l, digit=1, len=1,
+ sp=c("none", "positive", "negative"))
 }
 \arguments{
   
   \item{l}{a vector of numbers.}
   \item{digit}{the digit to generate frequencies for.}
-  \item{split}{whether and how to split the digits.}
+  \item{len}{The number of digits.}
+  \item{sp}{whether and how to split the digits.}
 
 }
 \references{Package home page: \url{http://rattle.togaware.com}}

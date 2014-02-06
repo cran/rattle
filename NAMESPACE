@@ -1,12 +1,13 @@
 export(
   acquireAuditData,
   asRules,
+  benfordDistr,
   binning,
   calcInitialDigitDistr,
   calculateAUC,
   centers.hclust,
   copyPlotToClipboard,
-  doRiskChart,
+  digitDistr,
   drawTreesAda,
   drawTreeNodes,
   evaluateRisk,
@@ -17,7 +18,8 @@ export(
   listTreesAda,
   listVersions,
   modalvalue,
-  plotBenfordsLaw,
+  normVarNames,
+  plotDigitFreq,
   plotNetwork,
   plotOptimalLine,
   plotRisk,
@@ -25,7 +27,8 @@ export(
   predict.hclust,
   printPlot,
   printRandomForests,
-  print.summary.nnet.rattle,
+  print.summary.nnet,
+  psfchart,
   randomForest2Rules,
   rattle,
   rattleInfo,
@@ -39,7 +42,6 @@ export(
   toga,
   treeset.randomForest,
   whichNumerics,
-  ada.formula,
   crs,crv
   )
 

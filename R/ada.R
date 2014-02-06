@@ -60,32 +60,33 @@
 # This function is written by Mark Vere Culp <culpm@umich.edu> and
 # used with his permission, as noted in the email above.
 
-"ada.formula" <-
-function(formula, data,...,subset,na.action=na.rpart){
- ## m = match.call(expand.dots = FALSE)
-  ##m[[1]] = as.name("model.frame")
-  ##m$...=NULL
-  ##m =eval(m,parent.frame())
+## 140206 No longer required - Mark has updateed the package.
+## "ada.formula" <-
+## function(formula, data,...,subset,na.action=na.rpart){
+##  ## m = match.call(expand.dots = FALSE)
+##   ##m[[1]] = as.name("model.frame")
+##   ##m$...=NULL
+##   ##m =eval(m,parent.frame())
 
-  m <- match.call(expand.dots=FALSE)
-  m$model <- m$method <- m$control <- NULL
-  m$x <- m$y <- m$parms <- m$... <- NULL
-  m$cost <- NULL
-  m$na.action <- na.action
-  m[[1]] <- as.name("model.frame")
-  m <- eval(m, parent.frame())
+##   m <- match.call(expand.dots=FALSE)
+##   m$model <- m$method <- m$control <- NULL
+##   m$x <- m$y <- m$parms <- m$... <- NULL
+##   m$cost <- NULL
+##   m$na.action <- na.action
+##   m[[1]] <- as.name("model.frame")
+##   m <- eval(m, parent.frame())
 
-  Terms = attr(m, "terms")
-  y = as.vector(model.extract(m,"response"))
-  preds<-attr(attributes(m)$terms,"term.labels")
-  x<-as.data.frame(m[,!is.na(match(names(m),preds))])
-  res = ada:::ada.default(x,y,...,na.action=na.action)
-  res$terms = Terms
-  cl = match.call()
-  cl[[1]] = as.name("ada")
-  res$call = cl
-  res
-}
+##   Terms = attr(m, "terms")
+##   y = as.vector(model.extract(m,"response"))
+##   preds<-attr(attributes(m)$terms,"term.labels")
+##   x<-as.data.frame(m[,!is.na(match(names(m),preds))])
+##   res = ada:::ada.default(x,y,...,na.action=na.action)
+##   res$terms = Terms
+##   cl = match.call()
+##   cl[[1]] = as.name("ada")
+##   res$call = cl
+##   res
+## }
 
 
 ## This implements a generic interface for interacting with the ada
@@ -201,6 +202,7 @@ buildModelAda <- function(formula,
 
 continueModelAda <- function(niter)
 {
+  ## 140206 This is no longer required - REMOVE.
   ## The current ada.update only works when the model is built using
   ## the x, y interface rather than the formula interface. Mark Culp,
   ## the author of ada, sent a fixed ada.formula wrapper which I've

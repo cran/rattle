@@ -13,20 +13,23 @@
   
 }
 \usage{
-riskchart(data,
+riskchart(pr, ac, ri=NULL,
           title=NULL,
     show.legend = TRUE,
     optimal = NULL, optimal.label = "", chosen = NULL, chosen.label = "",
     include.baseline = TRUE, dev = "", filename = "", show.knots = NULL,
-    show.lift=TRUE, show.precision=TRUE,
+    show.lift=TRUE, show.precision=TRUE, show.maximal = TRUE,
     risk.name = "Risk", recall.name = "Recall",
     precision.name = "Precision", thresholds=NULL)
 }
 \arguments{
   
-  \item{data}{The caseloads, precision, recall, risk values for each
-    probability cutoff.}
-  
+  \item{pr}{The predicted class for each observation.}
+
+  \item{ac}{The actual class for each observation.}
+
+  \item{ri}{The risk class for each observation.}
+
   \item{title}{the main title to place at the top of the plot.}
   
   \item{show.legend}{whether to display the legend in the plot.}
@@ -67,6 +70,8 @@ riskchart(data,
 
 \item{show.precision}{whether to show the precision plot.}
 
+\item{show.maximal}{whether to show the maximal performance line.}
+
 \item{risk.name}{a string used within the plot's legend that gives a
   name to the risk. Often the risk is a dollar amount at risk from a
   fraud or from a bank loan point of view, so the default is
@@ -104,19 +109,36 @@ riskchart(data,
 \author{\email{Graham.Williams@togaware.com}}
 \seealso{\code{\link{evaluateRisk}}, \code{\link{genPlotTitleCmd}}.}
 \examples{
-## this is usually used in the context of the evaluateRisk function
-\dontrun{ev <- evaluateRisk(predicted, actual, risk)}
+## Use rpart to build a decision tree.
 
-## imitate this output here
-ev <- data.frame(Caseload=c(1.0, 0.8, 0.6, 0.4, 0.2, 0),
-                 Precision=c(0.15, 0.18, 0.21, 0.25, 0.28, 0.30),
-                 Recall=c(1.0, 0.95, 0.80, 0.75, 0.5, 0.0),
-                 Risk=c(1.0, 0.98, 0.90, 0.77, 0.30, 0.0))
+library(rpart)
 
-## plot the Risk Chart
-riskchart(ev, chosen=60, chosen.label="Pr=0.45")
+## Set up the data for modelling.
 
-## Add a title
-eval(parse(text=genPlotTitleCmd("Sample Risk Chart")))
+set.seed(42)
+ds     <- weather
+target <- "RainTomorrow"
+risk   <- "RISK_MM"
+ignore <- c("Date", "Location", risk)
+vars   <- setdiff(names(ds), ignore)
+nobs   <- nrow(ds)
+form   <- formula(paste(target, "~ ."))
+train  <- sample(nobs, 0.7*nobs)
+test   <- setdiff(seq_len(nobs), train)
+actual <- ds[test, target]
+risks  <- ds[test, risk]
+
+# Build the model.
+
+model <- rpart(form, data=ds[train, vars])
+
+## Obtain predictions.
+
+predicted <- predict(model, ds[test, vars], type="prob")[,2]
+
+## Plot the Risk Chart.
+
+riskchart(predicted, actual, risks)
+
 }
 \keyword{hplot}

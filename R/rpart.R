@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-02-09 14:30:26 Graham Williams>
+# Time-stamp: <2013-11-20 06:22:15 Graham Williams>
 #
 # RPART TAB
 #
@@ -615,8 +615,17 @@ fancyRpartPlot <- function(model, main="", ...)
   }
   else
   {
-    per <- 1 - (model$frame$dev/model$frame$dev[1])
-    print(per)
+    # 130329 This is the deviance relative the the total deviance measured at
+    # the root node. We use this to colour the strength of the node -
+    # so more intense colour means less relative deviance.
+    
+    #per <- 1 - (model$frame$dev/model$frame$dev[1])
+
+    # 130329 Perhaps instead we want to use the yval as the intensity
+    # of the predicted value. Currently not handling negative values.
+
+    per <- model$frame$yval/max(model$frame$yval)
+    
   }
   
   # The conversion of a tree in CORElearn to an rpart tree results in these
@@ -626,10 +635,13 @@ fancyRpartPlot <- function(model, main="", ...)
   
   # Calculate an index into the combined colour sequence. Once we go
   # above numpals * palsize (30) start over.
- 
-  col.index <- ((palsize*(model$frame$yval-1) +
-                trunc(pmin(1 + (per * palsize), palsize))) %%
-                (numpals * palsize))
+
+  if (model$method == "class")
+    col.index <- ((palsize*(model$frame$yval-1) +
+                   trunc(pmin(1 + (per * palsize), palsize))) %%
+                  (numpals * palsize))
+  else
+    col.index <- round(per * (palsize-1)) + 1
 
   # Define the contents of the tree nodes.
  
@@ -638,9 +650,16 @@ fancyRpartPlot <- function(model, main="", ...)
   ##         format(x$frame$n, big.mark=","),
   ##         sep="")
 
+  # Determine the amount of extra information added to the nodes.
+
+  if (model$method == "class")
+    extra <- 104
+  else
+    extra <- 101
+  
   # Generate the plot and title.
  
-  prp(model, type=2, extra=104,
+  prp(model, type=2, extra=extra,
       box.col=pals[col.index],
       nn=TRUE,
       varlen=0, faclen=0,
@@ -810,10 +829,14 @@ drawTreeNodes <- function (tree, cex = par("cex"), pch = par("pch"),
     }
     else
     {
+      # 131120 Jouanne-Diedrich Holger noted the probabilities in the
+      # tree were wrong. Seems like rpart's frame is now returning a
+      # yval2 with 2 extra columns!
+      
+      nlv <- floor((ncol(tframe$yval2)-2)/2)
       for (i in 1:nnodes)
       {
         yval <- tframe$yval[i]
-        nlv <- floor(ncol(tframe$yval2)/2)
         # [080315 gjw] Now sort the class rates and get the largest!!!
         # But wouldn't we want to get the one corresponding to yval
         # rather than the largest? It won't necessarily be the largest

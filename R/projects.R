@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-03-06 18:43:18 Graham Williams>
+# Time-stamp: <2013-08-07 20:39:21 Graham Williams>
 #
 # Project functionality.
 #
@@ -310,6 +310,7 @@ saveProject <- function()
   
   crs$pwd <- dirname(save.name)
   
+  setMainTitle(basename(save.name))
   setStatusBar(sprintf(Rtxt("The current project has been saved to '%s'"), save.name))
 }
 
@@ -468,7 +469,7 @@ loadProject <- function()
   {
     theWidget("data_sample_checkbutton")$setActive(crs$sample.on)
   }
-  
+
   # Make sure we don't attempt to reload the file on executing the
   # Data tab, and thereby overwriting the current data, losing all of
   # the work already done on it. Set the modified time for the dataset
@@ -476,8 +477,35 @@ loadProject <- function()
 
   crs$mtime <- Sys.time()
 
+  # VARIABLES
+
+  # Deal with the weights. This is either crs$dataset$VARIABLE or some
+  # arbitrary formula. Need to distinguish and in the former to pass
+  # the variable through to resetVariableRoles, and if the latter then
+  # set the widget.
+
+  if (not.null(crs$weights))
+  {
+    wname <- gsub("crs\\$dataset\\$", "", crs$weights)
+    if (wname %in% colnames(crs$dataset))
+    {
+      theWidget("weight_entry")$setSensitive(FALSE)
+    }
+    else
+    {
+      theWidget("weight_entry")$setText(wname)
+      #    the.weight <- sprintf("Weights: %s",weights.display)
+      #    theWidget("model_tree_rpart_weights_label")$setText(the.weight)
+      crs$weights <- crs$weights
+      wname <- NULL
+    }
+  }
+  else
+    wname <- NULL
+
   resetVariableRoles(colnames(crs$dataset), nrow(crs$dataset),
-                     crs$input, crs$target, crs$risk, crs$ident, crs$ignore, crs$weight,
+                     crs$input, crs$target, crs$risk, crs$ident, crs$ignore,
+                     wname,
                      crs$zero,
                      crs$boxplot, crs$hisplot, crs$cumplot, crs$benplot,
                      crs$barplot, crs$dotplot, resample=FALSE, autoroles=FALSE)
@@ -494,17 +522,6 @@ loadProject <- function()
 
   enableDataSourceFunctions(FALSE)
   
-  # VARIABLES
-
-  if (not.null(crs$weights))
-  {
-    weights.display <- gsub('crs\\$dataset\\$', '', crs$weights)
-    theWidget("weight_entry")$setText(weights.display)
-    the.weight <- sprintf("Weights: %s",weights.display)
-    theWidget("model_tree_rpart_weights_label")$setText(the.weight)
-    crs$weights <- crs$weights
-  }
-
   # Explore
   
   setTextviewContents("summary_textview", crs$text$summary)

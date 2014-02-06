@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2012-10-01 10:34:05 Graham Williams>
+# Time-stamp: <2013-08-17 09:58:13 Graham Williams>
 #
 # Implement associations functionality.
 #
@@ -408,7 +408,13 @@ listAssociateRules <- function()
   # problem...
 
 #  if (lift == 0)
-    summary1.cmd <- 'inspect(sort(crs$apriori, by="confidence"))'
+  sby <- tolower(theWidget("associate_sort_comboboxtext")$getActiveText())
+  sort.ds <- ifelse(sby=="",
+                    "crs$apriori",
+                    sprintf('sort(crs$apriori, by="%s")', sby))
+  summary1.cmd <- sprintf('inspect(%s)', sort.ds)
+
+  
 #  else
 #lift<-1
 #      summary1.cmd <- paste('sort(subset(crs$apriori, lift > ',
@@ -451,7 +457,7 @@ listAssociateRules <- function()
 ##   close(zz)
 ##   result <- paste(commandsink, collapse="\n")
   # print(result) # DEBUG
-  appendTextview(TV, Rtxt("Top Rules"), "\n\n", result, "\n")
+  appendTextview(TV, Rtxt("All Rules"), "\n\n", result, "\n")
                  #"\n\nKnown Bug: If nothing appears above, ",
                  #"set the Lift to 0.0\n")
 #                 paste('inspect(sort(subset(crs$apriori, lift >',
@@ -462,6 +468,17 @@ listAssociateRules <- function()
 #  summary.cmd <- 'inspect(sort(crs$apriori, by="confidence"))'
 #  appendLog("List all rules.", summary.cmd)
 #  appendTextview(TV, "All Rules\n\n", collectOutput(summary.cmd))
+
+  # Measures of interestingness
+
+  measures <- paste('c("chiSquare", "hyperLift", "hyperConfidence",',
+                    '"leverage", "oddsRatio", "phi")')
+  interest.cmd <- sprintf('interestMeasure(%s, %s, crs$transactions)',
+                          sort.ds, measures)
+  appendLog(Rtxt("Interesting Measures."), interest.cmd)
+  result <- paste(capture.output(eval(parse(text=interest.cmd),
+                                      envir=globalenv())), collapse="\n")
+  appendTextview(TV, Rtxt("Interestng Measures"), "\n\n", result)
 
   setStatusBar(Rtxt("Finished listing the rules",
                     "- scroll the text window to view the rules."))

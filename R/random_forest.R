@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-01-29 17:03:38 Graham Williams>
+# Time-stamp: <2013-03-23 21:32:29 Graham Williams>
 #
 # RANDOM FOREST TAB
 #
@@ -221,20 +221,30 @@ executeModelRF <- function(traditional=TRUE, conditional=!traditional)
                    if (including) included,
                    if (subsetting) "]",
                    sep="")
-  if (! traditional)
-    dataset <- sprintf("na.omit(%s)", dataset)
+  # 130322 Don't na.omit for cforest - not needed?
+  #if (! traditional)
+  #  dataset <- sprintf("na.omit(%s)", dataset)
 
-  # Replicate rows according to the integer weights variable.
+  # Replicate rows according to the integer weights variable for
+  # randomForest.
   
   if(! is.null(crs$weights))
-    dataset <- paste(dataset,
-                     "[rep(row.names(",
-                     dataset,
-                     "),\n                                        ",
-                     # Use eval since crs$weights could be a formula
-                     'as.integer(eval(parse(text = "', crs$weights,
-                     '"))[crs$sample])),]',
-                     sep="")
+    if (traditional)
+      dataset <- paste(dataset,
+                       "[rep(row.names(",
+                       dataset,
+                       "),\n                                        ",
+                       # Use eval since crs$weights could be a formula
+                       'as.integer(eval(parse(text = "', crs$weights,
+                       '"))',
+                       if (sampling) '[crs$sample]',
+                       ')),]',
+                       sep="")
+    else
+      dataset <- sprintf("%s,\n      weights=%s%s", dataset,
+                       crs$weights,
+                       ifelse(sampling, "[crs$sample]", ""))
+
 
   # 100107 Deal with missing values. I've not tested whether cforest
   # has issues with missing values.
@@ -396,8 +406,8 @@ executeModelRF <- function(traditional=TRUE, conditional=!traditional)
       packageIsAvailable("pROC", Rtxt("calculate AUC confidence interval")))
   {
     lib.cmd <- "require(pROC, quietly=TRUE)"
-    roc.cmd <- "roc(crs$rf$y, crs$rf$votes)"
-    ci.cmd <- "ci.auc(crs$rf$y, crs$rf$votes)"
+    roc.cmd <- "roc(crs$rf$y, as.numeric(crs$rf$predicted))"
+    ci.cmd <- "ci.auc(crs$rf$y, as.numeric(crs$rf$predicted))"
 
     appendLog(Rtxt("The `pROC' package implements various AUC functions."), lib.cmd)
     eval(parse(text=lib.cmd))
