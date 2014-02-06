@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-01-19 08:56:01 Graham Williams>
+# Time-stamp: <2013-03-23 21:58:12 Graham Williams>
 #
 # CTREE OPTION OF THE TREE TAB
 #
@@ -138,14 +138,18 @@ executeModelCTree <- function()
   lib.cmd <- "require(party, quietly=TRUE)"
   if (! packageIsAvailable("party", Rtxt("build conditional trees"))) return(FALSE)
 
-    fit.cmd <- paste("crs$rpart <- ctree(", frml, ", data=crs$dataset",
-                     if (subsetting) "[",
-                     if (sampling) "crs$sample",
-                     if (subsetting) ",",
-                     if (including) included,
-                     if (subsetting) "]",
-                       ifelse(is.null(control), "", control),
-                     ")", sep="")
+  fit.cmd <- paste("crs$rpart <- ctree(", frml, ", data=crs$dataset",
+                   if (subsetting) "[",
+                   if (sampling) "crs$sample",
+                   if (subsetting) ",",
+                   if (including) included,
+                   if (subsetting) "]",
+                   if (! is.null(crs$weights))
+                   sprintf(",\n    weights=as.integer(%s)%s",
+                           crs$weights,
+                           ifelse(sampling, "[crs$train]", "")),
+                   ifelse(is.null(control), "", control),
+                   ")", sep="")
 
   print.cmd <- "print(crs$rpart)"
                                

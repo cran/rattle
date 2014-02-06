@@ -1,9 +1,9 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-03-16 08:50:53 Graham Williams>
+# Time-stamp: <2014-01-06 10:08:10 Graham Williams>
 #
 #
-# Copyright (c) 2009-2013 Togaware Pty Ltd
+# Copyright (c) 2009-2014 Togaware Pty Ltd
 #
 # The Rattle package is made of the following R source files:
 #
@@ -17,17 +17,8 @@
 # conditionally, particularly that a lot of users are not in the
 # upgrade habit as yet, and Revolution R is not up to 2.15 yet.
 
-if (version$major>="2" && version$minor>="15.1")
+if(getRversion() >= "2.15.1")
   utils::globalVariables(c("rattle.entered.dataset",
-                           #"ds",
-                           "gladeXMLNew",
-                           #"rsq",
-                           #"p",
-                           #"x_lab",
-                           "gladeXMLNew",
-                           "gladeXMLSignalAutoconnect",
-                           "gladeXMLNew",
-                           "gladeXMLSignalAutoconnect",
                            "gladeXMLNew",
                            "gladeXMLSignalAutoconnect",
                            "biocLite",
@@ -37,7 +28,19 @@ if (version$major>="2" && version$minor>="15.1")
                            "pos",
                            "ticks",
                            "target",
-                           "ignore"
+                           "ignore",
+                           "digit", "variable",
+                           "split.labels",
+                           "rbin",                    
+                           "pacc",                    
+                           "x",
+                           "y",
+                           "lbl",
+                           "hj",
+                           "vj",
+                           "score",
+                           "low",
+                           "high"
                            ))
 
 # The function paste0() was introduced in 2.15.0
@@ -60,12 +63,12 @@ Rtxt <- function(...)
 
 RtxtNT <- Rtxt
 
-VERSION <- "2.6.26"
-DATE <- "2013-03-16"
-REVISION <- "77"
+VERSION <- "3.0.2"
+DATE <- "2014-02-06"
+REVISION <- "169"
 
 # 091223 Rtxt does not work until the rattle GUI has started, perhaps?
-COPYRIGHT <- paste(Rtxt("Copyright"), "(C) 2006-2013 Togaware Pty Ltd.")
+COPYRIGHT <- paste(Rtxt("Copyright"), "(C) 2006-2014 Togaware Pty Ltd.")
 
 # Acknowledgements: Frank Lu has provided much feedback and has
 # extensively tested early versions of Rattle. Many colleagues at the
@@ -208,7 +211,7 @@ rattleInfo <- function(all.dependencies=FALSE,
   # checking for an installed package. But here I think it might be
   # appropriate to use it.
   
-  iv <- utils:::installed.packages()
+  iv <- utils::installed.packages()
   av <- available.packages(contriburl=contrib.url("http://cran.r-project.org"))
 
   cat(sprintf("Rattle: version %s r%s cran %s\n",
@@ -243,7 +246,7 @@ rattleInfo <- function(all.dependencies=FALSE,
         available.packages(contrib.url(x, type = type))
       })
       if (!keep.builtin) 
-        baseOrRecPkgs <- rownames(utils:::installed.packages(priority = "high"))
+        baseOrRecPkgs <- rownames(utils::installed.packages(priority = "high"))
       allPkgs <- unlist(sapply(pkgMatList, function(x) rownames(x)))
       if (!length(allPkgs)) 
         stop("no packages in specified repositories")
@@ -291,8 +294,10 @@ rattleInfo <- function(all.dependencies=FALSE,
       if (! require(pkgDepTools, quietly=TRUE))
       {
         source("http://bioconductor.org/biocLite.R")
+        pkg <- "pkgDepTools"
         biocLite("pkgDepTools")
-        require(pkgDepTools, quietly=TRUE)
+        cmd <- sprintf("require(%s, quietly=TRUE)", pkg)
+        eval(parse(text=cmd))
       }
       if (! require(Rgraphviz, quietly=TRUE))
       {
@@ -495,6 +500,7 @@ rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=NULL)
 
   # 101127 No longer needed if (crv$useGtkBuilder || Sys.info()["sysname"] == "Darwin")
   # 111203 Is this still needed????? Try removing it.
+  # 130412 Remove for now????
   if (Sys.info()["sysname"] == "Darwin")
     fixMacAndGtkBuilderTypes()
  
@@ -1569,6 +1575,8 @@ displayWelcomeTabMessage <- function()
                        "\n\n",
                        Rtxt("See the Help menu for extensive support in",
                             "using Rattle.",
+                            "The book Data Mining with Rattle and R is available from",
+                            "Amazon.",
                             "The Togaware Desktop Data Mining Survival Guide",
                             "includes Rattle documentation",
                             "and is available from",
@@ -1580,11 +1588,13 @@ displayWelcomeTabMessage <- function()
                             "See Help -> About for details."),
                        "\n\n",
                        sprintf(Rtxt("Rattle Version %s r%s.",
-                                    "Copyright 2006-2013 Togaware Pty Ltd"),
+                                    "Copyright 2006-2014 Togaware Pty Ltd."),
                                VERSION, REVISION),
 #LOG_LICENSE
                        "\n",
-                       Rtxt("Rattle is a registered trademark of Togaware Pty Ltd")),
+                       Rtxt("Rattle is a registered trademark of Togaware Pty Ltd."),
+                       "\n",
+                       Rtxt("Rattle was created and implemented by Graham Williams.")),
                 tvsep=FALSE)
 }
 
@@ -1747,7 +1757,7 @@ resetRattle <- function(new.dataset=TRUE)
 ##   theWidget("odbc_limit_spinbutton")$setValue(0)
 ##   theWidget("odbc_believeNRows_checkbutton")$setActive(FALSE)
 
-  if (packageIsAvailable("Snowball"))
+  if (packageIsAvailable("SnowballC"))
     theWidget("data_corpus_stem_checkbutton")$setActive(TRUE)
 
   if (new.dataset)
@@ -1918,7 +1928,8 @@ resetRattle <- function(new.dataset=TRUE)
   theWidget("hclust_stats_button")$setSensitive(FALSE)
   theWidget("hclust_data_plot_button")$setSensitive(FALSE)
   theWidget("hclust_discriminant_plot_button")$setSensitive(FALSE)
-
+  theWidget("associate_sort_comboboxtext")$setActive(0)
+  
   setStatusBar(Rtxt("To Begin: Choose the data source,",
                     "specify the details,",
                     "then click the Execute button."))
@@ -1939,7 +1950,7 @@ uri2file <- function(u)
 
 listVersions <- function(file="", ...)
 {
-  result <- utils:::installed.packages()[,c("Package", "Version")]
+  result <- utils::installed.packages()[,c("Package", "Version")]
   row.names(result) <- NULL
   write.csv(result, file=file, ...)
   invisible(result)
@@ -2541,71 +2552,76 @@ newPlot <- function(pcnt=1)
   # only the stars. Seems to be an issue with CairoDevice? For
   # Windows, for now, do not use Cairo by default.
 
-  if (theWidget("use_cairo_graphics_device")$getActive() &&
-      packageIsAvailable("cairoDevice", Rtxt("display plots")))
+  if (!exists("RStudioGD"))
   {
-    require("cairoDevice", quietly=TRUE)
-    if (crv$useGtkBuilder)
+    if (theWidget("use_cairo_graphics_device")$getActive() &&
+        packageIsAvailable("cairoDevice", Rtxt("display plots")))
     {
-      plotGUI <- gtkBuilderNew()
-      plotGUI$setTranslationDomain("R-rattle")
-    }
-
-    result <- try(etc <- file.path(path.package(package="rattle")[1], "etc"),
-                  silent=TRUE)
-    if (inherits(result, "try-error"))
+      require("cairoDevice", quietly=TRUE)
       if (crv$useGtkBuilder)
-        plotGUI$addFromFile(crv$rattleUI)
+      {
+        plotGUI <- gtkBuilderNew()
+        plotGUI$setTranslationDomain("R-rattle")
+      }
+
+      result <- try(etc <- file.path(path.package(package="rattle")[1], "etc"),
+                    silent=TRUE)
+      if (inherits(result, "try-error"))
+        if (crv$useGtkBuilder)
+          plotGUI$addFromFile(crv$rattleUI)
+        else
+          plotGUI <- gladeXMLNew("rattle.glade", root="plot_window", domain="R-rattle")
       else
-        plotGUI <- gladeXMLNew("rattle.glade", root="plot_window", domain="R-rattle")
-    else
+        if (crv$useGtkBuilder)
+          plotGUI$addFromFile(file.path(etc, crv$rattleUI))
+        else
+          plotGUI <- gladeXMLNew(file.path(etc,"rattle.glade"),
+                                 root="plot_window", domain="R-rattle")
       if (crv$useGtkBuilder)
-        plotGUI$addFromFile(file.path(etc, crv$rattleUI))
+      {
+        plotGUI$getObject("plot_window")$show()
+        plotGUI$connectSignals()
+        da <- plotGUI$getObject("drawingarea")
+      }
       else
-        plotGUI <- gladeXMLNew(file.path(etc,"rattle.glade"),
-                               root="plot_window", domain="R-rattle")
-    if (crv$useGtkBuilder)
-    {
-      plotGUI$getObject("plot_window")$show()
-      plotGUI$connectSignals()
-      da <- plotGUI$getObject("drawingarea")
+      {
+        gladeXMLSignalAutoconnect(plotGUI)
+        da <- plotGUI$getWidget("drawingarea")
+      }
+      
+      asCairoDevice(da)
+      if (isJapanese())
+      {
+        # 091222 Use a font that MS/Windows can display Japanese
+        # characters. Would like to use opar to record old value, but
+        # not easy to know where the end of this scope is.
+        
+        fnt.cmd <- 'par(family=windowsFont("MS Gothic"))'
+        appendLog(Rtxt("Use a Japanese font for the plots."), fnt.cmd)
+        eval(parse(text=fnt.cmd))
+      }
+      
+      if (crv$useGtkBuilder)
+        plotGUI$getObject("plot_window")$setTitle(paste(crv$appname, ": ",
+                                                        Rtxt("Plot"), " ",
+                                                        dev.cur(), sep=""))
+      else
+        plotGUI$getWidget("plot_window")$setTitle(paste(crv$appname, ": ",
+                                                        Rtxt("Plot"), " ",
+                                                        dev.cur(), sep=""))
     }
-    else
-    {
-      gladeXMLSignalAutoconnect(plotGUI)
-      da <- plotGUI$getWidget("drawingarea")
-    }
-    
-    asCairoDevice(da)
-    if (isJapanese())
-    {
-      # 091222 Use a font that MS/Windows can display Japanese
-      # characters. Would like to use opar to record old value, but
-      # not easy to know where the end of this scope is.
-
-      fnt.cmd <- 'par(family=windowsFont("MS Gothic"))'
-      appendLog(Rtxt("Use a Japanese font for the plots."), fnt.cmd)
-      eval(parse(text=fnt.cmd))
-    }
-
-    if (crv$useGtkBuilder)
-      plotGUI$getObject("plot_window")$setTitle(paste(crv$appname, ": ",
-                                                      Rtxt("Plot"), " ",
-                                                      dev.cur(), sep=""))
-    else
-      plotGUI$getWidget("plot_window")$setTitle(paste(crv$appname, ": ",
-                                                      Rtxt("Plot"), " ",
-                                                      dev.cur(), sep=""))
+# 140204 make check complains - do I need these anymore?
+#    
+#    else if (.Platform$GUI %in% c("X11", "unknown"))
+#    {
+#      # Add "unknown" to handle the case with the littler script
+#      # interface which runs with an "unknown" GUI.
+#      
+#      x11()
+#    }
+#    else if (isWindows())
+#      windows()
   }
-  else if (.Platform$GUI %in% c("X11", "unknown"))
-  {
-    # Add "unknown" to handle the case with the littler script
-    # interface which runs with an "unknown" GUI.
-
-    x11()
-  }
-  else if (isWindows())
-    windows()
 
   if (pcnt==1)
     layout(matrix(c(1), 1, 1, byrow=TRUE))
@@ -2929,6 +2945,9 @@ get.stem <- function(path)
 
 plotNetwork <- function(flow)
 {
+  # A standalone support function for network plots - not used in
+  # Rattle per se but useful for drawing network plots.
+  
   if (! packageIsAvailable("network", Rtxt("draw the network plot"))) return()
   require(network, quietly=TRUE)
 
@@ -2974,34 +2993,6 @@ plotNetwork <- function(flow)
 #
 # Shared callbacks
 #
-
-## 100916 Update the list only when Evaluate's R Dataset is toggled on.
-## update_comboboxentry_with_dataframes <- function(action, window)
-## {
-##   # Update a combo box (Evaluate -> Score) with just the available
-##   # data frames and matrices.
-
-##   current <- theWidget("data_name_combobox")$getActiveText()
-
-##   dl <- unlist(sapply(ls(sys.frame(0)),
-##                       function(x)
-##                       {
-##                         cmd <- sprintf("is.data.frame(%s)", x)
-##                         var <- try(ifelse(eval(parse(text=cmd), sys.frame(0)),
-##                                           x, NULL), silent=TRUE)
-##                         if (inherits(var, "try-error"))
-##                           var <- NULL
-##                         return(var)
-##                       }))
-##   if (not.null(dl))
-##   {
-##     action$getModel()$clear()
-##     lapply(dl, action$appendText)
-##     ## Set the selection to that which was already selected, if possible.
-##     if (not.null(current) && current %in% dl)
-##       action$setActive(which(sapply(dl, function(x) x==current))[1]-1)
-##   }
-## }
 
 on_rattle_window_delete_event <- function(action, window)
 {

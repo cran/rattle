@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-03-16 20:39:19 Graham Williams>
+# Time-stamp: <2013-11-21 21:09:50 Graham Williams>
 #
 # Implement EXPLORE functionality.
 #
@@ -98,8 +98,8 @@ executeExploreTab <- function()
       executeExplorePlaywith(dataset)
     else if (theWidget("explore_interactive_ggobi_radiobutton")$getActive())
       executeExploreGGobi(dataset, crs$dataname)
-    else if (theWidget("explore_interactive_plotbuilder_radiobutton")$getActive())
-      executeExplorePlotBuilder()
+#    else if (theWidget("explore_interactive_plotbuilder_radiobutton")$getActive())
+#      executeExplorePlotBuilder()
   }
   else if (theWidget("explore_correlation_radiobutton")$getActive())
   {
@@ -332,7 +332,7 @@ executeExploreSummary <- function(dataset)
                             "\n",
                             sprintf(paste(" cat(sprintf('%s',",
                                           "names(crs$dataset)[i], crs$target))"),
-                                    Rtxt("CrossTab of %s by target variable %s")),
+                                    Rtxt("CrossTab of %s by target variable %s\\n\\n")),
                             "\n  print(CrossTable(crs$dataset[[i]],",
                             "crs$dataset[[crs$target]], expected=TRUE, format='SAS'))",
                             "\n  cat(paste(rep('=', 70), collapse=''), '\n\n')",
@@ -360,21 +360,26 @@ getVariableIndicies <- function(variables)
   return(indicies)
 }
 
-calcInitialDigitDistr <- function(l, digit=1,
-                                  split=c("none", "positive", "negative"))
+calcInitialDigitDistr <- function(l,
+                                  digit=1,
+                                  len=1,
+                                  sp=c("none", "positive", "negative"))
 {
 
   # From a list of numbers return a vector of first digit
   # frequencies. If DIGIT is given, then return the distribution for
-  # that digit, rather than the default first digit. The default SPLIT
-  # is none, meaning that both positive and negative numbers are
-  # considered (ignoring the sign). Otherwise we return the
-  # distribution for either only the positive numbers in the list or
-  # for only the negative numbers in the list.
+  # that digit, rather than the default first digit. 130821 xtend to
+  # allow LEN to be specified as the number of digits (1 or 2) to
+  # calculate the distribution for.
 
-  if (split == "positive")
+  # The default SP is none, meaning that both positive and negative
+  # numbers are considered (ignoring the sign). Otherwise we return
+  # the distribution for either only the positive numbers in the list
+  # or for only the negative numbers in the list.
+
+  if (sp == "positive")
     l <- l[l>0]
-  else if (split == "negative")
+  else if (sp == "negative")
     l <- l[l<0]
 
   # Ignore all zeros.
@@ -403,7 +408,7 @@ calcInitialDigitDistr <- function(l, digit=1,
   # not any digits) from real numbers.
   
   ds <- data.frame(digit=as.numeric(substr(gsub("\\.", "",
-                     as.character(abs(l))), digit, digit)),
+                     as.character(abs(l))), digit, digit+len-1)),
                    value=1)
 #[071201  ds <- data.frame(digit=as.numeric(gsub("(.).*", "\\1",
 #                     as.character(abs(l)))),
@@ -414,37 +419,238 @@ calcInitialDigitDistr <- function(l, digit=1,
   if (digit == 1) ds <- ds[ds$digit!=0,]
 
   # Add in any mising digits as value=0
-  
-  missing <- setdiff(ifelse(digit>1,0,1):9, unique(ds[,1]))
-  if (length(missing) > 0)
-    ds <- rbind(ds, data.frame(digit=missing, value=0))
+
+  if (len == 1)
+  {
+    missing <- setdiff(ifelse(digit>1,0,1):9, unique(ds[,1]))
+
+    # Don't do it for 2 digit - we want to just plot the actual ones,
+    # not all possible combinations.
+    #
+    # setdiff(as.character(paste(ifelse(digit>1, 0, 1):9,
+    #                            rep(0:9, ifelse(digit>1, 10, 9)),
+    #                            sep="")),
+    #         as.character(unique(ds[,1])))
+    #
+    if (length(missing) > 0)
+      ds <- rbind(ds, data.frame(digit=missing, value=0))
+  }
   dsb <- by(ds, as.factor(ds$digit), function(x) sum(x$value))
   return(as.matrix(dsb)[,1]/sum(as.matrix(dsb)[,1]))
 }
 
-plotBenfordsLaw <- function(l)
-{
-  if (! packageIsAvailable("gplots", Rtxt("plot Benford's law"))) return()
-  require(gplots, quietly=TRUE)
+#130825 Is this actually used anywhere?
+#
+## plotBenfordsLaw <- function(l)
+## {
+##   if (! packageIsAvailable("gplots", Rtxt("plot Benford's law"))) return()
+##   require(gplots, quietly=TRUE)
   
-  actual <- calcInitialDigitDistr(l)
+##   actual <- calcInitialDigitDistr(l)
   
-  x  <- 1:9
-  expect <- log10(1 + 1/x)
+##   x  <- 1:9
+##   expect <- log10(1 + 1/x)
   
-  nds <- t(as.matrix(data.frame(expect=expect, actual=actual)))
+##   nds <- t(as.matrix(data.frame(expect=expect, actual=actual)))
 
-  ttl <- genPlotTitleCmd(Rtxt("Benford's Law"), vector=TRUE)
+##   ttl <- genPlotTitleCmd(Rtxt("Benford's Law"), vector=TRUE)
   
-  barplot2(nds, beside=TRUE, main=ttl[1], sub=ttl[2],
-           xlab=Rtxt("Initial Digit"), ylab=Rtxt("Probability"))
+##   barplot2(nds, beside=TRUE, main=ttl[1], sub=ttl[2],
+##            xlab=Rtxt("Initial Digit"), ylab=Rtxt("Probability"))
+## }
+
+#-----------------------------------------------------------------------
+# 130824 Implement Benfords plot using ggplot2 for Advanced Graphics,
+# and add in the length option.
+
+digitDistr <- function(x, digit=1, len=1, name="freq")
+{
+  require(plyr)
+  
+  # From the numbers in x return a data frame of digit
+  # frequencies. The specified DIGIT is analysed (default is the first
+  # digit). For first digit analysis, LEN can be provided as the
+  # number of digits to analyse.
+
+  # Ignore zeros.
+  
+  x <- x[x!=0]
+  
+  # If we don't have any numbers in the distrbution, return a list of
+  # zeros.
+  
+  if (!length(x))
+  {
+    if (digit == 1)
+      x <- data.frame(digit=1:9, freq=rep(0, 9))
+    else
+      x <- data.frame(digit=0:9, freq=rep(0, 10))
+  }
+  else
+  {
+    # Remove decimal points, retaining only digits.
+  
+    x <- data.frame(digit=as.numeric(substr(gsub("\\.", "",
+                      as.character(abs(x))), digit, digit+len-1)),
+                    value=1)
+    
+    # Add in any mising digits as value=0
+    
+    if (len == 1)
+      missing <- setdiff(ifelse(digit>1,0,1):9, unique(x[,1]))
+    else
+      missing <- setdiff(as.character(paste(ifelse(digit>1, 0, 1):9,
+                                            rep(0:9, ifelse(digit>1, 10, 9)),
+                                            sep="")),
+                         as.character(unique(x[,1])))
+    
+    if (length(missing) > 0)
+      x <- rbind(x, data.frame(digit=missing, value=0))
+    
+    x <- ddply(x, .(digit), function(y) sum(y$value))
+    x$V1 <- x$V1/sum(x$V1)
+  }
+
+  names(x)[2] <- name
+  return(x)
 }
+
+benfordDistr <- function(digit, len=1)
+{
+  if (digit != 1 && len != 1)
+    stop("len must be 1 for other than first digit")
+  
+  if (digit == 1)
+  {
+    digits <- seq(10^(len-1), (10^len)-1)
+    expect <- log10(1 + 1/digits)
+  }
+  else
+  {
+    digits <- 0:9    
+    expect <- unlist(lapply(digits, function(x)
+                            sum(log10(1 + 1/(10*(seq(10^(digit-2),
+                                                     (10^(digit-1))-1))
+                                             + x)))))
+  }
+  
+  result <- data.frame(digit=digits, Benford=expect)
+  return(result)
+}
+
+plotDigitFreq <- function(ds)
+{
+  require(ggplot2)
+  require(reshape)
+
+  dsm <- melt(ds, id.vars="digit")
+  len <- nchar(as.character(ds[1,1]))
+  
+  p <- ggplot(dsm, aes(x=digit, y=value, colour=variable))
+  p <- p + geom_line()
+  if (len < 3) p <- p + geom_point()
+  if (substr(as.character(ds[1,1]), 1, 1)=="1")
+    p <- p + scale_x_continuous(breaks=seq(10^(len-1), (10^len)-1, 10^(len-1)))
+  else
+    p <- p + scale_x_continuous(breaks=seq(0, 9, 1))
+  p <- p + ylab("Frequency") + xlab("Digits")
+  p <- p + theme(legend.title=element_blank())
+  return(p)
+}
+
+executeBenfordPlot2 <- function(dname, benplots, target, targets, stratify, sampling, pmax)
+{
+  if (! packageIsAvailable("ggplot2", Rtxt("plot a Benford's distribution")) ||
+      ! packageIsAvailable("reshape", Rtxt("arrange data for Benford's distribution")))
+    return(FALSE)
+  
+  startLog("Benford's Law")
+
+  lib.cmd <- "require(ggplot2, quietly=TRUE)"
+  appendLog(packageProvides("ggplot2", "ggplot"), lib.cmd)
+  eval(parse(text=lib.cmd))
+
+  lib.cmd <- "require(reshape, quietly=TRUE)"
+  appendLog(packageProvides("reshape", "melt"), lib.cmd)
+  eval(parse(text=lib.cmd))
+
+  absbutton <- theWidget("benford_abs_radiobutton")$getActive()
+  posbutton <- theWidget("benford_pos_radiobutton")$getActive()
+  negbutton <- theWidget("benford_neg_radiobutton")$getActive()
+  digit <- theWidget("benford_digits_spinbutton")$getValue()
+  len   <- theWidget("benford_num_digits_spinbutton")$getValue()
+
+  if (len > 1 && digit != 1)
+  {
+    errorDialog(Rtxt("Multiple digit analysis only supported from",
+                     "the first digit. For number of digits > 1",
+                     "please choose 1 as the starting digit."))
+    return()
+  }
+  
+  for (var in benplots)
+  {
+    newPlot()
+    
+    # We don't actually eval this command - just for information in
+    # the Log.
+    initialise.cmd <- paste(ifelse(length(target),
+                                   paste('target <- "', target, '"\n', sep=""),
+                                   ""),
+                            'var    <- "', var, '"\n',
+                            "digit  <- ", digit, "\n",
+                            "len    <- ", len, sep="")
+    appendLog(Rtxt("Initialies the parameters."), initialise.cmd)
+
+    ds.cmd <- paste("ds <- merge(benfordDistr(digit, len),\n",
+                    "            digitDistr(", dname, '[var], digit, len, "All"))',
+                    sep="")
+    if (length(target))
+      ds.cmd <- paste(ds.cmd, "\n",
+                      "for (i in unique(", dname, "[[target]]))\n",
+                      "  ds <- merge(ds, digitDistr(", dname, "[", dname,
+                      "[target]==i, var], digit, len, i))", sep="")
+    appendLog("Build the dataset", ds.cmd)
+    eval(parse(text=ds.cmd))
+
+    title <- paste("Digital Analysis of",
+                   switch(digit, "First", "Second", "Third",
+                          paste(digit, "th", sep="")),
+                   ifelse(len>1, "2 Digits", "Digit"), "\nof", var,
+                   ifelse(length(target), paste("by", target), ""))
+    plot.cmd <- paste("p <- plotDigitFreq(ds)\n",
+                      'p <- p + ggtitle("', title, '")\n',
+                      'print(p)', sep="")
+    appendLog("Plot the digital distribution", plot.cmd)
+    eval(parse(text=plot.cmd))
+  }    
+}
+  
+
+if (FALSE)
+{
+  target <- "TARGET_Adjusted"
+  var    <- "Income"
+  digit <- 1
+  len <- 1
+  ds <- read.csv(system.file("csv/audit.csv", package="rattle"))
+  x <- merge(benfordDistr(digit, len),
+             digitDistr(ds[var], digit, len, "All"))
+  for (i in unique(ds[[target]]))
+    x <- merge(x, digitDistr(ds[ds[target]==i, var], digit, len, i))
+
+  plotDigitFreq(x)
+}
+
+#-----------------------------------------------------------------------
+# Generate a title for plots.
 
 generateTitleText <- function(var, target, sampling, doby)
 {
   if (sampling)
     if (doby)
-      title.txt <- sprintf(Rtxt("Distribution of %s (sample)\nby %s"), var, target)
+      title.txt <- sprintf(Rtxt("Distribution of %s (sample)\nby %s"),
+                           var, target)
     else
       title.txt <- sprintf(Rtxt("Distribution of %s (sample)"), var)
   else
@@ -1084,15 +1290,32 @@ executeExplorePlot <- function(dataset,
 
   if (nbenplots > 0)
   {
-    ## Plot Benford's Law for numeric data.
+    # Plot Benford's Law for numeric data.
 
+    if (advanced.graphics &&
+        packageIsAvailable("ggplot2", Rtxt("plot using ggplot2")))
+    {
+      executeBenfordPlot2(dataset, benplots, target, targets, stratify, sampling, pmax)
+    }
+    else
+    {
+      
     barbutton <- theWidget("benford_bars_checkbutton")$getActive()
     absbutton <- theWidget("benford_abs_radiobutton")$getActive()
     posbutton <- theWidget("benford_pos_radiobutton")$getActive()
     negbutton <- theWidget("benford_neg_radiobutton")$getActive()
     digspin <- theWidget("benford_digits_spinbutton")$getValue()
+    numspin <- theWidget("benford_num_digits_spinbutton")$getValue()
 
-    benopts <- sprintf(', split="%s", digit=%d',
+    if (numspin > 1)
+    {
+      errorDialog(Rtxt("Traditional graphics option allows only a single digit.",
+                       "Try Advanced Graphics option under Settings."))
+      return()
+    }
+    
+    
+    benopts <- sprintf(', sp="%s", digit=%d',
                        ifelse(absbutton, "none",
                               ifelse(posbutton, "positive", "negative")),
                        digspin)
@@ -1109,7 +1332,10 @@ executeExplorePlot <- function(dataset,
     # Calculate the expected distribution according to Benford's Law
 
     if (digspin == 1)
-      expect.cmd <- paste('unlist(lapply(1:9, function(x) log10(1 + 1/x)))')
+      if (numspin == 1)
+        expect.cmd <- paste('unlist(lapply(1:9, function(x) log10(1 + 1/x)))')
+      else
+        expect.cmd <- paste('unlist(lapply(10:99, function(x) log10(1 + 1/x)))')
     # see http://www.mathpages.com/home/kmath302/kmath302.htm
     else if (digspin > 1) 
       expect.cmd <- sprintf(paste('unlist(lapply(0:9, function(x) {sum(log10',
@@ -1175,8 +1401,6 @@ executeExplorePlot <- function(dataset,
       if (is.null(targets) && ! barbutton)
       {
         # Plot all Benford's plots on the one line graph
-
-        startLog()
 
         bc <- sub(Rtxt("All"), "%s", substr(bind.cmd, 7, nchar(bind.cmd)-1))
         new.bind.cmd <- substr(bind.cmd, 1, 6)
@@ -1262,7 +1486,6 @@ executeExplorePlot <- function(dataset,
         
         for (s in seq_len(nbenplots))
         {
-          startLog()
           #
           # Record the sizes of the subsets for the legend
           #
@@ -1400,6 +1623,9 @@ executeExplorePlot <- function(dataset,
       }
     }
   }
+  }
+  
+  
 
   #---------------------------------------------------------------------
 
@@ -2618,7 +2844,7 @@ executeExplorePlot2 <- function(dataset,
     negbutton <- theWidget("benford_neg_radiobutton")$getActive()
     digspin <- theWidget("benford_digits_spinbutton")$getValue()
 
-    benopts <- sprintf(', split="%s", digit=%d',
+    benopts <- sprintf(', sp="%s", digit=%d',
                        ifelse(absbutton, "none",
                               ifelse(posbutton, "positive", "negative")),
                        digspin)
@@ -3503,7 +3729,7 @@ executeExploreGGobi <- function(dataset, name=NULL)
   # Construct the commands.
 
   lib.cmd <- "require(rggobi, quietly=TRUE)"
-  ggobi.cmd <- paste('crs$gg <<- ggobi(', dataset,
+  ggobi.cmd <- paste('crs$gg <- ggobi(', dataset, # 140206 Remove <<-
                      ifelse(not.null(name), sprintf(', name="%s"', name), ""),
                      ')')
 
@@ -3534,6 +3760,7 @@ executeExploreCorrelation <- function(dataset, newplot=TRUE)
 
   # Obtain user interface settings.
 
+  advanced.graphics <- theWidget("use_ggplot2")$getActive()
   ordered <- theWidget("explore_correlation_ordered_checkbutton")$getActive()
 
   # Map the GUI options to the right names - in case the translation
@@ -3594,7 +3821,8 @@ executeExploreCorrelation <- function(dataset, newplot=TRUE)
     }
   }
 
-  lib.cmd <-"require(ellipse, quietly=TRUE)"
+  lib.cmd <- sprintf("require(%s, quietly=TRUE)",
+                     ifelse(advanced.graphics, "corrplot", "ellipse"))
   crscor.cmd  <- sprintf('%scrs$cor <- cor(%s, use="pairwise", method="%s")',
                          ifelse(nas, naids.cmd, ""),
                          ifelse(nas,
@@ -3636,21 +3864,27 @@ executeExploreCorrelation <- function(dataset, newplot=TRUE)
     title.txt <- sprintf(Rtxt("Correlation %s using %s"), crs$dataname, method.orig)
                        
   plot.cmd    <- paste(par.cmd,
-                       "plotcorr(crs$cor, ",
-                       'col=colorRampPalette(c("red", "white", "blue"))(11)',
-                       '[5*crs$cor + 6])\n',
+                       ifelse(advanced.graphics,
+                              "corrplot(crs$cor, mar=c(0,0,1,0))\n",
+                              paste("plotcorr(crs$cor, ",
+                                    'col=colorRampPalette(c("red", "white", "blue"))(11)',
+                                    '[5*crs$cor + 6])\n', sep="")),
                        genPlotTitleCmd(title.txt),
                        opar.cmd,
                        sep="")
   
   # Start logging and executing the R code.
 
-  if (! packageIsAvailable("ellipse", Rtxt("display a correlation plot"))) return()
+  if (! packageIsAvailable(ifelse(advanced.graphics, "corrplot", "ellipse"),
+                           Rtxt("display a correlation plot"))) return()
      
   startLog(Rtxt("Generate a correlation plot for the variables."))
   resetTextview(TV)
 
-  appendLog(packageProvides("ellipse", "plotcorr"), lib.cmd)
+  if (advanced.graphics)
+    appendLog(packageProvides("corrplot", "corrplot"), lib.cmd)
+  else
+    appendLog(packageProvides("ellipse", "plotcorr"), lib.cmd)
   eval(parse(text=lib.cmd))
 
   appendLog(Rtxt("Correlations work for numeric variables only."), crscor.cmd)
@@ -3872,64 +4106,70 @@ executeExplorePlaywith <- function(dataset)
   eval(parse(text=lib.cmd))
 
   latopts <- ""
-  if (! is.null(crs$target))
+  if (length(crs$target))
     latopts <- sprintf(', spec=list(groups = "%s")', crs$target)
   plot.cmd <- sprintf("latticist(%s%s)", dataset, latopts)
   appendLog(Rtxt("Start up latticist."), plot.cmd)
   eval(parse(text=plot.cmd))
 }
 
-executeExplorePlotBuilder <- function()
-{
-  # 8 Mar 2012 Currently don't know how to tell Plot builder the
-  # default dataset to use. Nor how to extract from plot builder the
-  # actual ggplot2 command that is generated - would like to capture
-  # that and place it in the Log.
+## executeExplorePlotBuilder <- function()
+## {
+##   # 8 Mar 2012 Currently don't know how to tell Plot builder the
+##   # default dataset to use. Nor how to extract from plot builder the
+##   # actual ggplot2 command that is generated - would like to capture
+##   # that and place it in the Log.
   
-  if (! packageIsAvailable("Deducer", Rtxt("interactively develop a ggplot2 plot using Plot builder"))) return()
+##   if (! packageIsAvailable("Deducer", Rtxt("interactively develop a ggplot2 plot using Plot builder"))) return()
 
-  startLog(Rtxt("Use the Plot Builder dialog from the Deducer package."))
+##   startLog(Rtxt("Use the Plot Builder dialog from the Deducer package."))
 
-  lib.cmd <- "require(Deducer, quietly=TRUE)"
-  appendLog(packageProvides("Deducer", "deducer"), lib.cmd)
-  eval(parse(text=lib.cmd))
+##   lib.cmd <- "require(Deducer, quietly=TRUE)"
+##   appendLog(packageProvides("Deducer", "deducer"), lib.cmd)
+##   eval(parse(text=lib.cmd))
 
-  # This use of ds is a hack - not sure how else to do this as Plot
-  # Builder does not notice crs$dataset, presumably only checking for
-  # data frames in .GlobalEnv
+##   # This use of ds is a hack - not sure how else to do this as Plot
+##   # Builder does not notice crs$dataset, presumably only checking for
+##   # data frames in .GlobalEnv
 
-  # 121210 As of now, remove the assign to global env - it is a bad
-  # idea and against CRAN policy. But then Plot Builder will not
-  # notice the dataset? Perhaps at least check first if 'ds' exists
-  # and if not then assign in the global environment. Ripley suggests
-  # (121210) using environments but not sure he understands the
-  # specific issue here.
+##   # 121210 As of now, remove the assign to global env - it is a bad
+##   # idea and against CRAN policy. But then Plot Builder will not
+##   # notice the dataset? Perhaps at least check first if 'ds' exists
+##   # and if not then assign in the global environment. Ripley suggests
+##   # (121210) using environments but not sure he understands the
+##   # specific issue here.
 
-  # 130126 Deducer in
-  # Deducer/javasrc/deducer/data/DataViewerController.java, function
-  # refreshData, uses get.objects('data.frame',
-  # includeInherited=FALSE) to get the datasets to select from. This
-  # only uses the global environment. So perhaps an acceptable
-  # solution is to inform the user and to ask their permission.
+##   # 130126 Deducer in
+##   # Deducer/javasrc/deducer/data/DataViewerController.java, function
+##   # refreshData, uses get.objects('data.frame',
+##   # includeInherited=FALSE) to get the datasets to select from. This
+##   # only uses the global environment. So perhaps an acceptable
+##   # solution is to inform the user and to ask their permission.
 
-  var.name <- paste("ds", format(Sys.time(), format="%y%m%d%H%M%S"), sep="_")
-  if (!questionDialog(sprintf(Rtxt("To use Plot Builder the Rattle dataset needs to",
-                                   "be available in the global environment (the",
-                                   "user's workspace). To do this Rattle will copy",
-                                   "its internal dataset to the variable '%s'.",
-                                   "This will overwrite any variable of the same",
-                                   "name. The copy of the dataset will be removed",
-                                   "after you exit from Plot Builder.\n\n",
-                                   "Are you okay with Rattle doing this?"),
-                              var.name)))
-    return()
-  #130316 Break this for now until figure out how to avoid global env.
-  # assign(var.name, crs$dataset, envir=.GlobalEnv)
-  plot.cmd <- 'deducer(cmd="Plot builder")'
-  appendLog(Rtxt("Start up Plot builder dialog."), plot.cmd)
-  eval(parse(text=plot.cmd))
-  eval(parse(text=sprintf("rm(%s, envir=.GlobalEnv)", var.name)))
-}
+##   var.name <- paste("ds", format(Sys.time(), format="%y%m%d%H%M%S"), sep="_")
+##   if (!questionDialog(sprintf(Rtxt("To use Plot Builder the Rattle dataset needs to",
+##                                    "be available in the global environment (the",
+##                                    "user's workspace). To do this Rattle will copy",
+##                                    "its internal dataset to the variable '%s'.",
+##                                    "This will overwrite any variable of the same",
+##                                    "name. The copy of the dataset will be removed",
+##                                    "after you exit from Plot Builder.\n\n",
+##                                    "Are you okay with Rattle doing this?"),
+##                               var.name)))
+##     return()
+##   # I would really rather not do an assign, but is this the only
+##   # option - CRAN do not accept this and I must remove this on
+##   # submitting to CRAN.
+##   assign.cmd <- "assign(var.name, crs$dataset, envir=.GlobalEnv)"
+##   appendLog(Rtxt("Place dataset into Global Environment for PlotBuilder."),
+##             assign.cmd)
+##   eval(parse(text=assign.cmd))
+
+##   plot.cmd <- 'deducer(cmd="Plot builder")'
+##   appendLog(Rtxt("Start up Plot builder dialog."), plot.cmd)
+##   eval(parse(text=plot.cmd))
+##   eval(parse(text=sprintf("rm(%s, envir=.GlobalEnv)", var.name)))
+## }
 
 ########################################################################
 # CALLBACKS

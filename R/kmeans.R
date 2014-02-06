@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2012-09-01 06:53:39 Graham Williams>
+# Time-stamp: <2013-08-16 19:22:38 Graham Williams>
 #
 # Implement kmeans functionality.
 #
@@ -127,6 +127,18 @@ executeClusterKMeans <- function(include)
 
   ds <- sprintf("na.omit(crs$dataset[%s, %s])",
                 ifelse(sampling, "crs$sample", ""), include)
+
+  # Check if we should rescale
+
+  if (theWidget("kmeans_rescale_checkbutton")$getActive())
+  {
+    lib.cmd <- "require(reshape, quietly=TRUE)"
+    if (! packageIsAvailable("reshape", Rtxt("rescale for kmeans"))) return(FALSE)
+    appendLog(packageProvides('reshape', 'rescaler'), lib.cmd)
+    eval(parse(text=lib.cmd))
+    
+    ds <- sprintf('sapply(%s, rescaler, "range")', ds)
+  }
   
   # Calculate the centers
 

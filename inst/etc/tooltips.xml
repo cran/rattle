@@ -290,6 +290,9 @@
     observations.</tooltip>
   <tooltip widget="kmeans_seed_button">Update the seed with a random
     number.</tooltip>
+  <tooltip widget="kmeans_rescale_checkbutton">Automatically re-scale
+  the data to be in the range 0-1 to avoid bias toward large valued
+  variables.</tooltip>
   <tooltip widget="kmeans_seed_spinbutton">Random number generator
     seed. Change this for different random starting points for the
     clustering.</tooltip>
@@ -441,7 +444,7 @@
   <tooltip widget="model_rf_sample_entry">Specify a single sample size
     or a sample size for each class (e.g., '500,500') which may be
     useful in balancing class predictions.</tooltip>
-  <tooltip widget="model_rf_impute_checkbutton">Impute the medium 
+  <tooltip widget="model_rf_impute_checkbutton">Impute the median
     (numeric) or most frequent (categoric) value for missing data using
     na.roughfix() from randomForest.</tooltip>
   <tooltip widget="rf_importance_checkbutton">Enable this check button

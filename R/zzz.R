@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-03-09 20:09:54 Graham Williams>
+# Time-stamp: <2013-07-27 17:04:12 Graham Williams>
 #
 # Copyright (c) 2009-2013 Togaware Pty Ltd
 
@@ -110,14 +110,18 @@ on_aboutdialog_response <- function(object, ...)
   # 111204 Fix issue of Mac OS/X not ignoring warnings in the .ui
   # file, so use an alternative one for now until work out permanent
   # fix. 130309 No longer an issue since the ubuntu string is no
-  # longer inserted into the .ui file. So use the standard .ui file.
+  # longer inserted into the .ui file. So use the standard .ui
+  # file. 130402 Revert to using rattle_macosx.ui - rattle.ui does not
+  # yet work?
   
   crv$rattleUI <- "rattle.ui"
-  # if (Sys.info()["sysname"] == "Darwin") crv$rattleUI <- "rattle_macosx.ui"
+  if (Sys.info()["sysname"] == "Darwin") crv$rattleUI <- "rattle_macosx.ui"
 
   crv$log.intro <- paste("#", sprintf(Rtxt("%s is Copyright (c) 2006-2013 %s."),
                                       "Rattle", "Togaware Pty Ltd"))
-  crv$support.msg <- sprintf(Rtxt("Contact %s."), "support@togaware.com")
+  crv$support.msg <- sprintf(Rtxt("Contact %s.\n\n%s"), "support@togaware.com",
+                             Rtxt("Please supply the output of rattleInfo()",
+                                  "and the steps required to replicate the problem."))
   crv$library.command <- "library(rattle)"
 
   # 101009 Record version for each so we can see when we might have

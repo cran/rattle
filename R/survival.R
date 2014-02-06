@@ -1,6 +1,6 @@
 # Rattle Survival
 #
-# Time-stamp: <2010-09-13 21:04:49 Graham Williams>
+# Time-stamp: <2013-10-20 18:09:58 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -267,30 +267,6 @@ exportSurvivalModel <- function()
     appendLog(Rtxt("Export survival regression as PMML."),
               sprintf('saveXML(%s, "%s")', pmml.cmd, save.name))
     saveXML(eval(parse(text=pmml.cmd)), save.name)
-  }
-  else if (ext == "c")
-  {
-    # 090103 gjw Move to a function: saveC(pmml.cmd, save.name, "regression")
-
-    # 090223 Why is this tolower being used? Under GNU/Linux it is
-    # blatantly wrong. Maybe only needed for MS/Widnows
-    
-    if (isWindows()) save.name <- tolower(save.name)
-    
-    model.name <- sub("\\.c", "", basename(save.name))
-    appendLog(Rtxt("Export a Survival regression model as C code for WebFocus."),
-              sprintf('cat(pmmltoc(toString(%s), "%s", %s, %s, %s), file="%s")',
-                      pmml.cmd, model.name, 
-                      attr(save.name, "includePMML"),
-                      attr(save.name, "includeMetaData"),
-                      attr(save.name, "exportClass"),
-                      save.name))
-    cat(pmmltoc(toString(eval(parse(text=pmml.cmd))), model.name,
-                attr(save.name, "includePMML"),
-                ifelse(attr(save.name, "includeMetaData"),
-                       getTextviewContent("model_survival_textview"),
-                       "\"Not Included\""),
-                attr(save.name, "exportClass")), file=save.name)
   }
   
   setStatusBar("The", toupper(ext), "file", save.name, "has been written.")

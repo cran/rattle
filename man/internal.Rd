@@ -288,6 +288,13 @@
 \alias{quit_rattle}
 \alias{update_comboboxentry_with_dataframes}
 \alias{update_libdata_combobox_entry}
+\alias{benfordDistr}
+\alias{digitDistr}
+\alias{normVarNames}
+\alias{on_help_cluster_stats_activate}
+\alias{plotDigitFreq}
+\alias{psfchart}
+\alias{print.summary.nnet}
 \title{Interal Rattle user interface callbacks.}
 \description{These are exported from the package so that the GUI can
   access the callbacks. They should otherwise be ignored.}

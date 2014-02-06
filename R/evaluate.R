@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-03-05 22:30:28 Graham Williams>
+# Time-stamp: <2013-09-04 19:22:41 Graham Williams>
 #
 # Implement evaluate functionality.
 #
@@ -638,7 +638,7 @@ executeEvaluateTab <- function()
       sep = theWidget("data_separator_entry")$getText()
       hdr = theWidget("data_header_checkbutton")$getActive()
       read.cmd <- sprintf(paste('crs$testset <- read.csv("%s"%s, header=%s,',
-                                'sep="%s", encoding="%s")'),
+                                'sep="%s", encoding="%s", strip.white=TRUE)'),
                           filename, nastring,
                           ifelse(hdr, "TRUE", "FALSE"),
                           sep, crv$csv.encoding)
@@ -921,7 +921,10 @@ executeEvaluateTab <- function()
     cond.rf <- "RandomForest" %in% class(crs$rf) # party conditional rf
 
     # 090301 testset[[crv$RF]] <- testset0
-    testset[[crv$RF]] <- sprintf("na.omit(%s)", testset0)
+    if (cond.rf)
+      testset[[crv$RF]] <- testset0 # 130323 cforest handles NA in predict
+    else
+      testset[[crv$RF]] <- sprintf("na.omit(%s)", testset0)
 
     predcmd[[crv$RF]] <- sprintf("crs$pr <- predict(crs$rf, newdata=%s)",
                              testset[[crv$RF]])
@@ -1385,6 +1388,14 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
     # affect the na.omit function which will omit more rows if these
     # extra columns have NAs.
 
+    # If using new graphics option then check ggplot2 is installed.
+      
+    if (advanced.graphics)
+    {
+      lib.cmd <- "require(ggplot2, quietly=TRUE)"
+      if (! packageIsAvailable("ggplot2", "plot a riskchart")) return()
+    }
+      
     if (length(crs$risk))
     {
       # Extract the columns selected from the test dataset as we will
@@ -1399,21 +1410,17 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
         testsetr <- gsub(testcols, newcols, testset[[mtype]], fixed=TRUE)
       }
 
-      # If using new graphics option then check ggplot2 is installed.
-      
-      if (advanced.graphics)
-      {
-        lib.cmd <- "require(ggplot2, quietly=TRUE)"
-        if (! packageIsAvailable("ggplot2", "plot a riskchart")) return()
-      }
-      
       evaluate.cmd <- paste("crs$eval <- evaluateRisk(crs$pr,",
                             sprintf("\n    %s$%s,", testset[[mtype]], crs$target),
                             sprintf("\n    %s$%s)", testsetr, risk))
 
 
       if (advanced.graphics)
-        plot.cmd <- paste("print(riskchart(crs$eval, ",
+        plot.cmd <- paste("print(riskchart(crs$pr,",
+                          '\n                ',
+                          sprintf("%s$%s, ", testset[[mtype]], crs$target),
+                          '\n                ',
+                          sprintf("%s$%s, ", testsetr, risk),
                           '\n                ',
                           'title="',
                           paste("Risk Chart", commonName(mtype), testname, crs$target,
@@ -1443,7 +1450,10 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
                             sprintf("%s$%s)", testset[[mtype]], crs$target))
 
       if (advanced.graphics)
-        plot.cmd <- paste("print(riskchart(crs$eval, ",
+        plot.cmd <- paste("print(riskchart(crs$pr, ",
+                          '\n                ',
+                          sprintf("%s$%s, ", testset[[mtype]], crs$target),
+                          '\n                ',
                           'title="',
                           paste("Performance Chart", commonName(mtype), testname, '"'),
                           ', show.lift=', ifelse(numericTarget(), "FALSE", "TRUE"),
@@ -1469,8 +1479,8 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
 
     appendLog(Rtxt("Generate a risk chart."),
               ifelse(advanced.graphics,
-                     Rtxt("# Rattle provides 'evaluateRisk' and 'riskchart'."),
-                     Rtxt("# Rattle provides 'evaluateRisk' and 'plotRisk'.")),
+                     Rtxt("# Rattle provides evaluateRisk() and riskchart()."),
+                     Rtxt("# Rattle provides evaluateRisk() and plotRisk().")),
               "\n\n",
               probcmd[[mtype]], "\n",
               evaluate.cmd, "\n",
@@ -1522,7 +1532,10 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
     }
 
     # Now generate a summary of the performance at various probability
-    # cutoffs, with the result being stored in crs$eval.
+    # cutoffs, with the result being stored in crs$eval. We really
+    # only do this for the older style plot as now riskchart() does
+    # the evaluateRisk itself. But we also want to display the textual
+    # results, so keep it here.
 
     eval(parse(text=evaluate.cmd))
 
@@ -1557,20 +1570,26 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
 
     #auc <- calculateRiskAUC(crs$eval)
     #print(auc)
-    if (not.null(crs$risk)) aucRisk <- calculateAUC(crs$eval$Caseload, crs$eval$Risk)
-    aucRecall <- calculateAUC(crs$eval$Caseload, crs$eval$Recall)
+    if (length(crs$risk))
+    {
+      aucRisk <- with(crs$eval, calculateAUC(Caseload, Risk))
+      aucRisk <- (2*aucRisk)/(2-crs$eval$Precision[1])
+    }
+      
+    aucRecall <- with(crs$eval, calculateAUC(Caseload, Recall))
+    aucRecall <- (2*aucRecall)/(2-crs$eval$Precision[1])
     appendTextview(TV, paste("The area under the ",
-                             if (is.null(crs$risk))
+                             if (length(crs$risk))
                              "Recall curve " else "Risk and Recall curves ",
                              "for ", commonName(mtype), " model\n\n",
-                             if (not.null(crs$risk))
-                             "Area under the Risk   (red)   curve: ",
-                             if (not.null(crs$risk))
-                             sprintf("%d%% (%0.3f)\n",
-                                     round(100*aucRisk), aucRisk),
                              "Area under the Recall (green) curve: ",
                              sprintf("%d%% (%0.3f)\n",
                                      round(100*aucRecall), aucRecall),
+                             if (length(crs$risk))
+                             "Area under the Risk   (red)   curve: ",
+                             if (length(crs$risk))
+                             sprintf("%d%% (%0.3f)",
+                                     round(100*aucRisk), aucRisk),
                              sep=""))
 
     # Display the Risk Chart itself now.
@@ -1890,111 +1909,6 @@ plotRisk <- function (cl, pr, re, ri=NULL,
   par(opar)
 }
 
-riskchart <- function(data,
-                      title=NULL,
-                      show.legend=TRUE,
-                      optimal=NULL, optimal.label="",
-                      chosen=NULL, chosen.label="",
-                      include.baseline=TRUE,
-                      dev="", filename="",
-                      show.knots=NULL,
-                      show.lift=TRUE,
-                      show.precision=TRUE,
-                      risk.name="Risk",
-                      recall.name="Recall",
-                      precision.name="Precision",
-                      thresholds=NULL)
-{
-  # 121209 Keep R CMD check quiet....
-
-  x <- y <- NULL
-
-  # ggplot2 version of the risk chart.
-
-  require(ggplot2)
-  
-  stopifnot(c("Caseload", "Recall", "Precision") %in% colnames(data)) 
-
-  # Is Risk included in the supplied data?
-  
-  include.risk <- 'Risk' %in% colnames(data)
-  
-#  openMyDevice(dev, filename)
-
-  score <- as.numeric(row.names(data))
-  locateScores <- function(s) 
-  { 
-    # Convert score to caseload (percentile) for plotting
-    idx <- findInterval(s, score)
-    idx[idx==0] <- 1
-    data$Caseload[idx]
-  } 
-  scores <- data.frame(ticks=seq(0.1, 0.9, by = 0.1))
-  scores$pos <- locateScores(scores$ticks)
-
-  # Calculate AUC for each curve.
-  recall.auc <- round(100*with(data, calculateAUC(Caseload, Recall)))
-  recall.name <- sprintf("%s (%s%%)", recall.name, recall.auc)
-
-  if (include.risk)
-  {
-    risk.auc <- round(100*with(data, calculateAUC(Caseload, Risk)))
-    risk.name <- sprintf("%s (%s%%)", risk.name, risk.auc)
-  }
-  
-  # How to get recall.name etc in the following - by default it is not
-  # defined?
-
-  pl <- ggplot(data, aes(x=100*Caseload)) +
-        scale_colour_manual(breaks=c("Recall", "Risk", "Precision"),
-                            labels=c(recall.name, risk.name, precision.name),
-                            values=c("blue", "forestgreen", "red")) +
-        scale_linetype_manual(breaks=c("Recall", "Risk", "Precision"),
-                              labels=c(recall.name, risk.name, precision.name),
-                              values=c(3, 1, 2)) +
-        geom_line(aes(y=100*Recall, colour="Recall", linetype="Recall")) + 
-        geom_line(aes(y=100*Precision, colour="Precision", linetype="Precision")) + 
-
-        geom_text(data=scores, aes(x=100*pos, y=100*1.015, label=ticks),
-                  colour="purple", size=3) +
-        annotate("text", x=0, y=101.5, label="Score", size=3, colour="purple") +
-
-        geom_line(aes(y=100*Caseload)) +
-        ggtitle(title) +
-        xlab("Caseload (%)") + ylab("Performance (%)") +
-        theme(legend.title=element_blank(),
-              legend.justification=c(0, 0),
-              legend.position=c(.30, .02)) +
-        guides(colour=guide_legend(keywidth=3, labels=1:3))
-  
-  if (include.risk)
-    pl <- pl + geom_line(aes(y=100*Risk, colour="Risk", linetype="Risk"))
-
-  if (include.baseline && show.precision)
-    pl <- pl + geom_text(data=data.frame(x=100, y=100*data$Precision[1]+4,
-                           text=sprintf("%0.0f%%", 100*data$Precision[1])),
-                         aes(x, y, label=text))
-
-  if (show.lift)
-  {
-    base.lift <- 100*data$Precision[1]
-    lift.seq <- seq(base.lift, 100, base.lift)
-    lifts <- data.frame(x=110, y=lift.seq, label=lift.seq/base.lift)
-    pl <- pl + geom_text(data=lifts, aes(x, y, label=label), size=3) +
-               geom_text(aes(x=110, y=101.5, label="Lift"), size=3)
-  }
-
-  if (! is.null(thresholds))
-    pl <- pl + geom_vline(xintercept=100*locateScores(thresholds),
-                          linetype="twodash",
-                          color="grey")
-
-  pl <- pl + theme(legend.background=element_rect(fill=NA),
-                   legend.key=element_rect(fill=NA, linetype=0))
-  
-  return(pl)
-}
-
 handleMissingValues <- function(testset, mtype)
 {
   # 091205 A shared function to generate predictions in the variable
@@ -2017,12 +1931,13 @@ handleMissingValues <- function(testset, mtype)
                sep="\n"))
 }
 
-doRiskChart <- function(pr, data, test, target, risk, main, thresholds=NULL)
-{
-  eval <- evaluateRisk(pr, data[test, target], data[test, risk])
-
-  riskchart(eval, risk.name=risk, recall.name=target, show.lift=TRUE,
-            show.precision=TRUE, title=main, thresholds=thresholds)
+#doRiskChart <- function(pr, data, test, target, risk, main, thresholds=NULL)
+#{
+    # TODO 20130727 REMOVE this function sine now riskchart take pr,
+    # ac, ri itself so this wrapper is no longer required.
+#    riskchart(pr, data[test, target], data[test, risk],
+#              risk.name=risk, recall.name=target, show.lift=TRUE,
+#            show.precision=TRUE, title=main, thresholds=thresholds)
   
 #  plotRisk(eval$Caseload, eval$Precision, eval$Recall, eval$Risk,
 #           risk.name=risk,
@@ -2033,6 +1948,187 @@ doRiskChart <- function(pr, data, test, target, risk, main, thresholds=NULL)
 #  title(main=main,
 #        sub=paste("Rattle", format(Sys.time(), "%Y-%b-%d %H:%M:%S"),
 #          Sys.info()["user"]))
+#}
+
+# Generate a PSF chart
+#
+# 2010-03-19 09:14:33 Graham Williams
+#
+#   source("psfchart.R")
+#   fname <-"scores.csv"
+#   ds <- read.csv("scores.csv")
+#   psfchart(ds$predicted, ds$actual)
+
+psfchart <- function(predicted,
+                     actual,
+                     bins=100,          # Number of bins to use for the plot.
+                     threshold=0.5,     # The decision threshold.
+                     splits=NULL,	# E.g., c(0.2, 0.8)
+                     split.lables=c("Low", "Medium", "High"),
+                     tic.size=0.2,      # proportional gap between axis ticks.
+                     gg=TRUE,
+                     verbose=FALSE)
+{
+  if (gg) require(ggplot2)
+
+  dosplits <- ! is.null(splits)
+
+  if (is.factor(actual)) actual <- as.numeric(actual)-1
+    
+  doAggregate <- function()
+  {
+          
+    # Bin the scores into "bins" bins and store the bins into
+    # variable "bin". If there are more bins specified than
+    # scores, then simply rank the scores. In the end we have for
+    # each score a "rank", which is an integer in 1:bins or
+    # 1:length(actual).
+      
+    if (length(actual) >= bins)
+    {
+      bin <- as.numeric(binning(predicted, bins, method="quantile",
+                                ordered=FALSE, labels=FALSE))
+    }
+    else
+    {
+      bin <- rescaler(predicted, "rank")
+    }
+
+    # Check whether the pr and target agree.
+
+    agree <- as.numeric(as.numeric(predicted > threshold) == actual)
+
+    # Get the size of each bin (should all be the same +/-
+    # 1). Also get a count of the positives in each bin, assumming
+    # a 0/1 value for actual (so sum will work) and the accuracy
+    # of each bin.
+
+    agg <- aggregate(actual, list(bin), length)
+    names(agg) <- c("bin", "size")
+    agg$pos <- aggregate(actual, list(bin), sum)[[2]]
+    agg$acc <- aggregate(agree, list(bin), sum)[[2]]
+    agg$max <- aggregate(predicted, list(bin), max)[[2]]
+    agg$tdiff <- agg$max - threshold
+        
+    # Rescale bins to be between 0 and 1 so AUC is more sensible.
+  
+    agg$rbin <- agg$bin/bins
+  
+    # Calulate the proportion accuracy
+  
+    agg$pacc <- agg$acc/agg$size
+
+    return(agg)
+  }
+  
+  # Determine the model's decision based on the score and threshold
+  # and save that as pr.
+
+  pr <- as.numeric(predicted > threshold)
+
+  tp <- round(100 * sum(pr==1 & actual==1)/length(actual))
+  fp <- round(100 * sum(pr==1 & actual==0)/length(actual))
+  tn <- round(100 * sum(pr==0 & actual==0)/length(actual))
+  fn <- round(100 * sum(pr==0 & actual==1)/length(actual))
+    
+  if (verbose)
+    cat("\nData Summary:",
+        sprintf("    Obs: %s\n",
+                format(length(actual), big.mark=",")),
+        sprintf("    Targets: %s; Rate: %0.2f%%\n",
+                format(sum(actual==1), big.mark=","),
+                100*sum(actual==1)/length(actual)),
+        sprintf("    Model TP: %9s FN: %9s\n",
+                format(sum(pr==1 & actual==1), big.mark=","),
+                format(sum(pr==0 & actual==1), big.mark=",")),
+        sprintf("          FP: %9s TN: %9s\n",
+                format(sum(pr==1 & actual==0), big.mark=","),
+                format(sum(pr==0 & actual==0), big.mark=",")))
+  
+  agg <- doAggregate()
+
+    if (gg)
+    {
+        if (dosplits)
+            classes <- data.frame(x=c(splits[1]/2,
+                                      (splits[1]+splits[2])/2,
+                                      (1+splits[2])/2),
+                                  lbl=split.labels)
+        
+        quads <- data.frame(x=c(0, 1, 0, 1), hj=c(0, 1, 0, 1),
+                            y=c(0, 0, 1, 1), vj=c(0, 0, 1, 1),
+                            lbl=c(sprintf("True Negatives (%s%%)", tn),
+                                sprintf("True Positives (%s%%)", tp),
+                                sprintf("False Negatives (%s%%)", fn),
+                                sprintf("False Positives (%s%%)", fp)))
+
+        xthresh <- agg$rbin[which(abs(agg$tdiff) == min(abs(agg$tdiff)))][1]
+
+        tics <- seq(0, 1, tic.size)
+        ord <- order(predicted)
+        scores <- data.frame(x=tics,
+                             score=round(predicted[ord][c(1,
+                                 round(tics*length(ord)))], 2))
+
+        p <- ggplot(agg, aes(rbin, pacc))
+        p <- p + geom_line()
+        p <- p + ggtitle("Proportional Score Function (PSF) Curve")
+        p <- p + scale_y_continuous("% Accuracy", limits=c(0,1),
+                                    labels=100*tics, breaks=tics)
+        p <- p + scale_x_continuous(paste("Proportion of Cases",
+                                          "\nSorted by Increasing Risk Scores"),
+                                    breaks=tics)
+        p <- p + geom_text(data=quads,
+                           aes(x=x, y=y, label=lbl, hjust=hj, vjust=vj, size=5))
+        p <- p + geom_text(x=xthresh, aes(y=0, size=5),
+                           label=sprintf("Threshold (%s)", threshold),
+                           vjust=2, hjust=1.1)
+        p <- p + geom_vline(xintercept=xthresh)
+        p <- p + geom_text(data=scores, aes(x=x, y=1, label=score, size=5),
+                           vjust=-0.5)
+        p <- p + theme(legend.position="none")
+        if (dosplits)
+        {
+            p <- p + geom_text(data=classes, aes(x=x, y=0.2, label=lbl))
+            p <- p + geom_vline(xintercept=low, linetype="twodash", color="grey")
+            p <- p + geom_vline(xintercept=high, linetype="twodash", color="grey")
+        }
+        return(p)
+    }
+    else
+    {
+        plot(agg$rbin, agg$pacc, type="l", xlim=c(0,1), ylim=c(0,1),
+             xlab="Proportion of Cases\nSorted by Risk Score", ylab="% Accuracy")
+        title(main="PSF\n")
+  
+        abline(v=0.25, lty=3)
+        abline(v=0.75, lty=3)
+        text(0.08, 0.08, "Low")
+        text(0.5, 0.08, "Medium")
+        text(0.92, 0.08, "High")
+        
+        # Add annotations for the sinlge plot.
+        
+        abline(v=agg$rbin[which(abs(agg$tdiff) == min(abs(agg$tdiff)))], lty=1)
+        xthresh <- agg$rbin[which(abs(agg$tdiff) == min(abs(agg$tdiff)))]
+        text(xthresh, 0.15, "Threshold", pos=2)
+        text(xthresh, 0.1, threshold, pos=2)
+        
+        # TODO NEED TO PROGRAMMATICALLY DETERMINE THE LABELS FROM MIN SCORE TO MAX SCORE
+        ord <- order(predicted)
+        scores <- predicted[ord]
+        axis(3, at=seq(0, 1, 0.2), padj=1.5, lwd.ticks=0,
+             labels=round(scores[c(1, round(seq(0, 1, 0.2)*length(scores)))], 2))
+        
+        text(0.92, 1, "False Positives")
+        text(0.085, 1, "False Negatives")
+        text(0.92, 0, "True Positives")
+        text(0.08, 0, "True Negatives")
+        
+        opar <- par(xpd=TRUE)
+        text(0.5, 1.08,"Scores")
+        par(opar)
+    }
 }
 
 #----------------------------------------------------------------------
@@ -3259,7 +3355,7 @@ executeEvaluatePvOplot <- function(probcmd, testset, testname)
               paste("fitpoints <-", fit.cmd))
     fitpoints <- eval(parse(text=fit.cmd))
 
-    corr.cmd <- "format(cor(fitpoints[,1], fitpoints[,2]), digits=4)"
+    corr.cmd <- "format(cor(fitpoints[,1], fitpoints[,2])^2, digits=4)"
     appendLog(Rtxt("Obtain the pseudo R2 - a correlation."),
               paste("fitcorr <-", corr.cmd))
     fitcorr <- eval(parse(text=corr.cmd))
@@ -3281,7 +3377,13 @@ executeEvaluatePvOplot <- function(probcmd, testset, testname)
     # predicting more than (0,1) (linear regression), so remove the limits
     # for now (080301).
 
-    vnames <- names(fitpoints)
+    # 130322 For cforest, the Predicted column gets to be named the
+    # same as the target variable! Unlike for other models. Something
+    # about the structure of crs$pr So make sure it is called
+    # Predicted here.
+    
+    # vnames <- names(fitpoints)
+    vnames <- c(names(fitpoints)[1], "Predicted")
     plot.cmd <-sprintf('plot(%s, fitpoints[[2]], asp=1, xlab="%s", ylab="%s")',
                        ifelse(length(unique(fitpoints[[1]])) < crv$max.categories,
                               "jitter(fitpoints[[1]])",

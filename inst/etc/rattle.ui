@@ -10,7 +10,7 @@
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">normal</property>
     <property name="program_name">Rattle</property>
-    <property name="copyright" translatable="yes">Copyright (C) 2006-2013 Togaware
+    <property name="copyright" translatable="yes">Copyright (C) 2006-2014 Togaware
 All rights reserved.</property>
     <property name="comments" translatable="yes">The R Analytical Tool To Learn Easily
 (A GNOME Data Miner Built on R)</property>
@@ -34,7 +34,11 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA</prope
 
 Contributions also from:
   
+    Ed Cox
+    Daniele Medri
+    Anthony Nolan
     Mark Vere Culp
+    Akbar Waljee
     Denis White
 </property>
     <signal name="response" handler="on_aboutdialog_response" swapped="no"/>
@@ -117,7 +121,7 @@ Contributions also from:
   <object class="GtkAdjustment" id="adjustment17">
     <property name="lower">1</property>
     <property name="upper">100</property>
-    <property name="value">1</property>
+    <property name="value">2</property>
     <property name="step_increment">1</property>
     <property name="page_increment">5</property>
   </object>
@@ -177,7 +181,6 @@ Contributions also from:
   <object class="GtkAdjustment" id="adjustment25">
     <property name="lower">1</property>
     <property name="upper">9</property>
-    <property name="value">1</property>
     <property name="step_increment">1</property>
     <property name="page_increment">1</property>
   </object>
@@ -228,6 +231,13 @@ Contributions also from:
     <property name="value">0.80000000000000004</property>
     <property name="step_increment">0.01</property>
     <property name="page_increment">0.10000000000000001</property>
+  </object>
+  <object class="GtkAdjustment" id="adjustment33">
+    <property name="lower">1</property>
+    <property name="upper">2</property>
+    <property name="value">1</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">1</property>
   </object>
   <object class="GtkAdjustment" id="adjustment4">
     <property name="lower">1</property>
@@ -484,6 +494,23 @@ Contributions also from:
     <data>
       <row>
         <col id="0" translatable="yes">No data frames yet loaded.</col>
+      </row>
+    </data>
+  </object>
+  <object class="GtkListStore" id="liststore11">
+    <columns>
+      <!-- column-name item -->
+      <column type="gchararray"/>
+    </columns>
+    <data>
+      <row>
+        <col id="0" translatable="yes">Support</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Confidence</col>
+      </row>
+      <row>
+        <col id="0" translatable="yes">Lift</col>
       </row>
     </data>
   </object>
@@ -1686,6 +1713,15 @@ Contributions also from:
                                 <signal name="activate" handler="on_help_cluster_hclust_activate" swapped="no"/>
                               </object>
                             </child>
+                            <child>
+                              <object class="GtkMenuItem" id="help_cluster_stats">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="label" translatable="yes">_Stats</property>
+                                <property name="use_underline">True</property>
+                                <signal name="activate" handler="on_help_cluster_stats_activate" swapped="no"/>
+                              </object>
+                            </child>
                           </object>
                         </child>
                       </object>
@@ -2609,7 +2645,6 @@ Contributions also from:
                           <object class="GtkCheckButton" id="data_corpus_stem_checkbutton">
                             <property name="label" translatable="yes">Stem</property>
                             <property name="visible">True</property>
-                            <property name="sensitive">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
                             <property name="xalign">0.5</property>
@@ -3662,6 +3697,15 @@ Contributions also from:
                                   </packing>
                                 </child>
                                 <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
                                   <object class="GtkLabel" id="explot_target_label">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
@@ -3672,7 +3716,7 @@ Contributions also from:
                                     <property name="fill">False</property>
                                     <property name="padding">5</property>
                                     <property name="pack_type">end</property>
-                                    <property name="position">5</property>
+                                    <property name="position">8</property>
                                   </packing>
                                 </child>
                               </object>
@@ -3690,7 +3734,9 @@ Contributions also from:
                                   <object class="GtkLabel" id="label44">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="label">                  </property>
+                                    <property name="xpad">5</property>
+                                    <property name="label">Benfords:  </property>
+                                    <property name="justify">fill</property>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
@@ -3700,7 +3746,7 @@ Contributions also from:
                                 </child>
                                 <child>
                                   <object class="GtkCheckButton" id="benford_bars_checkbutton">
-                                    <property name="label" translatable="yes">Benford Bars</property>
+                                    <property name="label" translatable="yes">Bars</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">False</property>
@@ -3722,7 +3768,7 @@ Contributions also from:
                                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                                     <property name="xalign">1</property>
                                     <property name="xpad">10</property>
-                                    <property name="label" translatable="yes">Benford Digit:</property>
+                                    <property name="label" translatable="yes">Starting Digit:</property>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
@@ -3732,7 +3778,7 @@ Contributions also from:
                                 </child>
                                 <child>
                                   <object class="GtkSpinButton" id="benford_digits_spinbutton">
-                                    <property name="width_request">30</property>
+                                    <property name="width_request">50</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
@@ -3749,6 +3795,39 @@ Contributions also from:
                                   </packing>
                                 </child>
                                 <child>
+                                  <object class="GtkLabel" id="label4">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="label" translatable="yes">Number of Digits:</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">False</property>
+                                    <property name="padding">11</property>
+                                    <property name="position">4</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkSpinButton" id="benford_num_digits_spinbutton">
+                                    <property name="width_request">50</property>
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                                    <property name="invisible_char">•</property>
+                                    <property name="invisible_char_set">True</property>
+                                    <property name="primary_icon_activatable">False</property>
+                                    <property name="secondary_icon_activatable">False</property>
+                                    <property name="adjustment">adjustment33</property>
+                                    <property name="snap_to_ticks">True</property>
+                                    <property name="numeric">True</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">False</property>
+                                    <property name="position">5</property>
+                                  </packing>
+                                </child>
+                                <child>
                                   <object class="GtkRadioButton" id="benford_abs_radiobutton">
                                     <property name="label" translatable="yes">abs</property>
                                     <property name="visible">True</property>
@@ -3762,7 +3841,8 @@ Contributions also from:
                                   <packing>
                                     <property name="expand">False</property>
                                     <property name="fill">False</property>
-                                    <property name="position">4</property>
+                                    <property name="padding">5</property>
+                                    <property name="position">6</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -3779,7 +3859,7 @@ Contributions also from:
                                   <packing>
                                     <property name="expand">False</property>
                                     <property name="fill">False</property>
-                                    <property name="position">5</property>
+                                    <property name="position">7</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -3796,7 +3876,7 @@ Contributions also from:
                                   <packing>
                                     <property name="expand">False</property>
                                     <property name="fill">False</property>
-                                    <property name="position">6</property>
+                                    <property name="position">8</property>
                                   </packing>
                                 </child>
                               </object>
@@ -4195,7 +4275,7 @@ Contributions also from:
                                 <child>
                                   <object class="GtkRadioButton" id="explore_interactive_plotbuilder_radiobutton">
                                     <property name="label" translatable="yes">Plot Builder</property>
-                                    <property name="visible">True</property>
+                                    <property name="visible">False</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">False</property>
                                     <property name="xalign">0.5</property>
@@ -5822,6 +5902,26 @@ Contributions also from:
                               </packing>
                             </child>
                             <child>
+                              <object class="GtkCheckButton" id="kmeans_rescale_checkbutton">
+                                <property name="label" translatable="yes">Re-Scale</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="receives_default">False</property>
+                                <property name="xalign">0</property>
+                                <property name="active">True</property>
+                                <property name="draw_indicator">True</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="padding">5</property>
+                                <property name="position">6</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
                               <placeholder/>
                             </child>
                             <child>
@@ -6435,6 +6535,9 @@ Contributions also from:
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
+                  <placeholder/>
+                </child>
+                <child>
                   <object class="GtkHBox" id="hbox32">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
@@ -6447,40 +6550,13 @@ Contributions also from:
                         <property name="can_focus">True</property>
                         <property name="receives_default">False</property>
                         <property name="use_underline">True</property>
-                        <property name="xalign">0.5</property>
+                        <property name="xalign">0</property>
                         <property name="draw_indicator">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
                         <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="associate_plot_frequency_button">
-                        <property name="label" translatable="yes">Freq Plot</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">False</property>
-                        <property name="use_underline">True</property>
-                        <signal name="clicked" handler="on_associate_plot_frequency_button_clicked" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkVSeparator" id="vseparator2">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="padding">5</property>
-                        <property name="position">2</property>
                       </packing>
                     </child>
                     <child>
@@ -6492,13 +6568,16 @@ Contributions also from:
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">3</property>
+                        <property name="padding">8</property>
+                        <property name="position">1</property>
                       </packing>
                     </child>
                     <child>
                       <object class="GtkSpinButton" id="associate_support_spinbutton">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <property name="invisible_char">•</property>
+                        <property name="invisible_char_set">True</property>
                         <property name="primary_icon_activatable">False</property>
                         <property name="secondary_icon_activatable">False</property>
                         <property name="adjustment">adjustment18</property>
@@ -6509,7 +6588,7 @@ Contributions also from:
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">4</property>
+                        <property name="position">2</property>
                       </packing>
                     </child>
                     <child>
@@ -6521,26 +6600,59 @@ Contributions also from:
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
-                        <property name="position">5</property>
+                        <property name="padding">6</property>
+                        <property name="position">3</property>
                       </packing>
                     </child>
                     <child>
                       <object class="GtkSpinButton" id="associate_confidence_spinbutton">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <property name="invisible_char">•</property>
                         <property name="xalign">0.0099999997764825821</property>
                         <property name="shadow_type">none</property>
+                        <property name="invisible_char_set">True</property>
                         <property name="progress_pulse_step">0.10000000149011612</property>
                         <property name="primary_icon_activatable">False</property>
                         <property name="secondary_icon_activatable">False</property>
                         <property name="adjustment">adjustment32</property>
-                        <property name="climb_rate">1</property>
+                        <property name="climb_rate">1.04</property>
                         <property name="digits">4</property>
                         <property name="numeric">True</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="fill">True</property>
+                        <property name="fill">False</property>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label138">
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Lift:</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="padding">6</property>
+                        <property name="position">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSpinButton" id="associate_lift_spinbutton">
+                        <property name="can_focus">True</property>
+                        <property name="invisible_char">•</property>
+                        <property name="invisible_char_set">True</property>
+                        <property name="primary_icon_activatable">False</property>
+                        <property name="secondary_icon_activatable">False</property>
+                        <property name="adjustment">adjustment16</property>
+                        <property name="climb_rate">1</property>
+                        <property name="digits">1</property>
+                        <property name="numeric">True</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
                         <property name="position">6</property>
                       </packing>
                     </child>
@@ -6553,6 +6665,7 @@ Contributions also from:
                       <packing>
                         <property name="expand">False</property>
                         <property name="fill">False</property>
+                        <property name="padding">6</property>
                         <property name="position">7</property>
                       </packing>
                     </child>
@@ -6572,77 +6685,21 @@ Contributions also from:
                       </object>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="fill">True</property>
+                        <property name="fill">False</property>
                         <property name="position">8</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkVSeparator" id="vseparator1">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="padding">5</property>
-                        <property name="position">9</property>
-                      </packing>
+                      <placeholder/>
                     </child>
                     <child>
-                      <object class="GtkButton" id="associate_rules_button">
-                        <property name="label" translatable="yes">Show Rules</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">False</property>
-                        <property name="use_underline">True</property>
-                        <signal name="clicked" handler="on_associate_rules_button_clicked" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">10</property>
-                      </packing>
+                      <placeholder/>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="label138">
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Lift:</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">11</property>
-                      </packing>
+                      <placeholder/>
                     </child>
                     <child>
-                      <object class="GtkSpinButton" id="associate_lift_spinbutton">
-                        <property name="can_focus">True</property>
-                        <property name="primary_icon_activatable">False</property>
-                        <property name="secondary_icon_activatable">False</property>
-                        <property name="adjustment">adjustment16</property>
-                        <property name="climb_rate">1</property>
-                        <property name="digits">1</property>
-                        <property name="numeric">True</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">12</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="associate_plot_button">
-                        <property name="label" translatable="yes">Plot</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <signal name="clicked" handler="on_associate_plot_button_clicked" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">13</property>
-                      </packing>
+                      <placeholder/>
                     </child>
                     <child>
                       <placeholder/>
@@ -6657,7 +6714,130 @@ Contributions also from:
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
-                    <property name="position">0</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkHBox" id="hbox48">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="border_width">5</property>
+                    <property name="spacing">5</property>
+                    <child>
+                      <object class="GtkButton" id="associate_plot_frequency_button">
+                        <property name="label" translatable="yes">Freq Plot</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="use_underline">True</property>
+                        <signal name="clicked" handler="on_associate_plot_frequency_button_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="associate_rules_button">
+                        <property name="label" translatable="yes">Show Rules</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="use_underline">True</property>
+                        <signal name="clicked" handler="on_associate_rules_button_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="associate_sort_label">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Sort by:</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkComboBox" id="associate_sort_comboboxtext">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="model">liststore11</property>
+                        <child>
+                          <object class="GtkCellRendererText" id="cellrenderertext11"/>
+                          <attributes>
+                            <attribute name="text">0</attribute>
+                          </attributes>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="associate_plot_button">
+                        <property name="label" translatable="yes">Plot</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <signal name="clicked" handler="on_associate_plot_button_clicked" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
                 <child>
@@ -6675,7 +6855,7 @@ Contributions also from:
                   <packing>
                     <property name="expand">True</property>
                     <property name="fill">True</property>
-                    <property name="position">1</property>
+                    <property name="position">3</property>
                   </packing>
                 </child>
               </object>
@@ -8909,6 +9089,69 @@ Contributions also from:
                                   <placeholder/>
                                 </child>
                                 <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
                                   <object class="GtkLabel" id="nnet_hidden_nodes_label">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
@@ -8935,6 +9178,15 @@ Contributions also from:
                                     <property name="bottom_attach">2</property>
                                     <property name="x_options">GTK_FILL</property>
                                   </packing>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
+                                </child>
+                                <child>
+                                  <placeholder/>
                                 </child>
                                 <child>
                                   <placeholder/>
@@ -9038,6 +9290,33 @@ Contributions also from:
                             <property name="n_columns">5</property>
                             <property name="column_spacing">5</property>
                             <property name="row_spacing">5</property>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
+                            <child>
+                              <placeholder/>
+                            </child>
                             <child>
                               <placeholder/>
                             </child>

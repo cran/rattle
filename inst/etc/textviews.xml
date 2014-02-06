@@ -15,17 +15,23 @@ Kurtosis and Skewness allow these measures to be compared across the
 available numeric variables.</textview>
   <textview widget="interactive_textview">Interactive Data Exploration
 
-Latticist and GGobi are independent applications which provide highly
-dynamic and interactive graphic data visualisation for exploratory
-data analysis.
+Latticist, GGobi, and PlotBuilder are independent applications which
+provide highly dynamic and interactive graphic data visualisation for
+exploratory data analysis.
 
-Latticist is based on R whilst GGobi is written in C.
+Latticist is based on R whilst GGobi is written in C. PlotBuilder is
+Java based and is essentially an interactive tool for generating
+ggplot2 commands to produce very nice plots.
 
-Specialist tools include tours, scatterplots, barcharts and parallel
-coordinates plots.
+Specialist tools in these packages include tours, scatterplots,
+barcharts and parallel coordinates plots.
 
-Plots allow points to be identified and linked with brushing across
-multiple plots.</textview>
+The tools also allow points to be identified and linked with brushing
+across multiple plots.
+
+With PlotBuilder, once you have the desired plot, click the Run button
+and the actual ggplot2 commands are displayed in the console, and the
+actual plot appears in a separate window.</textview>
   <textview widget="correlation_textview">Numeric Variable Correlation
 
 A correlation analysis provides insights into the independence of the
@@ -217,7 +223,20 @@ classified as positives.</textview>
   <textview widget="precision_textview">Precision Chart</textview>
   <textview widget="sensitivity_textview">Sensitivity Chart</textview>
   <textview widget="costcurve_textview">Cost Curve Chart</textview>
-  <textview widget="pvo_textview">Predicted Versus Observed</textview>
+  <textview widget="pvo_textview">Predicted Versus Observed
+
+The Predicted Versus Observed plot is relevant for regression models
+(predicting a continuous value rather than a discrete value). It will
+display the predicted values against the observed values, as the name
+suggests!
+
+Two lines are also plotted, one being a linear fit to the actual
+points, and the other being the perfect fit, if the predicted values
+were the same as the actual observations.
+
+The Pseudo R-Squared is a measure that tries to mimic the
+R-Squared. It is calculated as the square of the correlation between
+the predicted and observed values. The closer to 1, the better.</textview>
   <textview widget="score_textview">Score
 
 A model can be deployed on a dataset to obtain scores or

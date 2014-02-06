@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-03-16 20:39:58 Graham Williams>
+# Time-stamp: <2013-11-14 06:11:34 Graham Williams>
 #
 # DATA TAB
 #
@@ -241,18 +241,15 @@ updateFilenameFilters <- function(button, fname)
       ff$addPattern("*.txt")
       button$addFilter(ff)
 
-      if (isWindows())
-      {
-        ff <- gtkFileFilterNew()
-        ff$setName(Rtxt("Excel Files"))
-        ff$addPattern("*.xls")
-        button$addFilter(ff)
+      ff <- gtkFileFilterNew()
+      ff$setName(Rtxt("Excel Files"))
+      ff$addPattern("*.xls")
+      button$addFilter(ff)
 
-        ff <- gtkFileFilterNew()
-        ff$setName(Rtxt("Excel 2007 Files"))
-        ff$addPattern("*.xlsx")
-        button$addFilter(ff)
-      }
+      ff <- gtkFileFilterNew()
+      ff$setName(Rtxt("Excel 2007 Files"))
+      ff$addPattern("*.xlsx")
+      button$addFilter(ff)
 
       ff <- gtkFileFilterNew()
       ff$setName(Rtxt("All Files"))
@@ -817,7 +814,7 @@ executeDataCSV <- function(filename=NULL)
   # is expected to be available in the data_filechooserbutton. This
   # could be either a CSV or TXT file. If no filename is supplied,
   # then give the user the option to load a sample dataset (for now,
-  # the audit dataset).
+  # the weather dataset).
 
   supplied <- filename
 
@@ -890,6 +887,9 @@ executeDataCSV <- function(filename=NULL)
                               package="rattle")
       theWidget("data_filechooserbutton")$setFilename(filename)
 
+      # 130825 This does not get reflected in the GUI? Can't work out
+      # how to make it so. For now it stays as None.
+      
       # Make sure we end up with a URI since a URI is otherwise used
       # when retrieving the information from the filechooserbutton
       # widget. If we don't do this then the crs$dwd does not include
@@ -966,22 +966,19 @@ executeDataCSV <- function(filename=NULL)
                               'encoding="%s")'),
                         crv$sample.dataset, crv$csv.encoding)
 
-  else if (isWindows() && tolower(get.extension(filename)) %in% c("xls", "xlsx"))
+  else if (tolower(get.extension(filename)) %in% c("xls", "xlsx"))
   {
-    if (! packageIsAvailable("RODBC", Rtxt("read .xls or .xlsx files"))) return(FALSE)
+    if (! packageIsAvailable("xlsx", Rtxt("read .xls or .xlsx files"))) return(FALSE)
 
     # 100114 A quick hack to allow reading MS/Excel files.
-    read.cmd <- sprintf(paste("require(RODBC, quietly=TRUE)",
-                              'con <- odbcConnectExcel%s("%s")',
-                              'crs$dataset <- sqlFetch(con, "Sheet1")',
-                              "odbcClose(con)",
+    read.cmd <- sprintf(paste("require(xlsx, quietly=TRUE)",
+                              'crs$dataset <- read.xlsx("%s", sheetIndex=1)',
                               # Make sure we return the actual dataset
                               # as the result as that is assumed.
                               "crs$dataset",
                               sep="\n"),
-                        ifelse(tolower(get.extension(filename)) == "xlsx",
-                               "2007", ""),
-                        sub("file:///", "", filename))
+                         sub("file:///", "/", filename))
+# 130612 Still needed for isWindows? sub("file:///", "", filename))
   }
   else
 
@@ -1730,28 +1727,38 @@ viewData <- function()
   # in the users workspace and then move it to crs$dataset. Seems that
   # data.viewer freezes on the second call to it, sometimes?
 
-  if (packageIsAvailable("Deducer", Rtxt("view data in a spreadsheet")))
-  {
-    require(Deducer)
-    var.name <- paste("ds", format(Sys.time(), format="%y%m%d%H%M%S"), sep="_")
-    if (!questionDialog(sprintf(Rtxt("To use Plot Builder the Rattle dataset needs to",
-                                     "be available in the global environment (the",
-                                     "user's workspace). To do this Rattle will copy",
-                                     "its internal dataset to the variable '%s'.",
-                                     "This will overwrite any variable of the same",
-                                     "name. The copy of the dataset will be removed",
-                                     "after you exit from Plot Builder.\n\n",
-                                     "Are you okay with Rattle doing this?"),
-                                var.name)))
-    #130316 Break this for now until figure out how to avoid global env.
-    #assign(var.name, crs$dataset, envir=.GlobalEnv)
-    view.cmd <- 'data.viewer()'
-    appendLog("Use data.viewer() from Deducer.", view.cmd)
-    eval(parse(text=view.cmd))
-    eval(parse(text=sprintf("rm(%s, envir=.GlobalEnv)", var.name)))
+  ## 131114 Deduce is too problematic.
+  #
+  ## if (packageIsAvailable("Deducer", Rtxt("view data in a spreadsheet")))
+  ## {
+  ##   require(Deducer)
+  ##   var.name <- paste("ds", format(Sys.time(), format="%y%m%d%H%M%S"), sep="_")
+  ##   if (!questionDialog(sprintf(Rtxt("To use Plot Builder the Rattle dataset needs to",
+  ##                                    "be available in the global environment (the",
+  ##                                    "user's workspace). To do this Rattle will copy",
+  ##                                    "its internal dataset to the variable '%s'.",
+  ##                                    "This will overwrite any variable of the same",
+  ##                                    "name. The copy of the dataset will be removed",
+  ##                                    "after you exit from Plot Builder.\n\n",
+  ##                                    "Are you okay with Rattle doing this?"),
+  ##                               var.name)))
+  ##     return()
+  ##   # I would really rather not do an assign, but is this the only
+  ##   # option - CRAN do not accept this and I must remove this on
+  ##   # submitting to CRAN even though the user is made fully aware of
+  ##   # the situation and the assign is included in the log.
+  ##   assign.cmd <- "assign(var.name, crs$dataset, envir=.GlobalEnv)"
+  ##   appendLog(Rtxt("Place dataset into Global Environment for PlotBuilder."),
+  ##             assign.cmd)
+  ##   eval(parse(text=assign.cmd))
 
-  }   
-  else if (packageIsAvailable("RGtk2Extras", Rtxt("view data in a spreadsheet")))
+  ##   view.cmd <- 'data.viewer()'
+  ##   appendLog("Use data.viewer() from Deducer.", view.cmd)
+  ##   eval(parse(text=view.cmd))
+  ##   eval(parse(text=sprintf("rm(%s, envir=.GlobalEnv)", var.name)))
+  ## }   
+  ## else
+  if (packageIsAvailable("RGtk2Extras", Rtxt("view data in a spreadsheet")))
   {
     require(RGtk2Extras)
     view.cmd <- paste('dfedit(crs$dataset,\n',
@@ -3263,7 +3270,8 @@ createVariablesModel <- function(variables, input=NULL, target=NULL,
       {
         ignore <- c(ignore, variables[i])
       }
-      else if (substr(variables[i], 1, 4) == "RISK" ||
+      else if (variables[i] == "risk" ||
+               substr(variables[i], 1, 4) == "RISK" ||
                substr(variables[i], 1, 6) == "STATUS" ||
                substr(variables[i], 1, 5) == "EVENT")
       {
@@ -3353,29 +3361,22 @@ createVariablesModel <- function(variables, input=NULL, target=NULL,
               crv$COLUMN["number"], i,
               crv$COLUMN["variable"], variables[i],
               crv$COLUMN["type"], prcl,
-##              crv$COLUMN["numeric"], cl %in% c("integer", "numeric"),
-##              crv$COLUMN["categorical"], cl %in% c("factor"),
               crv$COLUMN["input"], variables[i] %in% input,
               crv$COLUMN["target"], variables[i] %in% target,
               crv$COLUMN["risk"], variables[i] %in% risk,
               crv$COLUMN["ident"], variables[i] %in% ident,
               crv$COLUMN["ignore"], variables[i] %in% ignore,
               crv$COLUMN["weight"], variables[i] %in% weight,
-              crv$COLUMN["comment"], paste(# 090617 Don't show in data tab
-                                           #ifelse(pmmlCanExport(variables[i]),
-                                           #       "", "NO code export. "),
-                                        ## 090110 Show unique for all ifelse(numeric.var,# &&
-                                               #possible.categoric,
-                                               sprintf(Rtxt("Unique: %d "),
-                                                       unique.count),## ""),
-                                        ifelse(missing.count > 0,
-                                               sprintf(Rtxt("Missing: %d "),
-                                                       missing.count), ""),
-
-                                        ifelse(prcl == "constant",
-                                               sprintf(Rtxt("Value: %s "),
-                                                       unique.value), ""),
-                                        sep=""))
+              crv$COLUMN["comment"], paste(sprintf(Rtxt("Unique: %d "),
+                                                   unique.count),## ""),
+                                           ifelse(missing.count > 0,
+                                                  sprintf(Rtxt("Missing: %d "),
+                                                          missing.count), ""),
+                                           
+                                           ifelse(prcl == "constant",
+                                                  sprintf(Rtxt("Value: %s "),
+                                                          unique.value), ""),
+                                           sep=""))
 
     # Selected variables go into the other treeviews.
 
@@ -3387,15 +3388,11 @@ createVariablesModel <- function(variables, input=NULL, target=NULL,
                            # with missing values.
     {
 
-      # Check if it can be exported to PMML.
+      # Check if it can be exported to PMML. 131020 Assume now that
+      # all can be exported (i.e., do not include a message). The test
+      # is removed from pmml and it was ugly anyhow.
 
-      if (packageIsAvailable("pmml", Rtxt("test if export to pmml is supported")))
-      {
-        require("pmml", quietly=TRUE)
-        etype <- ifelse(pmmlCanExport(variables[i]), "", Rtxt(". No code export"))
-      }
-      else
-        etype <- ""
+      etype <- ""
 
       # Generate correct Rattle terminology for the variable
       # class. 090731 We denote an integer as Numeric, to be

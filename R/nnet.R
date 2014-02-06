@@ -193,7 +193,7 @@ errorReport(model.cmd, result)
                        'cat(sprintf("Sum of Squares Residuals: %.4f.\\n",',
                        '    sum(residuals(crs$nnet) ^ 2)))',
                        'cat("\\n")',
-                       "print.summary.nnet.rattle(summary(crs$nnet))", "cat('\\n')", sep="\n")
+                       "print(summary(crs$nnet))", "cat('\\n')", sep="\n")
   else
     print.cmd <- "print(crs$nnet)"
 
@@ -285,7 +285,12 @@ exportNNetModel <- function()
   setStatusBar(sprintf(Rtxt("The model has been exported to '%s'."), save.name))
 }
 
-print.summary.nnet.rattle <- function(x, ...)
+# 140206 This is modelled on Riper's print.summary.nnet and is
+# backward compatible and overrides the original when loaded which I
+# think is safe since it is a print method, intended for display
+# rather than down stream processing.
+
+print.summary.nnet <- function(x, ...)
 {
   require(nnet)
   cat(Rtxt("Neural Network build options:"))
@@ -306,7 +311,7 @@ print.summary.nnet.rattle <- function(x, ...)
       "  h1 represents hidden layer node 1\n",
       "  i1 represents input node 1 (i.e., input variable 1)\n",
       "  o  represents the output node\n")
-  wts <- format(round(nnet:::coef.nnet(x),2))
+  wts <- format(round(coef(x),2))
   lapply(split(wts, rep(1L:x$nunits, tconn)),
          function(x)
          {

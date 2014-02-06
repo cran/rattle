@@ -137,9 +137,9 @@ executeDataCorpus <- function()
                              'removeWords, stopwords("english"))'), map.cmd)
   if (stemw)
   {
-    lib.cmd <- "require(Snowball, quietly=TRUE)"
-    if (! packageIsAvailable("Snowball", "word stemming")) return(FALSE)
-    appendLog(packageProvides("Snowball", "stemDocument"), lib.cmd)
+    lib.cmd <- "require(SnowballC, quietly=TRUE)"
+    if (! packageIsAvailable("SnowballC", "word stemming")) return(FALSE)
+    appendLog(packageProvides("SnowballC", "stemDocument"), lib.cmd)
     eval(parse(text=lib.cmd))
 
     map.cmd <- sprintf("%s\nmy.corpus <- tm_map(my.corpus, stemDocument)", map.cmd)

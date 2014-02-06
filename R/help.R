@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2011-03-09 06:24:37 Graham Williams>
+# Time-stamp: <2013-09-19 05:32:13 Graham Williams>
 #
 # Help Menu
 #
@@ -21,13 +21,18 @@
 # You should have received a copy of the GNU General Public License
 # along with Rattle. If not, see <http://www.gnu.org/licenses/>.
 
-popupTextviewHelpWindow <- function(topic)
+popupTextviewHelpWindow <- function(topic, package)
 {
+  # We can specify the package so as to be specific about which
+  # function we want help on.
+  
+  pkg <- ifelse(missing(package), "", sprintf("package=%s, ", package))
+
   # The help_type option was introduced in 2.10.0
-  if (getRversion() <= "2.10.0")
-    collectOutput(sprintf("help(%s, htmlhelp=TRUE)", topic), TRUE)
-  else
-    collectOutput(sprintf("help(%s, help_type='html')", topic), TRUE)
+  
+  html <- ifelse(getRversion()<="2.10.0", "htmlhelp=TRUE", "help_type='html'")
+
+  collectOutput(sprintf("help(%s, %s%s)", topic, pkg, html), TRUE)
 }
 
 showHelpPlus <- function(..., extra=Rtxt("Would you like to view the R help?"))
@@ -833,6 +838,16 @@ on_help_cluster_hclust_activate <- function(action, window)
   }
 }
 
+on_help_cluster_stats_activate <- function(action, window)
+{
+  if (showHelpPlus(Rtxt("Numerous statistics have been developed over the",
+                        "years to measure the performance of a clustering.",
+                        "Use the Stats button to report various measures.")))
+  {
+    popupTextviewHelpWindow("cluster.stats", "fpc")
+  }
+}
+
 on_help_associate_menuitem_activate <- function(action, window)
 {
   if (showHelpPlus(Rtxt("Association rule mining finds interesting relationships",
@@ -923,7 +938,7 @@ on_help_model_survival_activate <- function(action, window)
                         "estimate the time to failure of components and parts; in healthcare it is used",
                         "to estimate the survival probability of patients; in various participation",
                         "programs it is used to estimate the expected time a person will participate in a",
-                        "program.   COXPH Survival Analysis will estimate the risk of an even occurring",
+                        "program.   COXPH Survival Analysis will estimate the risk of an event occurring",
                         "for a particular observation relative to the risk for the observed population.",
                         "Parametric Survival Analysis will estimate the expected time within which",
                         "the event will occur.")))
