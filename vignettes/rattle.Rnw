@@ -101,7 +101,6 @@ installed. Others that you might like to install include:
 \href{http://cran.r-project.org/package=Hmisc}{\pkg{Hmisc}},
 \href{http://cran.r-project.org/package=kernlab}{\pkg{kernlab}},
 \href{http://cran.r-project.org/package=mice}{\pkg{mice}},
-\href{http://cran.r-project.org/package=network}{\pkg{network}},
 \href{http://cran.r-project.org/package=party}{\pkg{party}},
 \href{http://cran.r-project.org/package=playwith}{\pkg{playwith}},
 \href{http://cran.r-project.org/package=pmml}{\pkg{pmml}},

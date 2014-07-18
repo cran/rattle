@@ -1,4 +1,5 @@
 \name{rattle_gui}
+\alias{on_pam_radiobutton_toggled}
 \alias{on_aboutdialog_response}
 \alias{on_rf_oob_roc_button_clicked}
 \alias{on_associate_plot_button_clicked}

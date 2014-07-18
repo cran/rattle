@@ -1,17 +1,52 @@
+rattle (3.1.0)
+
+	* Numerous updates of plots to use ggplot2 rather than base
+	graphics: ROC curves, riskchart, box plots, histogram plots, pairs
+	plot, Benfords. Advanced Graphics is now the default, reverting to tradition
+	graphics where needed. The migration to ggplot2 is ongoing.
+
+	* Added new Benfords functionality.
+
+	* Added a rescale option to kmeans.
+
+	* New psfchart() for evaluation.
+
+	* New function normVarNames() to normalise variable names to a
+	standard preferred style
+
+	* Evaluate -> Error Matrix has been updated to report averaged
+	class error and to report class errors.
+
+	* Evaluate -< PrvOb plot bug fix for non-missing data.
+
+	* INSTALL: Remove old INSTALL file - visit rattle.togaware.com for
+	installation instructions.
+
+	* plotNetwork() has been removed - not used by Rattle and
+	generally of limited use. See onepager.togaware.com for the code.
+
+	* No longer report repository revision number in version or about.
+
+	* Miscellaneous bug fixes and stability improvements.
+
+	* weatherAUS dataset is up-to-date.
+
+ -- Graham Williams <Graham.Williams@togaware.com>  2014-07-18 14:32:07 +1100
+
 rattle (2.6.26) unstable; urgency=low
 
   * Replace .path.package with path.package as requested by Ripley. The
     hidden version will disappear soon and the new version has been
     available since 2.13.0.
-  
+
   * Update boost help to note that it is available only for binary
     classification.
-  
+
   * Default stemming for textmining of a corpus is no active if the
     Snowball package is available.
 
   * For Advanced Graphics introduce a dendrogram plot using ggplot2.
-  
+
   * Various text mining improvements. Bug fix in checking if data needs
     reloading.  Support checking if corpus needs reloading.  Add extra
     cursor and status bar messages.  For corpus, set default folder to be
@@ -21,12 +56,12 @@ rattle (2.6.26) unstable; urgency=low
 
   * Remove macosx special rattle.ui. The ubuntu specific text no longer
     appears in the saved ui file.
-  
+
   * Internally: Move rattleGUI to crv from crs. The crs is saved as the
     state, and this was confusing the GUI on a project restore.  Had to
     ensure we restored rattleGUI with the current rattleGUI - this fixes
     loadProject bug.  Also, in Load project, filter on .RData not .Rdata.
-  
+
   * Add newdata= to call to predict, in line with the standard approach by
     party (reference Torston). Remove the OOB= for predict for
     cforest. With a new dataset OOB makes no sense. It was in there
@@ -34,12 +69,12 @@ rattle (2.6.26) unstable; urgency=low
 
   * Update fancy rpart plot to reduce colour intensity for printing and a
     nicer tree structure. Add all class probs to fancy tree.
-  
+
   * Define paste0 if it is not defined. It was introduced in 2.15.0 but is
     too early to assume the world is with us.
-  
+
   * Replace siatclust with weightedKmeans.
-  
+
   * Bug fix in OOB plot when impute is off - need to omit missing values.
     Update message regarding random forest and na.omit() removing all
     rows, noting the option to use na.roughfix().
@@ -77,10 +112,10 @@ rattle (2.6.25) unstable; urgency=low
 rattle (2.6.24) unstable; urgency=low
 
   * Bug fix for box plot using ggplot2.
-  
+
   * Finish the implementation of riskchart using ggplot2 to mimic the old
     version of risk charts.
-  
+
   * Remove copied code from print.rpart, known as rattle.print.rpart, and
     originally used without proper credit to Brian Ripley, but no longer
     required. Use his original versoin from rpart itself, though lose the
@@ -88,36 +123,34 @@ rattle (2.6.24) unstable; urgency=low
 
   * Migrate to a cleaner structure for managing the source package locally
     at togaware.
-  
+
   * Bug fix fancy rpart plot to handle regression as suggested by Yana
     Kane-Esrig.
-  
+
   * For arules, add option to specify minimum length.
-  
+
   * Update to new version of RGtk2Extras' dfedit, without a pretty_print
     option. Also able to assign result into crs$dataset now.
-  
+
   * Remove two instances of global variable assignments. Temporarily
     remove PlotBuilder and scoring of manually entered datasets.
-  
-  
-  
+
  -- Graham Williams <Graham.Williams@togaware.com>  Tue, 11 Dec 2012 06:45:50 +1100
 
 rattle (2.6.21) unstable; urgency=low
 
   * Retain depend on R > 2.12.1.
-  
+
   * Ensure rattle.togaware.com repo is maintained.
-  
+
   * Better detect arules error message for duplicate items in a basket.
-  
+
   * Update ggplot2 calls to conform to 0.92. Also turn advanced graphics
     on by default. Implement risk charts using ggplot2.
-  
+
   * Start introducing suppressPackageStartupMessages to avoid excessive
     messages in the console.
-  
+
   * Do AUC only for binomial targets.
 
  -- Graham Williams <Graham.Williams@togaware.com>  Mon, 10 Sep 2012 19:27:42 +1000
@@ -127,7 +160,7 @@ rattle (2.6.20) unstable; urgency=low
   * Because of use of globalVariables Rattle now depends on R >=
     2.15.1. However, check this conditionally to retain backward
     compatibility for now. Reported by Uwe Ligges.
-  
+
   * For show arules, eval in global environment else it does not show the
     rules. Reported by Tania Churchill.
 
@@ -136,59 +169,59 @@ rattle (2.6.20) unstable; urgency=low
 rattle (2.6.19) unstable; urgency=low
 
   * Depend on weightedKmeans rather than siatclust.
-  
+
   * Bug fix: correlation plots stopped working.
-  
+
   * Bug fix: ggcorplot use of size_scale started failing. Perhaps because
     of new version ofggplot2.
-  
+
   * Bug fix: notice when a restored project does not have a filename set.
-  
+
   * Fix some logic errors in rf.
-  
+
   * Add 0,0 point to evaluateRisk.
-  
+
   * Make risk, recall, precision as default names in risk chart.
-  
+
   * Add new riskchart funciton using ggplot2.
-  
+
   * Allow additional arguments to fancyRpartPlot passed through to prp.
-  
+
   * Update copyrigt to 2012.
-  
+
   * Allow y for yes in installing initial RGtk2.
-  
+
   * List global variables to avoid check messages.
-  
+
  -- Graham Williams <Graham.Williams@togaware.com>  Wed, 04 Jul 2012 22:15:27 +1000
 
 rattle (2.6.18) unstable; urgency=low
 
   * Ensure require uses quietly rather than quiet.
-  
+
   * Clean up randomForest textview output.
-  
+
   * Update pmml to 4.0. Fix various format issues and other updates from
     Tridi of Zementis.
-  
+
   * Update setupDataset but also note that it is moving into a separate
     package, container.
-  
+
   * Get odfweave stuff working again.
-  
+
   * Update fancyRPartPlot - being used in SIAT software. Can now handle
     any number of classes.
-  
+
   * Updates to the pmml rsf code.
-  
+
   * Bug fix for evaluation of conditional trees and random forests.
-  
+
   * Further pmml export of randomForest updates.
-  
+
   * Add PlotBuilder as interative explore option.
-  
+
   * Export pmml for glm models.
-  
+
   * Enhance ggplot2 plotting of boxplot.
 
  -- Graham Williams <Graham.Williams@togaware.com>  Sun, 22 Apr 2012 21:47:00 +1000
@@ -197,31 +230,31 @@ rattle (2.6.17) unstable; urgency=low
 
   * Add a log10 transform to the GUI, R10 prefix, add tooltip, handle it
     in pmml, create new rattle_macosx.ui. Suggested by Christophe Klopp.
-  
+
   * Bug fix usage of believeNRows - it was being ignored from the GUI, but
     is now acted upon. Reported by Andrew Elliott.
-  
+
   * Add ggplot2 box plots to Advanced Graphics option.
-  
+
   * Remove the timestamp messages.
-  
+
   * Update pmml to handle randomForest and rattle to export to pmml.
-  
+
   * Bug fix in naming the dataset when it is editted.
-  
+
   * Bug fix for ggcorplot when less than 6 vars - need to map var names
     into a c() call.
-  
+
  -- Graham Williams <Graham.Williams@togaware.com>  Sun, 19 Feb 2012 21:49:45 +1100
 
 rattle (2.6.16) unstable; urgency=low
 
   * rattleInfo() now also notes if rattle itself needs upgrading.
-  
+
   * Bug fix in show association rules. It now works again.
-  
+
   * Forgot to include rescale.by.group() in NAMESAPCE.
-  
+
   * CITATION to the book rather than the article. That is a more
     definitive resource, though not freely available.
 
@@ -242,16 +275,16 @@ rattle (2.6.14) unstable; urgency=low
 
   * Add OOB ROC button to Forest option of Model tab as suggested by Akbar
     Waljee.
-  
+
   * Bug fix for loading R Dataset data frame named dataset. Bug reported
     by George Dontas.
-  
+
   * Use roc.plot() from evaluation. Suggested by Akbar Waljee.
 
   * Use packageStartupMessage.
-  
+
   * Ensure oob roc plot handles numeric targets.
-  
+
  -- Graham Williams <Graham.Williams@togaware.com>  Wed, 16 Nov 2011 06:01:17 +1100
 
 rattle (2.6.13) unstable; urgency=low
@@ -266,9 +299,9 @@ rattle (2.6.12) unstable; urgency=low
     allow some flexiblity in specifying: 70 or 70/30 or 70/15/15. For the
     first two the training is 70% and testing is 30%. For the third,
     validation is 15% and testing is 15%.
-  
+
   * Update text mining support for lates version of tm.
-  
+
   * rattleInfo() was incorrectly counting the unmber of packages listed.
 
  -- Graham Williams <Graham.Williams@togaware.com>  Sun, 23 Oct 2011 06:00:16 +1100
@@ -276,9 +309,9 @@ rattle (2.6.12) unstable; urgency=low
 rattle (2.6.11) unstable; urgency=low
 
   * Use listAdaVarsUsed in Rattle.
-  
+
   * Use fancyRpartPlot in Rattle.
-  
+
   * Note rattle.ui requires gtk > 2.16, not > 2.20. Otherwise fails to
     start on Mac OS/X.
 
@@ -287,19 +320,19 @@ rattle (2.6.11) unstable; urgency=low
 rattle (2.6.10) unstable; urgency=low
 
   * Add listAdaUsedVars support function.
-  
+
   * Workaround CairoDevice issue on Windows by defaulting to not using it,
     as in the Settings menu.
-  
+
   * Add common name and crv constant for ewkm.
-  
+
   * fancyRpartPlot has optional main title as empty string.
-  
+
   * biclust now reports a biclust built rather than reporting a kmeans
     built.
-  
+
   * Add weights plots for ewkm from siatclust.
-  
+
  -- Graham Williams <Graham.Williams@togaware.com>  Sun, 11 Sep 2011 17:08:18 +1000
 
 rattle (2.6.9) unstable; urgency=low
@@ -307,15 +340,15 @@ rattle (2.6.9) unstable; urgency=low
   * AdaBoost now also reports which variables are used in the collection
     of trees built, and the number of trees in which a variable
     appears.
-  
+
   * Add setupDataset and whichNumeric to support encapsulation of data
     mining objects.
-  
+
   * Add a fancyRpartPlot so my fancy rpart tree is available outside of
     the rattle GUI.
-  
+
   * Correct the textview information relating to confusion matrices.
-  
+
   * Add doRiskChart to simplify using the risk charts.
 
  -- Graham Williams <Graham.Williams@togaware.com>  Sun, 04 Sep 2011 21:03:32 +1000
@@ -323,7 +356,7 @@ rattle (2.6.9) unstable; urgency=low
 rattle (2.6.8) unstable; urgency=low
 
   * Ensure ggplot2 loaded before plot ctree.
-  
+
   * Handle probability predictions for ctree and cforest in evaluation.
 
  -- Graham Williams <Graham.Williams@togaware.com>  Tue, 26 Jul 2011 22:03:47 +1000
@@ -332,77 +365,77 @@ rattle (2.6.7) unstable; urgency=low
 
   * Add support for the entropy weighted k-means subspace clustering
     algorithm from the ewkm package.
-  
+
   * Ensure rattle can load with only the base package installed (so
     install.packages is prefixed with utils:::).
-  
+
   * Migrate from using installed.pacakges() since it can be very slow on
     MS/Windows.
-  
+
   * Add an experimental dataset option to the command line call to rattle.
-  
+
   * Allow a bygroup to be used for any numeric transform.
-  
+
   * Add a plot for association rules.
-  
+
   * Display a ggplot2 scatterplot if advanced plots is enabled.
 
   * rattle:::executeExplorePlot made more friendly for calling from
     outside of Rattle.
-  
+
   * Tidy up the rattleInfo manual page.
-  
+
   * Master Makefile should respond with help if no target specified.
-    
+
  -- Graham Williams <Graham.Williams@togaware.com>  Mon, 18 Jul 2011 06:53:47 +1000
 
 rattle (2.6.6) unstable; urgency=low
 
   * Settings/Tooltips should be shown as TRUE.
-  
+
   * Add Settings/GGPlot2 to enable enhanced graphics (generally using
     ggplot2) where they have been implemented.
-  
+
   * Implement a ggplot2 pairs plot (scatterplot) as the plot to use when
     ggplot2 is enabled and under Explore/Distriubtions no variables are
     chosen to be displayed. Uses ggcorplot from Deducer.
-  
+
   * Implement use of rpart.plot's prp() when ggplot2 is enabled.
-  
+
  -- Graham Williams <Graham.Williams@togaware.com>  Sat, 09 Apr 2011 22:16:29 +1000
 
 rattle (2.6.5) unstable; urgency=low
 
   * Add rattleReport() - report on current state of rattle modelling.
-  
+
   * Restore the ByGroup option for now until it can be coded for the about
     transforms.
-  
+
   * Deal with UTF-8 encoding of Japanese filenames in data and evaluate,
     using iconv.
-  
+
   * Be sure to include http:// in web links, though on MS/Windows still
     not working: Could Not Show Link... No application is registered as
     handling this file
-  
+
   * On loading a dataset, convert any character variables to be
     factors. Rattle does not handle character variables, so the
     translation seems appropriate.
-  
+
   * Association rules status bar was refering to decision
     trees. Fixed. (Pointed out by Xiaobo Gu)
-  
+
   * Fix an introduced bug in handling of categorics in numeric transforms.
-  
+
   * Fix a bug where imputation for a categoric with class "ordered" and
     "factor" was treating it as a numeric (because "ordered" is not
     "factor").
-  
+
   * Some Help menu items under Test were not loading the required package
     and thus were not displaying the help.
-  
+
   * Only do crosstabs when we have categoric variables.
-  
+
   * Updated translations.
 
  -- Graham Williams <Graham.Williams@togaware.com>  Sun, 13 Mar 2011 16:46:20 +1100
@@ -412,39 +445,39 @@ rattle (2.6.4) unstable; urgency=low
   * Confusion matrices transposed to conform to what most people exect:
     Actual is on left and Predicted is on top. Retain the name as Error
     Matrix in Rattle for now.
-  
+
   * Use different pch for a dotchart.
 
   * Include the install.packages(rattleInfo()) trick in the output of
     rattleInfo().
-  
+
  -- Graham Williams <Graham.Williams@togaware.com>  Sat, 19 Feb 2011 06:26:09 +1100
 
 rattle (2.6.3) unstable; urgency=low
 
   * weather.arff Date field should have 'date' data type.
-  
+
   * The rug plot of histograms is no longer coloured. For large datasets,
     there is much overplotting and so it can in fact be quite misleading.
-  
+
   * Box plots now use varwidth=TRUE to indicate the distribution of the
     target variable.
 
   * Bug fix: exportHClustTab should not have a file argument.
-  
+
  -- Graham Williams <Graham.Williams@togaware.com>  Sun, 13 Feb 2011 21:42:11 +1100
 
 rattle (2.6.2) unstable; urgency=low
 
   * Rename rattle.info() to rattleInfo(), modelled on sessionInfo()
     naming. Include available CRAN version of rattle in the output.
-  
+
   * Ensure connection is closed on pmmltoc export from Rattle.
-  
+
   * questionDialog needs to not use RGtk2 if RGtk2 is not installed!
-  
+
   * Emphasise that Rattle is free in loading the rattle package.
-  
+
   * exportKmeansTab does not require the file argument.
 
  -- Graham Williams <Graham.Williams@togaware.com>  Wed, 02 Feb 2011 05:46:28 +1100
@@ -453,67 +486,67 @@ rattle (2.6.1) unstable; urgency=low
 
   * When exporting a regression model, be sure to use proper slash (i.e.,
     not the Windows slosh) for log tab record of the command.
-  
+
   * Add rattle.ui to the google code repository.
-  
+
   * Remove as many literals as possible from the Log tab - so that
     crs$dataset[crs$sample, c(2:10,14,16:20)] becomes
     crs$dataset[crs$sample, c(crs$input, crs$target)], for
     example. Similarly for the set.seed and other data storing variables.
-  
+
   * Other Log tab cleanup.
 
   * Fix bug that caused failure on reading an .xls data file.
-  
+
   * rattle.info() now returns the list of packages that need updating.
 
   * In exporting a model as C code, if we are Japanese on Windows then
     note that the encoding is shift-jis rather than utf-8 for some reason.
-  
+
   * Improve infrastructure for the generation of C code from PMML.
-  
+
  -- Graham Williams <Graham.Williams@togaware.com>  Thu, 13 Jan 2011 21:50:53 +1100
 
 rattle (2.6.0) unstable; urgency=low
 
   * Keep track of project names and use as default name to save a project
     to. Suggested by David Cochrane.
-  
+
   * Add strip.white to the default for reading CSV files. Suggested by
     Robert Muenchen.
 
   * Bug fix on resetEvaluateTab - Data row was being reset to sensitive
     because model was being toggled.
-  
+
   * Disconnect Rattle versions from google code revision numbers since the
     revision numbers change each change to the Wiki.
-  
+
   * Indicator Variables will Ignore the first of the new indicator
     variables. Suggested by Robert Muenchen.
-  
+
   * Include the Target name in listing of a decision tree as a rule set.
-  
+
   * On adding to the log when saving a plot make sure carioDevice is
     loaded and the file name path separators are appropriate. Reported by
     Shane Butler 11 Dec 2010.
-  
+
   * Ensure filename string is UTF-8 when exporting a file, to handle
     Japanese filenames.
-  
+
   * For nnet, choose a seed so weather generates a non-trivial model.
-  
+
   * Refer to remapping as recoding in line with commonly used terminology.
-  
+
   * Default back to showing text on icon for buttons. Seems okay in the
     new version of Gtk.
-  
+
  -- Graham Williams <Graham.Williams@togaware.com>  Sat, 11 Dec 2010 13:39:55 +1100
 
 rattle (2.5.47) unstable; urgency=low
 
   * Add a useGtkBuilder argument to rattle(). If NULL, then heuristically
     determine, otherwise go with the specified choice, if possible.
-  
+
   * Remove RGtk2, colorspace, and pmml as dependencies. Now dynamically
     check and offer to install. This also helps reduce chance of the
     XML/RGtk2 zlib1.dll bug, and also ensure RGtk2 loads before XML to
@@ -524,9 +557,9 @@ rattle (2.5.47) unstable; urgency=low
 rattle (2.5.46) unstable; urgency=low
 
   * Bug fix for fixTranslations.
-  
+
   * Save weights information in PMML.
-  
+
   * Cleanup SVM command generator.
 
  -- Graham Williams <Graham.Williams@togaware.com>  Thu, 11 Nov 2010 19:08:36 +1100
@@ -535,44 +568,44 @@ rattle (2.5.45) unstable; urgency=low
 
   * Check for GtkBuilder handling of the 'requires' tag, and if not
     handled the don't use GtkBuilder.
-  
+
   * Bump pmml version through 1.2.25 to 1.2.26.
-  
+
   * Change default nolan groups for a singularity to 50 rather than 99.
-  
+
   * PMML bug fix when glm and using weights.
-  
+
   * Move all variable initialisation from .onLoad to .onAttach. This will
     ensure .RData saved (and therefore old) versions of the variables will
     not overwrite the proper versions in a newer release of Rattle.
-  
+
  -- Graham Williams <Graham.Williams@togaware.com>  Sat, 09 Oct 2010 08:16:15 +1100
 
 rattle (2.5.44) unstable; urgency=low
 
   * Add an include.libpath to rattle.info() to provide information about
     where the packages are installed.
-  
+
   * Check for failed startup of rattle GUI using GtkBuider (because the
     Gtk library installed does not recognise 'requires' and suggest a
     workaround).
-  
+
   * Condiionally turn toolbar Text (in addition to just Icons) on.
-  
+
   * For loading spreadsheets, make sure RODBC is available and loaded.
-  
+
   * Ensure 'ordered categoric' are treated as categoric for Explore,
     Distribution.
-  
+
  -- Graham Williams <Graham.Williams@togaware.com>  Tue, 05 Oct 2010 18:08:20 +1100
 
 rattle (2.5.43) unstable; urgency=low
 
   * Ensure gtkBuilder is setting the correct translation domain for the
     interface.
-  
+
   * Add global option for not showing timestamps: crv$show.timestamp.
-  
+
   * Add optional arg to newProject to not ask about overwriting a
     project. Default is as previously - to ask.
 
@@ -584,13 +617,13 @@ rattle (2.5.42) unstable; urgency=low
     their version number and any updates available from CRAN and generate
     command to update packages that have updates available. See
     ?rattle.info for the options.
-  
+
   * Fix bug causing R Dataset option of the Evaluate window to always
     revert to the first named dataset.
-  
+
   * Fix bug in transforms where weights were not being handled in
     refreshing of the Data tab.
-  
+
   * Fix a bug in box plots when trying to label outliers when there aren't
     any.
 
@@ -599,29 +632,29 @@ rattle (2.5.42) unstable; urgency=low
 rattle (2.5.41) unstable; urgency=low
 
   * Use GtkBuilder for Export dialog.
-  
+
   * Test use of glade vs GtkBuilder on multiple platforms.
-  
+
   * Rename rattle.info to rattle.version.
-  
+
   * Add weight column to data tab.
-  
+
   * Support weights for nnet, multinom, survival.
-  
+
   * Add weights information to PMML as a PMML Extension.
-  
+
   * Ensure GtkFrame is available as a data type whilst waiting for updated
     RGtk2.
-  
+
   * Bug fix to packageIsAvailable not reruning any result.
-  
+
   * Replace destroy with withdraw for plot window as the former has
     started crashing R.
-  
+
   * Improve Log formatting for various model build commands.
-  
+
   * Be sure to include the car package for Anova for multinom models.
-  
+
   * Release pmml 1.2.24: Bug fix glm binomial regression - note as
     classification model.
 
@@ -633,7 +666,7 @@ rattle (2.5.40) unstable; urgency=low
     if windows and R before 2.12.0 then libglade 
     if unix and R 2.12.0 then libglade for now (RGtk2 update needed?)
     all else use GtkBuilder
-  
+
  -- Graham Williams <Graham.Williams@togaware.com>  Sun, 22 Aug 2010 12:02:00 +1000
 
 rattle (2.5.39) unstable; urgency=low
@@ -654,34 +687,34 @@ rattle (2.5.38) unstable; urgency=low
     validated.
 
   * Bump pmml version to 1.2.23
-  
+
  -- Graham Williams <Graham.Williams@togaware.com>  Fri, 06 Aug 2010 05:56:11 +1000
 
 rattle (2.5.37) unstable; urgency=low
 
   * The Predictive tab has gone back to being Model. Not sure which is
     best.
-  
+
   * cranSearch defaults to r-project rather than unimelb.
-  
+
   * Migrate from RGtk2DfEdit to its replacement, RGtk2Extras.
-  
+
   * Revert cairoDevice to being a Suggests rater than Depends.
-  
+
   * Remove redundant CITATION from root of package, as the real one is in
     inst.
-  
+
  -- Graham Williams <Graham.Williams@togaware.com>  Sat, 31 Jul 2010 14:34:50 +1000
 
 rattle (2.5.36) unstable; urgency=low
 
   * Add Bill Venables' searchCRAN example code.
-  
+
   * Improve error message when we find duplicate variable names in a
     loaded file, which might result when there is no header line.
-  
+
   * Add help item for Projects.
-  
+
   * On Evaluate with supplied file, use the hdr specified on the Data tab.
 
  -- Graham Williams <Graham.Williams@togaware.com>  Mon, 12 Jul 2010 06:43:06 +1000
@@ -689,24 +722,24 @@ rattle (2.5.36) unstable; urgency=low
 rattle (2.5.35) unstable; urgency=low
 
   * Add utility lss function to list object sizes.
-  
+
   * Add options text entry for SVM to easily allow other options.
-  
+
   * Better formatting of the Log tab.
-  
+
   * Use a set.seed for SVM to ensure same model each time.
-  
+
   * Add option to random forest to impute missing values rather than
     simply ignoring the observations.
-  
+
   * On Evalaute with supplied file, use the sep specified on the Data tab,
     thus allowing TXT files.
-  
+
   * On loading a new dataset for evaluation be sure to add in any missing
     columns, and unify the levels.
-  
+
   * Improve binning documentation.
-  
+
   * Make RGtk2, cairoDevice, colorspace all dependencies so we can get
     rattle started and then rattle will prompt to install other packages
     that are mssing when it needs them.
@@ -717,7 +750,7 @@ rattle (2.5.34) unstable; urgency=low
 
   * When a package is missing, there is now the option to install it right
     then, and it continues as normal after it gets installed.
-  
+
   * Change Suggests to Depends so all used pacakges get loaded on loading
     rattle, in an attempt to make it easier to install Rattle. Then the
     r-cran-rattle package on Debian/Ubuntu will have all required
@@ -726,7 +759,7 @@ rattle (2.5.34) unstable; urgency=low
     'Suggests'). Penalty is it takes 20 seconds to do 'library(rattle)' on
     a server and 90 seconds on a netbook - so revert back to not doing
     this.
-  
+
   * Ensure the new train/validate/test scneario is saved across projects.
 
  -- Graham Williams <Graham.Williams@togaware.com>  Wed, 09 Jun 2010 07:04:08 +1000
@@ -734,7 +767,7 @@ rattle (2.5.34) unstable; urgency=low
 rattle (2.5.33) unstable; urgency=low
 
   * Bug fix rf.cmd.
-  
+
   * Improve scoring functionality: The dataset can have NA's for target,
     and these can now get scored by rf on Evaluate tab. Loading a CSV file
     to be scored no longer needs to have the target column included
@@ -746,32 +779,32 @@ rattle (2.5.33) unstable; urgency=low
 rattle (2.5.32) unstable; urgency=low
 
   * Remove dependency on car - not actually being used at the moment.
-  
+
   * For random forest, allow sample size text entry as a single integer or
     a list, as per randomForest.
-  
+
   * Use na.omit with cforest, as is done with randomForest.
-  
+
   * For randomForest turn subsampling with replacement off since it is
     more likely to produce biased importance measures, as explained in by
     the cforest papers.
-  
+
   * Fix bug with multiple "contact support" lines in error popups.
-  
+
   * When showing the randomForest importance values, sort on the accuracy
     measure rather than the Gini measure, since the Gini is biased in
     favour of categoric variables with many categories.
-  
+
   * ada boost seed should be 42, like all other seeds.
-  
+
   * Tidy up some ada output.
-  
+
   * Bug fix - save project for rf failing (looking for rf_sampsize_entry).
-  
+
   * Remove text from toolbar by default.
-  
+
   * Change order of Forest/Boost buttons on Model tab.
-  
+
   * Add tooltips for all toolbar buttons.
 
  -- Graham Williams <Graham.Williams@togaware.com>  Fri, 28 May 2010 15:47:15 +1000
@@ -779,14 +812,14 @@ rattle (2.5.32) unstable; urgency=low
 rattle (2.5.31) stable; urgency=low
 
   * Add rattle.info() to list information for debugging purposes.
-  
+
   * Bump pmml to 1.2.22
-  
+
   * Fixes from wenching.lin@zementis.com: Extension in Header should be
     first element. Coefficients in regression models should not be NA (as
     will be for singularities), but replace with, and so no impact of
     change.
-  
+
   * Ensure Survival defaults are reset appropriately.
 
  -- Graham Williams <Graham.Williams@togaware.com>  Wed, 19 May 2010 09:50:39 +1000
@@ -796,7 +829,7 @@ rattle (2.5.30) stable; urgency=low
   * On MS/Windows with Japanese, read.csv needs encoding option set with
     file rather than with read.csv (for UTF-8) but seems okay under other
     scenarios.
-  
+
   * On MS/Windows with Japanese (UTF-8) the encoding of the variables
     selected for transforming needs to be UTF-8 for much of the process,
     but "unknown" when using Rtxt and sprintf (when substituting the
@@ -808,14 +841,14 @@ rattle (2.5.30) stable; urgency=low
 rattle (2.5.29) stable; urgency=low
 
   * Add the translation file.
-  
+
   * Fix an Encoding/sprintf issue for Japanese on MS/Windows.
-  
+
   * Allow crv$NOTEBOOK.MODEL.NAME to be overridden by other packages
     (RStat).
-  
+
   * When dispatch fails be sure to include the Tab label on which it fails.
-  
+
   * Ensure HClust Options are re-enabled on loading a project.
 
  -- Graham Williams <Graham.Williams@togaware.com>  Sat, 24 Apr 2010 07:32:02 +1000
@@ -823,13 +856,13 @@ rattle (2.5.29) stable; urgency=low
 rattle (2.5.28) stable; urgency=low
 
   * Minor format changes for glm and rf model output.
-  
+
   * Capture additional survival model error and suggest a solution.
-  
+
   * Remove spurious additional plot for Survival Residual plot.
-  
+
   * Update log tab labels to be more generic.
-  
+
   * Update tooltips to be generic and add survival tooltips.
 
  -- Graham Williams <Graham.Williams@togaware.com>  Thu, 22 Apr 2010 06:21:58 +1000
@@ -838,23 +871,23 @@ rattle (2.5.27) unstable; urgency=low
 
   * Further translation fixes. In particular, use Encoding(...getText())
     <- "UTF-8" to ensure strings from the GUI ate UTF-8, and not unknown.
-  
+
   * Ensure training dataset rather than sample dataset nomenclature is now
     used.
-  
+
   * Ensure execute button can only be clicked once while it is processing.
-  
+
   * Survival plot buttons need to be made sensitive as appropriate.
-  
+
   * For Japanese on MS/Windows do not use monospace font since this ends
     up vertically cenbtering periods and commas (and all other
     characters). Need a fixed width font that does not do this, but for
     now we put up with variable width font.
 
   * Revert to using only English for all hidden tab labels.
-  
+
   * Improved identification of current plot number.
-  
+
   * Bug fix multiple vars selected for asnumeric and ascategoric
     transforms.
 
@@ -867,11 +900,11 @@ rattle (2.5.26) unstable; urgency=low
 
   * Bug fix - improve how we obtain the plot number from the title,
     particularly in the context of translations.
-  
+
   * Further translation markup.
 
   * Clean up the use of dfedit.
-  
+
   * Minor improvement to spacing in Log tab.
 
  -- Graham Williams <Graham.Williams@togaware.com>  Tue, 30 Mar 2010 21:37:29 +1100
@@ -884,14 +917,14 @@ rattle (2.5.25) unstable; urgency=low
     editing options are available. Also press = to run an arbitrary R
     command on selected data (e.g. select two columns of data and issue
     the plot command).
-  
+
   * Add further markup of text for translations.
-  
+
   * Support specification of the character used for decimal points (to
     suit some European usage).
-  
+
   * Fix bug in exporting XML - replace & with &amp;
-  
+
   * Survival plots - split survival chart plot from residuals plots, and
     plot all residuals.
 
@@ -902,10 +935,10 @@ rattle (2.5.25) unstable; urgency=low
 rattle (2.5.24) stable; urgency=low
 
   * Revamp the help text, and put into the Rtxt translation framework.
-  
+
   * Fix the height of the data name widget (the library option was growing
     the width for some reason).
-  
+
   * For Evaluate, add Full and Enter as dataset options. Enter will pop up
     an editor with the final row from the dataset, allowing you to add
     rows or modify the supplied row. We supply the row so that we have an
@@ -921,58 +954,58 @@ rattle (2.5.23) stable; urgency=low
   * When data tab is executed, and so crs$rpart is reset to NULL, always
     remove the Draw/Rules button from the Tree option of the Predictive
     tab.
-  
+
   * Add code to fix translations that are not being loaded when using
     RGtk2 on MS/Windows. All is okay on GNU/Linux, but RGtk2 seems not to
     get the right locale for loaded Glade file. The fix is to traverse the
     GUI and change all labels, on starting up Rattle. RGtk2 authors tried
     to fix but it remains an issue.
-  
+
   * Ensure rpart is reset on resetting rattle.
-  
+
   * Rework handling of tab pages because a Japanese translation on
     MS/Windows is having issues with the following call (nd=notebook)
     nb$getTabLabelText(nb$getNthPage(nb$getCurrentPage())) returning what
     looks like Shift-JIS encoding of the string rather than UTF-8, and
     hence not string matching the expected tab label.
-  
+
   * Fix spelling errors on help menu and ensure help for all topics is
     covered.
-  
+
   * For nnet, use MaxNWts=10000 (default is 1000) to allow larger nets by
     default, and capture the error message when this is exceeded and
     better explain what to do.
-  
+
   * Ensure we don't export an empty dataset when choosing export on the
     data tab.
-  
+
   * Capture arules error message when there are repeated items in one
     basket, and explain this more clearly.
-  
+
   * For rpart use information as the default split rather than Gini - makes
     little if any difference.
-  
+
   * Allow showHelpPlus to have an extra/alternative question that is
     displayed.
-  
+
   * All random seeds should be 42.
-  
+
   * Reset kmeans tab on loading a project.
-  
+
   * Add dozen more weather stations to the weatherAUS dataset.
 
   * Improve the logic for the display of the Report radio buttons on the
     Evaluate tab.
-  
+
   * Spelling correction to a number of tooltips.
-  
+
  -- Graham Williams <Graham.Williams@togaware.com>  Wed, 03 Mar 2010 06:50:58 +1100
 
 rattle (2.5.22) stable; urgency=low
 
   * Default window height is 650, but not forced so that the window
     nicely fills a netbook screen if maximised.
-  
+
   * Bump R dependency to 2.8.0 in line with update of the CITATION file.
 
  -- Graham Williams <Graham.Williams@togaware.com>  Sat, 13 Feb 2010 09:48:00 +1100
@@ -982,16 +1015,16 @@ rattle (2.5.21) stable; urgency=low
   * Re-enable gettext on MS/Windows, even though RGtk2 2.12.18 has not
     fixed the bindtextdomain problem with glade files and package supplied
     translations.
-  
+
   * Change the tree plot to us "< =>" and ">= <" to clearly identify which
     branch the "=" results go. Could not figure out how to get expression
     to us a "ge" symbol.
-  
+
   * Improve formatting of the PvO plots.
-  
+
   * Use the pairs.panels function from the psych package for the default
     scatterplot on the Explore tab.
-  
+
   * Add INSTALL file.
 
  -- Graham Williams <Graham.Williams@togaware.com>  Sun, 07 Feb 2010 15:03:22 +1100
@@ -999,7 +1032,7 @@ rattle (2.5.21) stable; urgency=low
 rattle (2.5.20) stable; urgency=low
 
   * Restore missing weather.csv file.
-  
+
   * Add to Google code: weather.R ChangeLog NEWS ToDo upload_uwe.sh
     upload_cran.sh.
 
@@ -1009,14 +1042,14 @@ rattle (2.5.19) unstable; urgency=low
 
   * Ensure the right labels (Time/Risk rather than Class/Prob) displayed
     in filechooser when exporting a survival model.
-  
+
   * Model tab renamed as Predictive.
-  
+
   * Ensure boxplots have same "by ..." in the main title.
-  
+
   * Update the weather dataset and include many more weather stations in
     the weatherAUS dataset.
-  
+
   * Rtxt does no translations when running on MS/Windows (for now).
 
  -- Graham Williams <Graham.Williams@togaware.com>  Sat, 30 Jan 2010 09:28:18 +1100

@@ -14,13 +14,14 @@ riskchart <- function(pr, ac, ri=NULL,
                       precision.name="Precision",
                       thresholds=NULL)
 {
-  # 121209 Keep R CMD check quiet....
+  # 121209 Initialise variables otherwise appearing to be unintialised
+  # to R CMD check.
 
   x <- y <- NULL
 
   # ggplot2 version of the risk chart.
 
-  require(ggplot2)
+  if (! require(ggplot2)) stop(Rtxt("riskchart requires the ggplot2 package"))
 
   data <- evaluateRisk(pr, ac, ri)
   
@@ -30,8 +31,6 @@ riskchart <- function(pr, ac, ri=NULL,
   
   include.risk <- 'Risk' %in% colnames(data)
   
-#  openMyDevice(dev, filename)
-
   score <- as.numeric(row.names(data))
   locateScores <- function(s) 
   { 
@@ -93,14 +92,13 @@ riskchart <- function(pr, ac, ri=NULL,
   }
   
   p <- p + geom_line(aes(y=100*Recall, colour="Recall", linetype="Recall"))
-  p <- p + geom_line(aes(y=100*Precision,
-                         colour="Precision",
-                         linetype="Precision"))
+  p <- p + geom_line(aes(y=100*Precision, colour="Precision", linetype="Precision"))
   p <- p + geom_text(data=scores, aes(x=100*pos, y=102, label=ticks), size=2)
-  p <- p + annotate("text", x=0, y=105, label="Risk Scores", hjust=0, size=3)
+  p <- p + ggplot2::annotate("text", x=0, y=105, label="Risk Scores", hjust=0, size=3)
   p <- p + geom_line(aes(y=100*Caseload))
   p <- p + ggtitle(title) + xlab("Caseload (%)") + ylab("Performance (%)")
   p <- p + theme(legend.title=element_blank(),
+                 plot.title=element_text(size=10),
                  legend.justification=c(0, 0),
                  legend.position=c(.30, .02))
   p <- p + guides(colour=guide_legend(keywidth=3, labels=1:3))

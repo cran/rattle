@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-11-21 21:09:50 Graham Williams>
+# Time-stamp: <2014-07-17 21:42:56 gjw>
 #
 # Implement EXPLORE functionality.
 #
@@ -649,7 +649,7 @@ generateTitleText <- function(var, target, sampling, doby)
 {
   if (sampling)
     if (doby)
-      title.txt <- sprintf(Rtxt("Distribution of %s (sample)\nby %s"),
+      title.txt <- sprintf(Rtxt("Distribution of %s (sample)\\nby %s"),
                            var, target)
     else
       title.txt <- sprintf(Rtxt("Distribution of %s (sample)"), var)
@@ -977,8 +977,6 @@ executeExplorePlot <- function(dataset,
     }
   }
   }
-  
-  
 
   ##--------------------------------------------------------------------
   
@@ -991,11 +989,17 @@ executeExplorePlot <- function(dataset,
     # ensured the y limits are calcuated in case the density plot is
     # higher than the histogram. The current colours are not yet right
     # though. For binary data the distinction between the blue and
-    # gree is very difficult to see for thin lines. 
+    # green is very difficult to see for thin lines. 
 
-    #if (packageIsAvailable("RColorBrewer"))
-    #  cols <- 'col=brewer.pal(%s, "Set1")'
-    #else
+    if (advanced.graphics &&
+        packageIsAvailable("ggplot2", Rtxt("plot using ggplot2")) &&
+        packageIsAvailable("dplyr", Rtxt("select from the dataset")))
+    {
+      executeHistPlot2(new.dataset, hisplots, target, targets, stratify, sampling, pmax)
+    }
+    else
+    {
+    
     if (packageIsAvailable("colorspace")) # 090524 Why vcd? comes from colorspace....
       # cols <- "col=rainbow_hcl(%s, start = 270, end = 150)"
       cols <- "col=rainbow_hcl(%s)"# 090524, start = 0, end = 150)"
@@ -1202,7 +1206,8 @@ executeExplorePlot <- function(dataset,
       eval(parse(text=title.cmd))
     }
   }
-
+  }
+  
   #---------------------------------------------------------------------
   
   if (not.null(cumplots))
@@ -2111,91 +2116,81 @@ executeBoxPlot2 <- function(dataset, vars, target, targets, stratify, sampling, 
   # length of vars and the value of pmax the number of new plots, and
   # the grid layout.
   
-  # 080918 Use the colorspace package to get a better colour map. See
-  # http://epub.wu-wien.ac.at/dyn/virlib/wp/eng/showentry?ID=epub-wu-01_c87 and
-  # http://statmath.wu.ac.at/~zeileis/papers/Zeileis+Hornik+Murrell-2009.pdf
-  #
-  # 120209 Use the default colours for ggplot2 instead. They should be
-  # just fine.
-    
-#  if (packageIsAvailable("colorspace"))
-#    cols <- "fill=rainbow_hcl(%d)" # 090524, start = 270, end = 150),"
-#  else
-#    cols <- "fill=rainbow(%d)"
-
   startLog(Rtxt("Box Plot"))
 
   lib.cmd <- "require(ggplot2, quietly=TRUE)"
   appendLog(packageProvides("ggplot2", "ggplot"), lib.cmd)
   eval(parse(text=lib.cmd))
 
-  # TODO 120205 Grid layout. Note that if no target is selected but
-  # multiple variables are selected, the scales will be different and
-  # so can not be placed on the one plot.  If multiple vars and
-  # selected target, do multiple plots in grid. 120206 Use grid.layout
-  # to arrange multiple plots.
-  
-  nplots <- length(vars)
-    
-  # mylayout <- grid.layout(nrow=2, ncol=2)
-    # grid.show.layout(mylayout)
-    #
-    # vplayout <- function(...)
-    # {
-    #  grid.newpage()
-    #  pushViewport(viewport(layout=mylayout))
-    # }
-    #
-    # subplot <- function(x, y)
-    #  viewport(layout.pos.row = x, layout.pos.col = y)
-    #
-    # vplayout()
-    # print(pp, vp=subplot(1, 1:2))
-    # print(pp, vp=subplot(2, 1))
-    # print(pp, vp=subplot(2, 2))
-    
   for (s in seq_along(vars))
   {
     newPlot()
 
-    ggplot.cmd  <- sprintf("ggplot(%s) +", dataset)
-
-    # TODO 120206 How to fill and not show the legend?
-    
-    # boxplot.cmd <- sprintf("geom_boxplot(aes(fill=%s))", target) # Colour + Legend
-
-    # TODO 120209 How to specify width of each plot.
-
-    # TODO 120205 Add notches - this is coming:
-    # http://groups.google.com/group/ggplot2-dev/browse_thread/thread/3e9f3eaa64779922
-
-    boxplot.all.cmd <- sprintf('geom_boxplot(aes("All", %s), notch=TRUE) +', vars[s])
-
-    boxplot.var.cmd <- sprintf("geom_boxplot(aes(%s, %s), notch=TRUE) +", target, vars[s])
-
-    title.txt <- genPlotTitleCmd(generateTitleText(vars[s],
-                                                   target,
-                                                   sampling,
+    title.txt <- genPlotTitleCmd(generateTitleText(vars[s], target, sampling,
                                                    stratify && length(targets)),
                                  vector=TRUE)
 
-    title.cmd <- sprintf('ggtitle("%s") +', title.txt[1])
-
-    legend.cmd <- 'theme(legend.position="none")'
-  
-    xlab.cmd <- sprintf('xlab("%s\\n\\n%s") +', target, title.txt[2])
-
-    plot.cmd <- paste(ggplot.cmd, boxplot.all.cmd, boxplot.var.cmd, xlab.cmd,
-                      title.cmd, legend.cmd, sep=" \n           ")
-    plot.cmd <- sprintf("pp <- with(crs,\n           %s\n          )\nprint(pp)",
-                        plot.cmd)
+    plot.cmd <- paste(sprintf("p <- ggplot(with(crs, %s), aes(y=%s))", dataset, vars[s]),
+                      'p <- p + geom_boxplot(aes(x="All"), notch=TRUE, fill="grey")',
+                      paste('p <- p + stat_summary(aes(x="All"),',
+                            'fun.y=mean, geom="point", shape=8)'),
+                      sprintf('p <- p + geom_boxplot(aes(x=%s, fill=%s), notch=TRUE)',
+                              target, target),
+                      sprintf(paste('p <- p + stat_summary(aes(x=%s),',
+                                    'fun.y=mean, geom="point", shape=8)'),
+                              target),
+                      sprintf('p <- p + xlab("%s\\n\\n%s")', target, title.txt[2]),
+                      sprintf('p <- p + ggtitle("%s")',  title.txt[1]),
+                      'p <- p + theme(legend.position="none")',
+                      'print(p)',
+                      sep="\n")
   
     appendLog(paste(Rtxt("Box Plot for"), vars[s]), plot.cmd)
     eval(parse(text=plot.cmd))
-
   }
 }
 
+executeHistPlot2 <- function(dataset, vars, target, targets, stratify, sampling, pmax)
+{
+  startLog(Rtxt("Histogram Plots"))
+
+  lib.cmd <- "require(ggplot2, quietly=TRUE)"
+  appendLog(packageProvides("ggplot2", "ggplot"), lib.cmd)
+  eval(parse(text=lib.cmd))
+
+  lib.cmd <- "require(dplyr, quietly=TRUE)"
+  appendLog(packageProvides("dplyr", "select"), lib.cmd)
+  eval(parse(text=lib.cmd))
+
+  for (s in seq_along(vars))
+  {
+    newPlot()
+
+    title.txt <- genPlotTitleCmd(generateTitleText(vars[s], target, sampling,
+                                                   stratify && length(targets)),
+                                 vector=TRUE)
+
+    plot.cmd <- paste(sprintf('ar <- range(with(crs, select(%s, %s)))',
+                              dataset, vars[s]),
+                      sprintf('bw <- (ar[2]-ar[1])/nclass.FD(with(crs, %s$%s))',
+                              dataset, vars[s]),
+                      sprintf(paste('p <- ggplot(with(crs, select(%s, %s, %s)),',
+                                    'aes(x=%s))'),
+                              dataset, vars[s], target, vars[s]),
+                      paste('p <- p + geom_histogram(aes(y=..density..),',
+                            'binwidth=bw, fill="grey", colour="black")'),
+                      'p <- p + geom_density()',
+                      sprintf('p <- p + geom_density(aes(colour=%s))', target),
+                      sprintf('p <- p + xlab("%s\\n\\n%s")', vars[s], title.txt[2]),
+                      sprintf('p <- p + ggtitle("%s")',  title.txt[1]),
+                      'p <- p + labs(colour="") + xlab("Density")',
+                      'print(p)',
+                      sep="\n")
+  
+    appendLog(paste(Rtxt("Histogram Plot for"), vars[s]), plot.cmd)
+    eval(parse(text=plot.cmd))
+  }
+}
 
 # 120205 The following is migrating into the original
 # executeExplorePlot, and splitting out the different plots into

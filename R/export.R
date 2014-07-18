@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-03-16 08:50:35 Graham Williams>
+# Time-stamp: <2013-10-20 18:12:51 Graham Williams>
 #
 # Implement functionality associated with the Export button and Menu.
 #
@@ -355,34 +355,7 @@ getExportSaveName <- function(mtype)
     return(NULL)
   }
 
-  # 081222 Maybe assume now that we need to get an extension specified
-  # by the user - don't do things behind their back.
-###   if (get.extension(save.name) == "")
-###   {
-###     if (save.type == "C Files")
-###       save.name <- sprintf("%s.c", save.name)
-###     else
-###     {
-###       if (save.type == "PMML Files")
-###         save.name <- sprintf("%s.xml", save.name)
-###       else if (isRStat())
-###         save.name <- sprintf("%s.c", save.name)
-###       else
-###         save.name <- sprintf("%s.xml", save.name)
-###     }
-###   }
-
   ext <- tolower(get.extension(save.name))
-
-  ## if (ext == "c" && length(getAnywhere("pmmltoc")$where) == 0)
-  ## {
-  ##   errorDialog("The PMMLtoC functionality does not appear to be available.",
-  ##               "This function needs to be loaded.",
-  ##               if (isRattle())
-  ##               paste("It is not available in Rattle by default.",
-  ##                     "\n\n", crv$support.msg))
-  ##   return(NULL)
-  ## }
 
   if (crv$export.to.c.available)
   {

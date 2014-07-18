@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-03-23 21:32:29 Graham Williams>
+# Time-stamp: <2014-05-15 08:23:35 Graham Williams>
 #
 # RANDOM FOREST TAB
 #
@@ -446,11 +446,9 @@ executeModelRF <- function(traditional=TRUE, conditional=!traditional)
   }
   else
   {
-    varimp.cmd <- paste("vi <- as.data.frame(sort(varimp(crs$rf),",
-                        "decreasing=TRUE))\n",
-                        "names(vi) <- 'Importance'\nvi")
+    varimp.cmd <- "data.frame(Importance=sort(varimp(crs$rf), decreasing=TRUE))"
   }
-  
+
   appendLog(Rtxt("List the importance of the variables."), varimp.cmd)
 
   result <- try(collectOutput(varimp.cmd), silent=TRUE)
@@ -463,19 +461,6 @@ executeModelRF <- function(traditional=TRUE, conditional=!traditional)
   
   addTextview(TV, sprintf("\n\n%s", Rtxt("Variable Importance")),
               "\n===================\n\n", result, "\n")
-
-  # 100522 Don't provide this information in the textview - the user
-  # can look into the log to find this out.
-  
-  ## addTextview(TV, sprintf(Rtxt ("\n\nDisplay the Model",
-  ##                              "\n\nTo view model 5, for example, execute the",
-  ##                              "command \n  %s\nin the R console. Generating",
-  ##                              "all models will take quite some time."),
-  ##                         ifelse(traditional,
-  ##                                "printRandomForests(crs$rf, 5)",
-  ##                                paste('party:::prettytree(crs$rf@ensemble[[5]],',
-  ##                                      'names(crs$rf@data@get("input")))'))),
-  ##             "\n")
 
   # 100107 What is the purpose of this?
 
@@ -543,25 +528,33 @@ plotRandomForestImportance <- function()
   
   newPlot()
   if (class(crs$rf) %in% "RandomForest")
-    plot.cmd <- paste('set.seed(crv$seed)',
-                      '\nrequire(ggplot2)',
-                      '\nv <- varimp(crs$rf)',
-                      '\nvimp <- data.frame(Variable=as.character(names(v)),',
-                      '\n                   Importance=v,',
-                      '\n                   colour=as.factor(ifelse(v<0, ',
-                      '"firebrick1", "steelblue")),',
-                      '\nrow.names=NULL, stringsAsFactors=FALSE)',
-                      '\nvimp <- with(vimp, vimp[rev(order(Importance)),])',
-                      '\np <- ggplot(vimp, aes(Variable, Importance))',
-                      '\nprint(p + geom_bar(aes(fill=colour)) + coord_flip() +',
-                      '\n          labs(x="", y="") + opts(legend.position="none"))',
-                      sep="")
+    plot.cmd <- paste('require(ggplot2)',
+                      '',
+                      '# Note that values vary slightly on each call to varimp().',
+                      '',
+                      'v    <- varimp(crs$rf)',
+                      'vimp <- data.frame(Variable=as.character(names(v)),',
+                      '                   Importance=v,',
+                      '                   row.names=NULL, stringsAsFactors=FALSE)',
+                      '',
+                      'p <- ggplot(vimp, aes(Variable, Importance))',
+                      'p <- p + geom_bar(stat="identity", position="identity")',
+                      'p <- p + scale_x_discrete(limits=with(vimp, Variable[order(Importance)]))',
+                      'p <- p + theme(legend.position="none",',
+                      '               axis.title.x = element_blank(),',
+                      '               axis.title.y = element_blank())',
+                      'p <- p + coord_flip()',
+                      'print(p)',
+                      sep="\n")
   else
     plot.cmd <- paste('varImpPlot(crs$rf, main="")\n',
                       genPlotTitleCmd(Rtxt("Variable Importance"),
                                       commonName(crv$RF), crs$dataname),
                       sep="")
-  appendLog(Rtxt("Plot the relative importance of the variables."), plot.cmd)
+
+  startLog()
+  appendLog(Rtxt("Plot the relative importance of the variables."),
+            sub("print\\(p\\)", "p", plot.cmd))
 
   set.cursor("watch")
   on.exit(set.cursor())

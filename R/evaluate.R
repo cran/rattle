@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-09-04 19:22:41 Graham Williams>
+# Time-stamp: <2014-07-18 13:15:37 gjw>
 #
 # Implement evaluate functionality.
 #
@@ -1228,15 +1228,20 @@ executeEvaluateConfusion <- function(respcmd, testset, testname)
                          Rtxt("Actual"), '", "',
                          Rtxt("Predicted"), '"))', sep="")
 
-    percentage.cmd <- paste("round(100*table(",
-                            sprintf("%s$%s, ", ts, crs$target),
-                            "crs$pr, ",
-                            '\n        dnn=c("', Rtxt("Actual"),
-                            '", "', Rtxt("Predicted"), '"))',
-                            "/length(crs$pr))",
-                            sep="")
+    percentage.cmd <- paste('pcme <- function(actual, cl)',
+                            '{',
+                            '  x <- table(actual, cl)',
+                            '  tbl <- cbind(round(x/length(actual), 2),',
+                            '               Error=round(c(x[1,2]/sum(x[1,]),',
+                            '                             x[2,1]/sum(x[2,])), 2))',
+                            '  names(attr(tbl, "dimnames")) <- c("Actual", "Predicted")',
+                            '  return(tbl)',
+                            '};',
+                            sprintf('pcme(%s$%s, crs$pr)', ts, crs$target),
+                            sep="\n")
 
     if (binomialTarget())
+    {
       # 080528 TODO generalise to categoricTarget. 091023 Handle the
       # case where there is only one value predicted from the two
       # possible values.
@@ -1246,6 +1251,12 @@ executeEvaluateConfusion <- function(respcmd, testset, testname)
                          "\noverall(table(crs$pr,",
                          sprintf("%s$%s, ", ts, crs$target),
                          '\n        dnn=c("Predicted", "Actual")))')
+      avgerr.cmd <- paste("avgerr <- function(x)",
+                          "\n\tcat(mean(c(x[1,2], x[2,1]) / apply(x, 1, sum)))",
+                          "\navgerr(table(crs$pr,",
+                          sprintf("%s$%s, ", ts, crs$target),
+                         '\n        dnn=c("Predicted", "Actual")))')
+    }
 
     # Log the R commands and execute them.
 
@@ -1294,13 +1305,15 @@ executeEvaluateConfusion <- function(respcmd, testset, testname)
 
     confuse.output <- collectOutput(confuse.cmd, TRUE)
 
-    appendLog(Rtxt("Generate the confusion matrix showing percentages."), percentage.cmd)
-    percentage.output <- collectOutput(percentage.cmd, TRUE)
+    appendLog(Rtxt("Generate the confusion matrix showing proportions."), percentage.cmd)
+    percentage.output <- collectOutput(percentage.cmd)
 
     if (binomialTarget())
     {
-      appendLog(Rtxt("Calucate the overall error percentage."), error.cmd)
+      appendLog(Rtxt("Calculate the overall error percentage."), error.cmd)
       error.output <- collectOutput(error.cmd)
+      appendLog(Rtxt("Calculate the averaged class error percentage."), avgerr.cmd)
+      avgerr.output <- collectOutput(avgerr.cmd)
     }
 
     appendTextview(TV,
@@ -1311,14 +1324,16 @@ executeEvaluateConfusion <- function(respcmd, testset, testname)
                    confuse.output,
                    "\n\n",
                    sprintf(Rtxt("Error matrix for the %s model",
-                                "on %s (%%):"),
+                                "on %s (proportions):"),
                            commonName(mtype), testname),
                    "\n\n",
                    percentage.output,
                    if (binomialTarget())
                    {
                      paste("\n\n", sprintf(Rtxt("Overall error: %s"),
-                                           format(error.output)), sep="")
+                                           format(error.output)),
+                           ", ",   sprintf(Rtxt("Averaged class error: %s"),
+                                           format(avgerr.output)), sep="")
                    })
 
   }
@@ -1675,11 +1690,11 @@ evaluateRisk <- function(predicted, actual, risks=NULL)
 
   if (is.null(risks))
     ds.actual <- data.frame(Actual=actual,
-                            Predict=as.factor(predicted))
+                            Predict=predicted)
   else
     ds.actual <- data.frame(Actual=actual,
                             Risk=as.numeric(risks), # Avoid integer overflow
-                            Predict=as.factor(predicted))
+                            Predict=predicted)
   #Predict=as.factor(ds.predict[,2]))
 
   # With na.rm=TRUE in the first sum here we cater for the case when
@@ -1726,17 +1741,21 @@ evaluateRisk <- function(predicted, actual, risks=NULL)
     ds.evaluation$Measure <- abs(ds.evaluation$Recall - ds.evaluation$Caseload) +
       abs(ds.evaluation$Risk - ds.evaluation$Caseload)
 
-  # 120502 Be sure we include the 0, 0 point - no caseload means no
-  # recall, no risk, no measure and let's say 100% strike rate.
+  # 120502 Be sure we include the 0, 0 point. 140503 If Caseload=0 is
+  # not present in the data, then add one. Previously used a check on
+  # whether row.names included a 1 but that does not acutally catch
+  # the case where the risk scores include 1. Recall, and Risk are 0
+  # and Strike Rate is 1. That is, no caseload means no recall, no
+  # risk, no measure and let's say 100% strike rate.
 
-  if (! 1 %in% row.names(ds.evaluation))
+  if (! 0 %in% ds.evaluation$Caseload)
   {
     if (is.null(risks))
       ds.evaluation <- rbind(ds.evaluation, c(0.00, 0.00, 1.00))
     else
       ds.evaluation <- rbind(ds.evaluation, c(0.00, 0.00, 0.00, 1.00, 0.00))
   
-    row.names(ds.evaluation)[nrow(ds.evaluation)] <- 1.00
+    row.names(ds.evaluation)[nrow(ds.evaluation)] <- "1.0"
   }
   
   return(ds.evaluation)
@@ -1913,21 +1932,23 @@ handleMissingValues <- function(testset, mtype)
 {
   # 091205 A shared function to generate predictions in the variable
   # pred that do not include any missing values (from the target
-  # variable.
+  # variable).
 
   return(paste("",
-               Rtxt("# Deal with any missing values in the target variable by",
-                    "\n# ignoring any training data with missing target values."),
-               "\n",
-               sprintf('no.miss <- na.omit(%s$%s)', testset[[mtype]], crs$target),
+               Rtxt("# Remove observations with missing target."),
+               '',
+               sprintf('no.miss   <- na.omit(%s$%s)', testset[[mtype]], crs$target),
                'miss.list <- attr(no.miss, "na.action")',
-               # 110320 Add this in to avoid prediction complaining
-               # about invalid labels.
+               # 110320 Avoid prediction complaining about invalid labels.
                'attributes(no.miss) <- NULL',
-               'if (length(miss.list)) {',
-               '\tpred <- prediction(crs$pr[-miss.list], no.miss)',
-               '} else {',
-               '\tpred <- prediction(crs$pr, no.miss)\n}',
+               '',
+               'if (length(miss.list))',
+               '{',
+               '  pred <- prediction(crs$pr[-miss.list], no.miss)',
+               '} else',
+               '{',
+               '  pred <- prediction(crs$pr, no.miss)',
+               '}',
                sep="\n"))
 }
 
@@ -2387,11 +2408,16 @@ executeEvaluateROC <- function(probcmd, testset, testname)
 {
   TV <- "roc_textview"
   resetTextview(TV)
+  advanced.graphics <- theWidget("use_ggplot2")$getActive()
+
   lib.cmd <- "require(ROCR, quietly=TRUE)"
   if (! packageIsAvailable("ROCR", Rtxt("plot an ROC curve"))) return()
 
-  newPlot()
-  addplot <- "FALSE"
+  if (advanced.graphics)
+  {
+    req.ggplot2.cmd <- "require(ggplot2, quietly=TRUE)"
+    if (! packageIsAvailable("ggplot2", "plot an ROC curve")) return()
+  }
 
   nummodels <- length(probcmd)
   mcolors <- rainbow(nummodels, 1, .8)
@@ -2399,21 +2425,59 @@ executeEvaluateROC <- function(probcmd, testset, testname)
 
   for (mtype in getEvaluateModels())
   {
+    # A new plot for each chart.
+    
+    newPlot()
+    addplot <- "FALSE"
+
+    # Inform the user what is going on.
+    
     setStatusBar(sprintf(Rtxt("Applying %s model to the dataset to generate",
                               "an ROC plot ..."),
                          mtype))
 
     mcount <- mcount + 1
-    plot.cmd <- paste(handleMissingValues(testset, mtype),
-                      '\nplot(performance(pred, "tpr", "fpr"), ',
-                      sprintf('col="%s", lty=%d, ', mcolors[mcount], mcount),
-                      sprintf("add=%s)\n", addplot),
-                      sep="")
+
+    plot.cmd <- handleMissingValues(testset, mtype)
+    if (advanced.graphics)
+      plot.cmd <-
+        paste(plot.cmd,
+              '',
+              'pe <- performance(pred, "tpr", "fpr")',
+              'au <- performance(pred, "auc")@y.values[[1]]',
+              'pd <- data.frame(fpr=unlist(pe@x.values), tpr=unlist(pe@y.values))',
+              'p <- ggplot(pd, aes(x=fpr, y=tpr))',
+              'p <- p + geom_line(colour="red")',
+              'p <- p + xlab("False Positive Rate") + ylab("True Positive Rate")',
+              sprintf('p <- p + ggtitle("ROC Curve %s %s %s")',
+                      commonName(mtype), testname, crs$target),
+              'p <- p + theme(plot.title=element_text(size=10))',
+              paste('p <- p + geom_line(data=data.frame(), aes(x=c(0,1), y=c(0,1)),',
+                    'colour="grey")'),
+              'p <- p + annotate("text", x=0.50, y=0.00, hjust=0, vjust=0, size=5,',
+              '                   label=paste("AUC =", round(au, 2)))',
+              'print(p)',
+              sep="\n")
+    else
+      plot.cmd <-
+        paste(plot.cmd,
+              '\n',
+              'plot(performance(pred, "tpr", "fpr"), ',
+              sprintf('col="%s", lty=%d, ', mcolors[mcount], mcount),
+              sprintf("add=%s)", addplot),
+              sep="")
+    
     addplot <- "TRUE"
 
     appendLog(Rtxt("ROC Curve: requires the ROCR package."), lib.cmd)
     eval(parse(text=lib.cmd))
 
+    if (advanced.graphics)
+    {
+      appendLog(Rtxt("ROC Curve: requires the ggplot2 package."), req.ggplot2.cmd)
+      eval(parse(text=req.ggplot2.cmd))
+    }
+    
     appendLog(sprintf(Rtxt("Generate an ROC Curve for the %s model on %s."),
                      mtype, testname),
              probcmd[[mtype]], "\n", plot.cmd)
@@ -2454,58 +2518,61 @@ executeEvaluateROC <- function(probcmd, testset, testname)
                                     "%s model on %s is %0.4f"),
                                mtype, testname, attr(auc, "y.values")))
   }
-  lines(c(0,1), c(0,1)) # Baseline
-
-  # If just one model, and we are plotting the test dataset, then
-  # also plot the training dataset.
-
-  if (nummodels==1 && length(grep(sprintf("\\[%s\\]", Rtxt("test")), testname))>0)
+  if (! advanced.graphics)
   {
-    mcount <- mcount + 1
-    plot.cmd <- paste(Rtxt("\n# In ROCR (1.0-3) plot does not obey the add command.\n"),
-                      Rtxt("# Calling the function directly works.\n\n"),
-                      ".plot.performance(performance(prediction(crs$pr, ",
-                      sprintf("%s$%s),",
-                              sub("-crs\\$sample", "crs$sample",
-                                  testset[[mtype]]), crs$target),
-                      '"tpr", "fpr"), ',
-                      'col="#00CCCCFF", lty=2, ',
-                      sprintf("add=%s)\n", addplot),
-                      sep="")
-    appendLog(sprintf(Rtxt("Generate an ROC curve for the %s model on %s."),
-                      mtype, sub(sprintf("\\[%s\\]", Rtxt("test")), '[train]', testname)),
-              sub("-crs\\$sample", "crs$sample",
-                  probcmd[[mtype]]), "\n", plot.cmd)
+    lines(c(0,1), c(0,1)) # Baseline
 
-    result <- try(eval(parse(text=sub("-crs\\$sample",
-                               "crs$sample", probcmd[[mtype]]))), silent=TRUE)
-    eval(parse(text=plot.cmd))
-    models <- c(Rtxt("Test"), Rtxt("Train"))
-    nummodels <- 2
-    legtitle <- getEvaluateModels()
-    title <- sub(sprintf("\\[%s\\]", Rtxt("test")), '', testname)
+    # If just one model, and we are plotting the test dataset, then
+    # also plot the training dataset.
+
+    if (nummodels==1 && length(grep(sprintf("\\[%s\\]", Rtxt("test")), testname))>0)
+    {
+      mcount <- mcount + 1
+      plot.cmd <- paste(Rtxt("\n# In ROCR (1.0-3) plot does not obey the add command.\n"),
+                        Rtxt("# Calling the function directly works.\n\n"),
+                        ".plot.performance(performance(prediction(crs$pr, ",
+                        sprintf("%s$%s),",
+                                sub("-crs\\$sample", "crs$sample",
+                                    testset[[mtype]]), crs$target),
+                        '"tpr", "fpr"), ',
+                        'col="#00CCCCFF", lty=2, ',
+                        sprintf("add=%s)\n", addplot),
+                        sep="")
+      appendLog(sprintf(Rtxt("Generate an ROC curve for the %s model on %s."),
+                        mtype, sub(sprintf("\\[%s\\]", Rtxt("test")), '[train]', testname)),
+                sub("-crs\\$sample", "crs$sample",
+                    probcmd[[mtype]]), "\n", plot.cmd)
+      
+      result <- try(eval(parse(text=sub("-crs\\$sample",
+                                   "crs$sample", probcmd[[mtype]]))), silent=TRUE)
+      eval(parse(text=plot.cmd))
+      models <- c(Rtxt("Test"), Rtxt("Train"))
+      nummodels <- 2
+      legtitle <- getEvaluateModels()
+      title <- sub(sprintf("\\[%s\\]", Rtxt("test")), '', testname)
+    }
+    else
+    {
+      models <- getEvaluateModels()
+      legtitle <- Rtxt("Models")
+      title <- testname
+    }
+    
+    legendcmd <- paste('legend("bottomright",',
+                       sprintf("c(%s),",
+                               paste('"', models, '"',
+                                     sep="", collapse=",")),
+                       sprintf('col=rainbow(%d, 1, .8), lty=1:%d,',
+                               nummodels, nummodels),
+                       sprintf('title="%s", inset=c(0.05, 0.05))', legtitle))
+    appendLog(Rtxt("Add a legend to the plot."), legendcmd)
+    eval(parse(text=legendcmd))
+
+    decor.cmd <- paste(genPlotTitleCmd(Rtxt("ROC Curve"), "", title),
+                       '\ngrid()', sep="")
+    appendLog(Rtxt("Add decorations to the plot."), decor.cmd)
+    eval(parse(text=decor.cmd))
   }
-  else
-  {
-    models <- getEvaluateModels()
-    legtitle <- Rtxt("Models")
-    title <- testname
-  }
-
-  legendcmd <- paste('legend("bottomright",',
-                     sprintf("c(%s),",
-                             paste('"', models, '"',
-                                   sep="", collapse=",")),
-                     sprintf('col=rainbow(%d, 1, .8), lty=1:%d,',
-                             nummodels, nummodels),
-                     sprintf('title="%s", inset=c(0.05, 0.05))', legtitle))
-  appendLog(Rtxt("Add a legend to the plot."), legendcmd)
-  eval(parse(text=legendcmd))
-
-  decor.cmd <- paste(genPlotTitleCmd(Rtxt("ROC Curve"), "", title),
-                    '\ngrid()', sep="")
-  appendLog(Rtxt("Add decorations to the plot."), decor.cmd)
-  eval(parse(text=decor.cmd))
 
   return(sprintf(Rtxt("Generated ROC Curves on %s."), testname))
 }
@@ -3173,6 +3240,9 @@ executeEvaluatePvOplot <- function(probcmd, testset, testname)
   # multiple charts onto one plot, keeping them all the same size
   # (thus if numplots is odd, leave a cell of the plot empty.
 
+  # TODO [140623] This needs to be updaed to work wiht crs$train, etc
+  # rather than crs$sample.
+  
   model.list <- getEvaluateModels()
   numplots <- length(model.list)
 
@@ -3312,7 +3382,17 @@ executeEvaluatePvOplot <- function(probcmd, testset, testname)
     else
       omitted <- NULL
 
-    # Now clean out the column subsets.
+    # Now clean out the column subsets. [140623] Big fixing the case
+    # where there are no missing amongst the crs$input but thre are
+    # amongst the other variables. I need to check again why we remove
+    # the variable list here - it seems correct to be
+    # c(crs$input,crs$target) when we run the obs <- commands
+    # below... So store the old value for now. Otherwise we get a
+    # mismatch in the number of crs$pr and the target values. However,
+    # the modified scoreset is not used for anything else so there
+    # must have been a reason to remove it?
+
+    orig.scoreset <- scoreset
 
     if (length(grep(",", scoreset)) > 0)
       scoreset <- gsub(",.*]", ",]", scoreset)
@@ -3323,6 +3403,11 @@ executeEvaluatePvOplot <- function(probcmd, testset, testname)
 
     if (not.null(omitted))
       scoreset <- sub(")", "[-omitted,]", sub("na.omit\\(", "", scoreset))
+    else
+      # [140623] Restore the original version here to see if that
+      # fixes the bug, without interferring with the complicated code
+      # to handle the omitted.
+      scoreset <- orig.scoreset
 
     # Extract the actual (i.e., observed) values that are to be
     # compared to the probabilities (i.e., predictions) from the

@@ -1,6 +1,6 @@
 @relation weather
 @attribute Date date "yyyy-MM-dd"
-@attribute Location {'Adelaide','Albany','Albury','AliceSprings','BadgerysCreek','Ballarat','Bendigo','Brisbane','Cairns','Canberra','Cobar','CoffsHarbour','Dartmoor','Darwin','GoldCoast','Hobart','Launceston','Melbourne','MelbourneAirport','Mildura','Moree','MountGambier','MountGinini','Newcastle','NorahHead','NorfolkIsland','Nuriootpa','PearceRAAF','Penrith','Perth','PerthAirport','Portland','Richmond','Sale','SalmonGums','Sydney','SydneyAirport','Townsville','Tuggeranong','WaggaWagga','Walpole','Watsonia','Williamtown','Witchcliffe','Wollongong','Woomera'}
+@attribute Location {'Adelaide','Albany','Albury','AliceSprings','BadgerysCreek','Ballarat','Bendigo','Brisbane','Cairns','Canberra','Cobar','CoffsHarbour','Dartmoor','Darwin','GoldCoast','Hobart','Katherine','Launceston','Melbourne','MelbourneAirport','Mildura','Moree','MountGambier','MountGinini','Newcastle','Nhil','NorahHead','NorfolkIsland','Nuriootpa','PearceRAAF','Penrith','Perth','PerthAirport','Portland','Richmond','Sale','SalmonGums','Sydney','SydneyAirport','Townsville','Tuggeranong','Uluru','WaggaWagga','Walpole','Watsonia','Williamtown','Witchcliffe','Wollongong','Woomera'}
 @attribute MinTemp numeric
 @attribute MaxTemp numeric
 @attribute Rainfall numeric

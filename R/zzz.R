@@ -1,8 +1,8 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-07-27 17:04:12 Graham Williams>
+# Time-stamp: <2014-07-14 20:58:17 gjw>
 #
-# Copyright (c) 2009-2013 Togaware Pty Ltd
+# Copyright (c) 2009-2014 Togaware Pty Ltd
 
 # These could be in rattle.R
 
@@ -115,9 +115,9 @@ on_aboutdialog_response <- function(object, ...)
   # yet work?
   
   crv$rattleUI <- "rattle.ui"
-  if (Sys.info()["sysname"] == "Darwin") crv$rattleUI <- "rattle_macosx.ui"
+  # if (Sys.info()["sysname"] == "Darwin") crv$rattleUI <- "rattle_macosx.ui"
 
-  crv$log.intro <- paste("#", sprintf(Rtxt("%s is Copyright (c) 2006-2013 %s."),
+  crv$log.intro <- paste("#", sprintf(Rtxt("%s is Copyright (c) 2006-2014 %s."),
                                       "Rattle", "Togaware Pty Ltd"))
   crv$support.msg <- sprintf(Rtxt("Contact %s.\n\n%s"), "support@togaware.com",
                              Rtxt("Please supply the output of rattleInfo()",
@@ -129,8 +129,6 @@ on_aboutdialog_response <- function(object, ...)
 
   crv$version <- VERSION
   crs$version <- VERSION
-  crv$revision <- REVISION
-  crs$revision <- REVISION
 
   # Some global constants
 
@@ -245,11 +243,11 @@ on_aboutdialog_response <- function(object, ...)
   # 091221 The Rtxt does not seem to work from the rattle.R file, so
   # do it here again.
   
-  COPYRIGHT <- sprintf(Rtxt("Copyright (c) 2006-2013 %s."), "Togaware Pty Ltd")
+  COPYRIGHT <- sprintf(Rtxt("Copyright (c) 2006-2014 %s."), "Togaware Pty Ltd")
 
   msg <- paste(Rtxt("Rattle: A free graphical interface",
                     "for data mining with R."), "\n",
-               Rtxt("Version"), " ", VERSION, " r", REVISION, " ",
+               Rtxt("Version"), " ", VERSION, " ",
                COPYRIGHT, "\n",
 #LICENSE
                Rtxt("Type 'rattle()' to shake, rattle, and roll your data."),

@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-08-17 09:58:13 Graham Williams>
+# Time-stamp: <2014-03-07 06:29:42 Graham Williams>
 #
 # Implement associations functionality.
 #
@@ -408,7 +408,9 @@ listAssociateRules <- function()
   # problem...
 
 #  if (lift == 0)
-  sby <- tolower(theWidget("associate_sort_comboboxtext")$getActiveText())
+  sby <- ""
+  if (! isMac())
+      sby <- tolower(theWidget("associate_sort_comboboxtext")$getActiveText())
   sort.ds <- ifelse(sby=="",
                     "crs$apriori",
                     sprintf('sort(crs$apriori, by="%s")', sby))

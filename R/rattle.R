@@ -1,17 +1,9 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-01-06 10:08:10 Graham Williams>
-#
+# Time-stamp: <2014-07-18 10:50:59 gjw>
 #
 # Copyright (c) 2009-2014 Togaware Pty Ltd
 #
-# The Rattle package is made of the following R source files:
-#
-# cluster.R	KMeans and Hierachical Clustering.
-# data.R	Handle Data management tasks.
-# execute.R	The Execute functionality.
-#
-
 # 120704 Avoid "no visible binding for global variable" warnings on a
 # check. However, this then requires R >= 2.15.1, so only do this
 # conditionally, particularly that a lot of users are not in the
@@ -63,9 +55,8 @@ Rtxt <- function(...)
 
 RtxtNT <- Rtxt
 
-VERSION <- "3.0.2"
-DATE <- "2014-02-06"
-REVISION <- "169"
+VERSION <- "3.1.0"
+DATE <- "2014-07-18"
 
 # 091223 Rtxt does not work until the rattle GUI has started, perhaps?
 COPYRIGHT <- paste(Rtxt("Copyright"), "(C) 2006-2014 Togaware Pty Ltd.")
@@ -214,17 +205,16 @@ rattleInfo <- function(all.dependencies=FALSE,
   iv <- utils::installed.packages()
   av <- available.packages(contriburl=contrib.url("http://cran.r-project.org"))
 
-  cat(sprintf("Rattle: version %s r%s cran %s\n",
-              crv$version, crv$revision, av["rattle", "Version"]))
+  cat(sprintf("Rattle: version %s cran %s\n",
+              crv$version, av["rattle", "Version"]))
 
   up <- NULL # List of packages that can be upgraded.
 
   if (compareVersion(av["rattle", "Version"], crv$version) == 1)
     up <- "rattle"
   
-  cat(sprintf("%s (Revision %s)\n",
-              sub(" version", ": version", version$version.string),
-              version$"svn rev"))
+  cat(sprintf("%s\n",
+              sub(" version", ": version", version$version.string)))
 
   cat("\n")
   si <- Sys.info()
@@ -501,7 +491,7 @@ rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=NULL)
   # 101127 No longer needed if (crv$useGtkBuilder || Sys.info()["sysname"] == "Darwin")
   # 111203 Is this still needed????? Try removing it.
   # 130412 Remove for now????
-  if (Sys.info()["sysname"] == "Darwin")
+  if (isMac())
     fixMacAndGtkBuilderTypes()
  
   # Ensure the About dialog will respond to the Quit button.
@@ -775,12 +765,13 @@ rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=NULL)
   crv$KMEANS 	<- "kmeans"
   crv$EWKM 	<- "ewkm"
   crv$CLARA 	<- "clara"
+  crv$PAM  	<- "pam"
   crv$HCLUST 	<- "hclust"
   crv$BICLUST 	<- "biclust"
   crv$APRIORI 	<- "apriori"
 
   # 091218 Not yet - avoid issues with RStat release.
-  # crv$DESCRIBE <- c(crv$KMEANS, crv$CLARA, crv$HCLUST, crv$BICLUST, crv$APRIORI)
+  # crv$DESCRIBE <- c(crv$KMEANS, crv$CLARA, crv$PAM, crv$HCLUST, crv$BICLUST, crv$APRIORI)
   crv$DESCRIBE <- c(crv$KMEANS, crv$HCLUST, crv$APRIORI)
 
   crv$GLM   	<- "glm"
@@ -934,6 +925,7 @@ rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=NULL)
   crv$CLUSTER.KMEANS.TAB  <- getNotebookPage(crv$CLUSTER, "kmeans")
   crv$CLUSTER.EWKM.TAB    <- getNotebookPage(crv$CLUSTER, "ewkm")
   crv$CLUSTER.CLARA.TAB   <- getNotebookPage(crv$CLUSTER, "clara")
+  crv$CLUSTER.PAM.TAB     <- getNotebookPage(crv$CLUSTER, "pam")
   crv$CLUSTER.HCLUST.TAB  <- getNotebookPage(crv$CLUSTER, "hclust")
   crv$CLUSTER.BICLUST.TAB <- getNotebookPage(crv$CLUSTER, "biclust")
 
@@ -1587,9 +1579,9 @@ displayWelcomeTabMessage <- function()
                             "Rattle comes with ABSOLUTELY NO WARRANTY.",
                             "See Help -> About for details."),
                        "\n\n",
-                       sprintf(Rtxt("Rattle Version %s r%s.",
+                       sprintf(Rtxt("Rattle Version %s.",
                                     "Copyright 2006-2014 Togaware Pty Ltd."),
-                               VERSION, REVISION),
+                               VERSION),
 #LOG_LICENSE
                        "\n",
                        Rtxt("Rattle is a registered trademark of Togaware Pty Ltd."),
@@ -1685,6 +1677,7 @@ resetRattle <- function(new.dataset=TRUE)
   crs$kmeans   <- NULL
   crs$kmeans.seed <- NULL
   crs$clara    <- NULL
+  crs$pam      <- NULL
   crs$hclust   <- NULL
   crs$biclust  <- NULL
   crs$apriori  <- NULL
@@ -1799,6 +1792,8 @@ resetRattle <- function(new.dataset=TRUE)
     theWidget("kmeans_discriminant_plot_button")$setSensitive(FALSE)
 
     # Reset Describe -> Cluster -> Clara
+
+    # Reset Describe -> Cluster -> PAM
 
     # Reset Describe -> Cluster -> HClust
 
@@ -1928,7 +1923,7 @@ resetRattle <- function(new.dataset=TRUE)
   theWidget("hclust_stats_button")$setSensitive(FALSE)
   theWidget("hclust_data_plot_button")$setSensitive(FALSE)
   theWidget("hclust_discriminant_plot_button")$setSensitive(FALSE)
-  theWidget("associate_sort_comboboxtext")$setActive(0)
+  if (! isMac()) theWidget("associate_sort_comboboxtext")$setActive(0)
   
   setStatusBar(Rtxt("To Begin: Choose the data source,",
                     "specify the details,",
@@ -1998,8 +1993,8 @@ errorDialog <- function(...)
   
   dialog <- gtkMessageDialogNew(NULL, "destroy-with-parent", "error", "close",
                                 ...,
-                                sprintf("\n\n%s %s %s",
-                                        crv$appname, crv$version, crv$revision))
+                                sprintf("\n\n%s %s",
+                                        crv$appname, crv$version))
   connectSignal(dialog, "response", gtkWidgetDestroy)
   return(FALSE)
 }
@@ -2392,6 +2387,16 @@ getCurrentPageLabel <- function(nb)
 {
   return(getNotebookPageLabel(nb, nb$getCurrentPage()))
 }
+
+isMac <- function()
+{
+  # 140307 Added to check for GUI tings not migrated back into the Mac
+  # GUI XML.
+    
+  # Perhaps should use .Platform$OS.type as below for isWindows.
+  return(Sys.info()["sysname"] == "Darwin")
+}
+
 
 isWindows <- function()
 {
@@ -2943,52 +2948,6 @@ get.stem <- function(path)
   last
 }
 
-plotNetwork <- function(flow)
-{
-  # A standalone support function for network plots - not used in
-  # Rattle per se but useful for drawing network plots.
-  
-  if (! packageIsAvailable("network", Rtxt("draw the network plot"))) return()
-  require(network, quietly=TRUE)
-
-  flow.net <- network(as.matrix(flow))
-
-  # Change the line widths to represent the magnitude of the flow.
-  # Use a log transform to get integers for the line widths.
-
-  flow.log <- log10(flow) # Log 10 to get magnitude
-  flow.log[flow.log==0] <- 1 # Set any 0's to 1 as the base case
-  flow.log[flow.log==-Inf] <- 0 # Set resulting -Infinty (log10(0)) values to 0
-  flow.mag <- round(flow.log) # Round them to
-
-  # Add color to indicate the magnitude.  Use heat colours to
-  # indicate the magnitude of the flow, from yellow to red.
-
-  heat <- rev(heat.colors(max(flow.mag)))
-  flow.col <- flow.mag
-  for (i in seq_along(heat)) flow.col[flow.col==i] <- heat[i]
-  flow.col <- sapply(flow.col, as.character)
-
-  # Record the magnitude of flow coming into any label and use this to
-  # scale the entity labels.
-
-  entity.sizes <- round(log10(apply(flow, 2, sum)))
-  entity.sizes[entity.sizes==-Inf] <- 0
-  entity.sizes <- 1 + entity.sizes-min(entity.sizes)
-  entity.sizes <- 1 + entity.sizes/max(entity.sizes)
-
-  # A warning that "par()$cxy * label.cex" have missmatched
-  # dimensions. par()$cxy is of length 2? Should be 1?
-
-  suppressWarnings(plot(flow.net, displaylabels=TRUE, usecurve=TRUE,
-                        mode="circle",
-                        edge.lwd=flow.mag*1.5, edge.col=flow.col,
-                        label.cex=entity.sizes, label.border=0))
-
-  eval(parse(text=genPlotTitleCmd("Network Map of Flows")))
-
-}
-
 ########################################################################
 #
 # Shared callbacks
@@ -3127,7 +3086,7 @@ on_about_menu_activate <-  function(action, window)
   else
     ab <- about$getWidget("aboutdialog")
 
-  ab$setVersion(paste0(crv$version, " r", crv$revision,
+  ab$setVersion(paste0(crv$version,
 #LICENSE
                        ""))
 
