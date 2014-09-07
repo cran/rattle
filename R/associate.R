@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-03-07 06:29:42 Graham Williams>
+# Time-stamp: <2014-09-06 08:29:55 gjw>
 #
 # Implement associations functionality.
 #
@@ -518,25 +518,25 @@ exportAssociateTab <- function()
   
   # Obtain filename to write the PMML to.
   
-  dialog <- gtkFileChooserDialog(Rtxt("Export PMML"), NULL, "save",
-                                 "gtk-cancel", GtkResponseType["cancel"],
-                                 "gtk-save", GtkResponseType["accept"])
+  dialog <- RGtk2::gtkFileChooserDialog(Rtxt("Export PMML"), NULL, "save",
+                                 "gtk-cancel", RGtk2::GtkResponseType["cancel"],
+                                 "gtk-save", RGtk2::GtkResponseType["accept"])
   dialog$setDoOverwriteConfirmation(TRUE)
 
   if(not.null(crs$dataname))
     dialog$setCurrentName(paste(get.stem(crs$dataname), "_arules.xml", sep=""))
 
-  ff <- gtkFileFilterNew()
+  ff <- RGtk2::gtkFileFilterNew()
   ff$setName(Rtxt("PMML Files"))
   ff$addPattern("*.xml")
   dialog$addFilter(ff)
 
-  ff <- gtkFileFilterNew()
+  ff <- RGtk2::gtkFileFilterNew()
   ff$setName(Rtxt("All Files"))
   ff$addPattern("*")
   dialog$addFilter(ff)
   
-  if (dialog$run() == GtkResponseType["accept"])
+  if (dialog$run() == RGtk2::GtkResponseType["accept"])
   {
     save.name <- dialog$getFilename()
     dialog$destroy()
@@ -556,7 +556,7 @@ exportAssociateTab <- function()
   pmml.cmd <- 'pmml(crs$apriori)'
   appendLog(Rtxt("Export association rules as PMML."),
             sprintf('saveXML(%s, "%s")', pmml.cmd, save.name))
-  saveXML(eval(parse(text=pmml.cmd)), save.name)
+  XML::saveXML(eval(parse(text=pmml.cmd)), save.name)
 
   setStatusBar(sprintf(Rtxt("The PMML file '%s' has been written."), save.name))
 }

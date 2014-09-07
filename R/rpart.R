@@ -1,10 +1,10 @@
-# Gnome R Data Miner: GNOME interface to R for Data Mining
-#
-# Time-stamp: <2013-11-20 06:22:15 Graham Williams>
+# Rattle: A GUI for Data Mining in R
 #
 # RPART TAB
 #
-# Copyright (c) 2009-2013 Togaware Pty Ltd except as noted:
+# Time-stamp: <2014-09-06 08:31:46 gjw>
+#
+# Copyright (c) 2009-2014 Togaware Pty Ltd except as noted:
 #
 # drawTreeNodes() is a modification of draw.tree() from the maptree
 # package written by Denis White. No copyright is claimed by Denis
@@ -573,175 +573,6 @@ showModelRPartExists <- function(state=!is.null(crs$rpart))
   }
 }
 
-#-----------------------------------------------------------------------
-# Fancy plot
-
-fancyRpartPlot <- function(model, main="", ...)
-{
-  # Note that rpart.plot requires rpart >= 3.1.48 which is not
-  # available on Windows R 2.12.2!
-
-  require("rpart.plot")
-  require("RColorBrewer")
-
-  num.classes <- length(attr(model, "ylevels"))
-
-  # Generate a colour pallete, with a range of 5 (palsize) colours for
-  # each of the 6 (numpals) palettes. The pallete is collapsed into
-  # one list. We index it according to the class. Keep to the lighter
-  # end of the pallete to ensure printing is okay otherwise the black
-  # text is hard to read.
-
-  numpals <- 6
-  palsize <- 5
-  pals <- c(brewer.pal(9, "Greens")[1:5],
-            brewer.pal(9, "Blues")[1:5],
-            brewer.pal(9, "Oranges")[1:5],
-            brewer.pal(9, "Purples")[1:5],
-            brewer.pal(9, "Reds")[1:5],
-            brewer.pal(9, "Greys")[1:5])
-  
-  # Extract the scores/percentages for each of the nodes for the
-  # majority decision.  The decisions are in column 1 of yval2 and the
-  # percentages are in the final num.classes columns.
-
-  # 121106 Need to handle regression as pointed out by Yana
-  # Kane-Esrig, 26 October 2012.
-
-  if (model$method == "class")
-  {
-    yval2per <- -(1:num.classes)-1
-    per <- apply(model$frame$yval2[,yval2per], 1, function(x) x[1+x[1]])
-  }
-  else
-  {
-    # 130329 This is the deviance relative the the total deviance measured at
-    # the root node. We use this to colour the strength of the node -
-    # so more intense colour means less relative deviance.
-    
-    #per <- 1 - (model$frame$dev/model$frame$dev[1])
-
-    # 130329 Perhaps instead we want to use the yval as the intensity
-    # of the predicted value. Currently not handling negative values.
-
-    per <- model$frame$yval/max(model$frame$yval)
-    
-  }
-  
-  # The conversion of a tree in CORElearn to an rpart tree results in these
-  # being character, so ensure we have numerics.
-  
-  per <- as.numeric(per)
-  
-  # Calculate an index into the combined colour sequence. Once we go
-  # above numpals * palsize (30) start over.
-
-  if (model$method == "class")
-    col.index <- ((palsize*(model$frame$yval-1) +
-                   trunc(pmin(1 + (per * palsize), palsize))) %%
-                  (numpals * palsize))
-  else
-    col.index <- round(per * (palsize-1)) + 1
-
-  # Define the contents of the tree nodes.
- 
-  ## my.node.fun <- function(x, labs, digits, varlen)
-  ##   paste(labs, "\n", round(100*per), "% of ",
-  ##         format(x$frame$n, big.mark=","),
-  ##         sep="")
-
-  # Determine the amount of extra information added to the nodes.
-
-  if (model$method == "class")
-    extra <- 104
-  else
-    extra <- 101
-  
-  # Generate the plot and title.
- 
-  prp(model, type=2, extra=extra,
-      box.col=pals[col.index],
-      nn=TRUE,
-      varlen=0, faclen=0,
-      shadow.col="grey",
-      fallen.leaves=TRUE,
-      branch.lty=3, ...)
-##      node.fun=my.node.fun, ...)
-  
-  title(main=main,
-    sub=paste("Rattle", format(Sys.time(), "%Y-%b-%d %H:%M:%S"), 
-              Sys.info()["user"]))
-}
-
-#----------------------------------------------------------------------
-# Print out RPart Rules
-
-asRules <- function(model, compact=FALSE, ...) UseMethod("asRules")
-
-asRules.rpart <- function(model, compact=FALSE, ...)
-{
-  if (!inherits(model, "rpart")) stop(Rtxt("Not a legitimate rpart tree"))
-  # if (model$method != "class")) stop("Model method needs to be class")
-  #
-  # Get some information.
-  #
-  rtree <- length(attr(model, "ylevels")) == 0
-  target <- as.character(attr(model$terms, "variables")[2])
-  frm <- model$frame
-  names <- row.names(frm)
-  ylevels <- attr(model, "ylevels")
-  ds.size <-  model$frame[1,]$n
-  #
-  # Print each leaf node as a rule.
-  #
-  if (rtree)
-    # Sort rules by coverage
-    ordered <- rev(sort(frm$n, index=TRUE)$ix)
-  else
-    # Sort rules by probabilty of second class (usually the last in binary class)
-    ordered <- rev(sort(frm$yval2[,5], index=TRUE)$ix)
-  for (i in ordered)
-  {
-    if (frm[i,1] == "<leaf>")
-    {
-      # The following [,5] is hardwired and works on one example....
-      if (rtree)
-        yval <- frm[i,]$yval
-      else
-        yval <- ylevels[frm[i,]$yval]
-      cover <- frm[i,]$n
-      pcover <- round(100*cover/ds.size)
-      if (! rtree) prob <- frm[i,]$yval2[,5]
-      cat("\n")
-      pth <- path.rpart(model, nodes=as.numeric(names[i]), print.it=FALSE)
-      pth <- unlist(pth)[-1]
-      if (! length(pth)) pth <- "True"
-      if (compact)
-      {
-        cat(sprintf("R%03s ", names[i]))
-        if (rtree)
-          cat(sprintf("[%2.0f%%,%0.2f]", pcover, prob))
-        else
-          cat(sprintf("[%2.0f%%,%0.2f]", pcover, prob))
-        cat(sprintf(" %s", pth), sep="")
-      }
-      else
-      {
-        cat(sprintf(Rtxt(" Rule number: %s "), names[i]))
-        if (rtree)
-          cat(sprintf("[%s=%s cover=%d (%.0f%%)]\n",
-                      target, yval, cover, pcover))
-        else
-          cat(sprintf("[%s=%s cover=%d (%.0f%%) prob=%0.2f]\n",
-                      target, yval, cover, pcover, prob))
-        cat(sprintf("   %s\n", pth), sep="")
-      }
-    }
-  }
-  cat("\n")
-  invisible(ordered)
-}
-
 list.rule.nodes.rpart <- function(model)
 {
   # The information we need is in the rpart frame
@@ -1096,7 +927,7 @@ exportRpartModel <- function()
   {
     appendLog(sprintf(Rtxt("Export %s as PMML."), commonName(crv$RPART)),
               sprintf('saveXML(%s, "%s")', pmml.cmd, save.name))
-    saveXML(eval(parse(text=pmml.cmd)), save.name)
+    XML::saveXML(eval(parse(text=pmml.cmd)), save.name)
   }
   else if (ext == "c")
   {

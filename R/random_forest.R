@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-05-15 08:23:35 Graham Williams>
+# Time-stamp: <2014-09-06 09:29:01 gjw>
 #
 # RANDOM FOREST TAB
 #
@@ -13,6 +13,7 @@ setRFOptions <- function(mtype)
 {
   theWidget("model_rf_sample_label")$setSensitive(mtype=="randomForest")
   theWidget("model_rf_sample_entry")$setSensitive(mtype=="randomForest")
+  theWidget("model_rf_impute_checkbutton")$setSensitive(mtype=="randomForest")
 }
 
 on_model_rf_traditional_radiobutton_toggled <- function(button)
@@ -183,13 +184,6 @@ executeModelRF <- function(traditional=TRUE, conditional=!traditional)
   
     parms <- sprintf("%s,\n      importance=TRUE", parms)
   }
-  
-
-  # Proximity is for unsupervised - not sure why I originally put it
-  # in here for the traditional model.
-  
-  # if (theWidget("rf_proximity_checkbutton")$getActive())
-  #  parms <- sprintf("%s, proximity=TRUE", parms)
   
   # Build the formula for the model. TODO We assume we will always do
   # classification rather than regression, at least for now.
@@ -708,7 +702,7 @@ treeset.randomForest <- function(model, n=1, root=1, format="R")
   ## Return a string listing the decision tree form of the chosen tree
   ## from the random forest.
   
-  tree <- getTree(model, n)
+  tree <- randomForest::getTree(model, n)
   if (format == "R")
   {
     cassign <- "<-"
@@ -809,7 +803,7 @@ ruleset.randomForest <- function(model, n=1, include.class=NULL)
   if (!inherits(model, "randomForest"))
     stop(Rtxt("the model is not of the 'randomForest' class"))
 
-  tr <- getTree(model, n)
+  tr <- randomForest::getTree(model, n)
   tr.paths <- getRFPathNodesTraverse(tr)
   tr.vars <- attr(model$terms, "dataClasses")[-1]
 
@@ -897,7 +891,7 @@ printRandomForest <- function(model, n=1, include.class=NULL,
 
   if (format=="VB") comment="'"
   
-  tr <- getTree(model, n)
+  tr <- randomForest::getTree(model, n)
   tr.paths <- getRFPathNodesTraverse(tr)
   tr.vars <- attr(model$terms, "dataClasses")[-1]
   
@@ -1019,7 +1013,7 @@ getRFRuleSet <- function(model, n)
 
   require(randomForest, quietly=TRUE)
 
-  tr <- getTree(model, n)
+  tr <- randomForest::getTree(model, n)
   tr.paths <- getRFPathNodes(tr)
   tr.vars <- attr(model$terms, "dataClasses")[-1]
   
@@ -1245,7 +1239,7 @@ exportRandomForestModel <- function()
   {
     appendLog(sprintf(Rtxt("Export %s as PMML."), commonName(crv$RF)),
               sprintf('saveXML(%s, "%s")', pmml.cmd, save.name))
-    saveXML(eval(parse(text=pmml.cmd)), save.name)
+    XML::saveXML(eval(parse(text=pmml.cmd)), save.name)
   }
   else if (ext == "c")
   {

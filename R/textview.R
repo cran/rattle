@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-03-16 08:51:04 Graham Williams>
+# Time-stamp: <2014-09-07 05:23:16 gjw>
 #
 # Textview widget support
 #
@@ -94,7 +94,7 @@ resetTextview <- function(tv, ..., sep="", tvsep=TRUE)
                 "We found a", class(tv)[1], crv$support.msg)
     return(FALSE)
   }
-  if (! isJapanese()) wid$modifyFont(pangoFontDescriptionFromString(crv$textview.font))
+  if (! isJapanese()) wid$modifyFont(RGtk2::pangoFontDescriptionFromString(crv$textview.font))
   msg <- paste(sep=sep, ...)
   if (length(msg) > 0)
   {
@@ -217,28 +217,26 @@ resetTextviews <- function(tv=NULL)
     return(FALSE)
   }
 
-  require(XML, quietly=TRUE)
-
   result <- try(etc <- file.path(path.package(package="rattle")[1], "etc"),
                 silent=TRUE)
   if (inherits(result, "try-error"))
-    doc <- xmlTreeParse("textviews.xml", useInternalNodes=TRUE)
+    doc <- XML::xmlTreeParse("textviews.xml", useInternalNodes=TRUE)
   else
-    doc <- xmlTreeParse(file.path(etc, "textviews.xml"), useInternalNodes=TRUE)
+    doc <- XML::xmlTreeParse(file.path(etc, "textviews.xml"), useInternalNodes=TRUE)
 
   if (is.null(tv))
-    sapply(getNodeSet(doc, "//textview"),
+    sapply(XML::getNodeSet(doc, "//textview"),
            function(tt)
            {
-             wd <- xmlGetAttr(tt, 'widget')
-             resetTextview(wd, Rtxt(xmlValue(tt)), tvsep=FALSE)
+             wd <- XML::xmlGetAttr(tt, 'widget')
+             resetTextview(wd, Rtxt(XML::xmlValue(tt)), tvsep=FALSE)
            })
   else
-    sapply(getNodeSet(doc, "//textview"),
+    sapply(XML::getNodeSet(doc, "//textview"),
            function(tt)
            {
-             wd <- xmlGetAttr(tt, 'widget')
-             if (wd %in% tv) resetTextview(wd, Rtxt(xmlValue(tt)), tvsep=FALSE)
+             wd <- XML::xmlGetAttr(tt, 'widget')
+             if (wd %in% tv) resetTextview(wd, Rtxt(XML::xmlValue(tt)), tvsep=FALSE)
            })
   invisible()
 }

@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-07-18 13:15:37 gjw>
+# Time-stamp: <2014-09-07 16:16:18 gjw>
 #
 # Implement evaluate functionality.
 #
@@ -1407,7 +1407,7 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
       
     if (advanced.graphics)
     {
-      lib.cmd <- "require(ggplot2, quietly=TRUE)"
+      lib.cmd <- "library(ggplot2)"
       if (! packageIsAvailable("ggplot2", "plot a riskchart")) return()
     }
       
@@ -1489,6 +1489,8 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
     if (advanced.graphics)
     {
       appendLog(Rtxt("Risk Chart: requires the ggplot2 package."), lib.cmd)
+      # 140906 Move to using namespaces within the code, though still
+      # expose the interactive commands.
       eval(parse(text=lib.cmd))
     }
 
@@ -1971,187 +1973,6 @@ handleMissingValues <- function(testset, mtype)
 #          Sys.info()["user"]))
 #}
 
-# Generate a PSF chart
-#
-# 2010-03-19 09:14:33 Graham Williams
-#
-#   source("psfchart.R")
-#   fname <-"scores.csv"
-#   ds <- read.csv("scores.csv")
-#   psfchart(ds$predicted, ds$actual)
-
-psfchart <- function(predicted,
-                     actual,
-                     bins=100,          # Number of bins to use for the plot.
-                     threshold=0.5,     # The decision threshold.
-                     splits=NULL,	# E.g., c(0.2, 0.8)
-                     split.lables=c("Low", "Medium", "High"),
-                     tic.size=0.2,      # proportional gap between axis ticks.
-                     gg=TRUE,
-                     verbose=FALSE)
-{
-  if (gg) require(ggplot2)
-
-  dosplits <- ! is.null(splits)
-
-  if (is.factor(actual)) actual <- as.numeric(actual)-1
-    
-  doAggregate <- function()
-  {
-          
-    # Bin the scores into "bins" bins and store the bins into
-    # variable "bin". If there are more bins specified than
-    # scores, then simply rank the scores. In the end we have for
-    # each score a "rank", which is an integer in 1:bins or
-    # 1:length(actual).
-      
-    if (length(actual) >= bins)
-    {
-      bin <- as.numeric(binning(predicted, bins, method="quantile",
-                                ordered=FALSE, labels=FALSE))
-    }
-    else
-    {
-      bin <- rescaler(predicted, "rank")
-    }
-
-    # Check whether the pr and target agree.
-
-    agree <- as.numeric(as.numeric(predicted > threshold) == actual)
-
-    # Get the size of each bin (should all be the same +/-
-    # 1). Also get a count of the positives in each bin, assumming
-    # a 0/1 value for actual (so sum will work) and the accuracy
-    # of each bin.
-
-    agg <- aggregate(actual, list(bin), length)
-    names(agg) <- c("bin", "size")
-    agg$pos <- aggregate(actual, list(bin), sum)[[2]]
-    agg$acc <- aggregate(agree, list(bin), sum)[[2]]
-    agg$max <- aggregate(predicted, list(bin), max)[[2]]
-    agg$tdiff <- agg$max - threshold
-        
-    # Rescale bins to be between 0 and 1 so AUC is more sensible.
-  
-    agg$rbin <- agg$bin/bins
-  
-    # Calulate the proportion accuracy
-  
-    agg$pacc <- agg$acc/agg$size
-
-    return(agg)
-  }
-  
-  # Determine the model's decision based on the score and threshold
-  # and save that as pr.
-
-  pr <- as.numeric(predicted > threshold)
-
-  tp <- round(100 * sum(pr==1 & actual==1)/length(actual))
-  fp <- round(100 * sum(pr==1 & actual==0)/length(actual))
-  tn <- round(100 * sum(pr==0 & actual==0)/length(actual))
-  fn <- round(100 * sum(pr==0 & actual==1)/length(actual))
-    
-  if (verbose)
-    cat("\nData Summary:",
-        sprintf("    Obs: %s\n",
-                format(length(actual), big.mark=",")),
-        sprintf("    Targets: %s; Rate: %0.2f%%\n",
-                format(sum(actual==1), big.mark=","),
-                100*sum(actual==1)/length(actual)),
-        sprintf("    Model TP: %9s FN: %9s\n",
-                format(sum(pr==1 & actual==1), big.mark=","),
-                format(sum(pr==0 & actual==1), big.mark=",")),
-        sprintf("          FP: %9s TN: %9s\n",
-                format(sum(pr==1 & actual==0), big.mark=","),
-                format(sum(pr==0 & actual==0), big.mark=",")))
-  
-  agg <- doAggregate()
-
-    if (gg)
-    {
-        if (dosplits)
-            classes <- data.frame(x=c(splits[1]/2,
-                                      (splits[1]+splits[2])/2,
-                                      (1+splits[2])/2),
-                                  lbl=split.labels)
-        
-        quads <- data.frame(x=c(0, 1, 0, 1), hj=c(0, 1, 0, 1),
-                            y=c(0, 0, 1, 1), vj=c(0, 0, 1, 1),
-                            lbl=c(sprintf("True Negatives (%s%%)", tn),
-                                sprintf("True Positives (%s%%)", tp),
-                                sprintf("False Negatives (%s%%)", fn),
-                                sprintf("False Positives (%s%%)", fp)))
-
-        xthresh <- agg$rbin[which(abs(agg$tdiff) == min(abs(agg$tdiff)))][1]
-
-        tics <- seq(0, 1, tic.size)
-        ord <- order(predicted)
-        scores <- data.frame(x=tics,
-                             score=round(predicted[ord][c(1,
-                                 round(tics*length(ord)))], 2))
-
-        p <- ggplot(agg, aes(rbin, pacc))
-        p <- p + geom_line()
-        p <- p + ggtitle("Proportional Score Function (PSF) Curve")
-        p <- p + scale_y_continuous("% Accuracy", limits=c(0,1),
-                                    labels=100*tics, breaks=tics)
-        p <- p + scale_x_continuous(paste("Proportion of Cases",
-                                          "\nSorted by Increasing Risk Scores"),
-                                    breaks=tics)
-        p <- p + geom_text(data=quads,
-                           aes(x=x, y=y, label=lbl, hjust=hj, vjust=vj, size=5))
-        p <- p + geom_text(x=xthresh, aes(y=0, size=5),
-                           label=sprintf("Threshold (%s)", threshold),
-                           vjust=2, hjust=1.1)
-        p <- p + geom_vline(xintercept=xthresh)
-        p <- p + geom_text(data=scores, aes(x=x, y=1, label=score, size=5),
-                           vjust=-0.5)
-        p <- p + theme(legend.position="none")
-        if (dosplits)
-        {
-            p <- p + geom_text(data=classes, aes(x=x, y=0.2, label=lbl))
-            p <- p + geom_vline(xintercept=low, linetype="twodash", color="grey")
-            p <- p + geom_vline(xintercept=high, linetype="twodash", color="grey")
-        }
-        return(p)
-    }
-    else
-    {
-        plot(agg$rbin, agg$pacc, type="l", xlim=c(0,1), ylim=c(0,1),
-             xlab="Proportion of Cases\nSorted by Risk Score", ylab="% Accuracy")
-        title(main="PSF\n")
-  
-        abline(v=0.25, lty=3)
-        abline(v=0.75, lty=3)
-        text(0.08, 0.08, "Low")
-        text(0.5, 0.08, "Medium")
-        text(0.92, 0.08, "High")
-        
-        # Add annotations for the sinlge plot.
-        
-        abline(v=agg$rbin[which(abs(agg$tdiff) == min(abs(agg$tdiff)))], lty=1)
-        xthresh <- agg$rbin[which(abs(agg$tdiff) == min(abs(agg$tdiff)))]
-        text(xthresh, 0.15, "Threshold", pos=2)
-        text(xthresh, 0.1, threshold, pos=2)
-        
-        # TODO NEED TO PROGRAMMATICALLY DETERMINE THE LABELS FROM MIN SCORE TO MAX SCORE
-        ord <- order(predicted)
-        scores <- predicted[ord]
-        axis(3, at=seq(0, 1, 0.2), padj=1.5, lwd.ticks=0,
-             labels=round(scores[c(1, round(seq(0, 1, 0.2)*length(scores)))], 2))
-        
-        text(0.92, 1, "False Positives")
-        text(0.085, 1, "False Negatives")
-        text(0.92, 0, "True Positives")
-        text(0.08, 0, "True Negatives")
-        
-        opar <- par(xpd=TRUE)
-        text(0.5, 1.08,"Scores")
-        par(opar)
-    }
-}
-
 #----------------------------------------------------------------------
 # EVALUATE COST CURVE 080524
 
@@ -2159,7 +1980,7 @@ executeEvaluateCostCurve <- function(probcmd, testset, testname)
 {
   # 080524 Display Cost Curves (Drummond and Holte)
 
-  lib.cmd <- "require(ROCR, quietly=TRUE)"
+  lib.cmd <- "library(ROCR)"
   if (! packageIsAvailable("ROCR", "plot a cost curve")) return()
 
   # Put 1 or 2 charts onto their own plots. Otherwise, put the
@@ -2186,10 +2007,11 @@ executeEvaluateCostCurve <- function(probcmd, testset, testname)
   opar <- par(cex=cex)
 
   nummodels <- length(probcmd)
-  if (packageIsAvailable("colorspace"))
-     mcolors <- rainbow_hcl(nummodels) # 090524, start = 270, end = 150)
-  else
-    mcolors <- rainbow(nummodels, 1, .8)
+  #140906 mcolors is not used? Why define it??? REMOVE.
+  #  if (packageIsAvailable("colorspace"))
+  #     mcolors <- colorspace::rainbow_hcl(nummodels) # 090524, start = 270, end = 150)
+  #  else
+  #    mcolors <- rainbow(nummodels, 1, .8)
   mcount <- 0
 
   model.list <- getEvaluateModels()
@@ -2229,6 +2051,8 @@ executeEvaluateCostCurve <- function(probcmd, testset, testname)
                       sep="\n")
 
     appendLog(Rtxt("Cost Curve: requires the ROCR package."), lib.cmd)
+    # 140906 Move to using namespaces within the code, though still
+    # expose the interactive commands.
     eval(parse(text=lib.cmd))
 
     appendLog(sprintf(Rtxt("Generate a Cost Curve for the %s model on %s."),
@@ -2277,7 +2101,7 @@ executeEvaluateCostCurve <- function(probcmd, testset, testname)
 
 executeEvaluateLift <- function(probcmd, testset, testname)
 {
-  lib.cmd <- "require(ROCR, quietly=TRUE)"
+  lib.cmd <- "library(ROCR)"
   if (! packageIsAvailable("ROCR", Rtxt("plot a lift chart"))) return()
 
   newPlot()
@@ -2309,6 +2133,8 @@ executeEvaluateLift <- function(probcmd, testset, testname)
     addplot <- "TRUE"
 
     appendLog(Rtxt("Lift Chart: requires the ROCR package."), lib.cmd)
+    # 140906 Move to using namespaces within the code, though still
+    # expose the interactive commands.
     eval(parse(text=lib.cmd))
 
     # print(mtype); print(testname)
@@ -2410,7 +2236,7 @@ executeEvaluateROC <- function(probcmd, testset, testname)
   resetTextview(TV)
   advanced.graphics <- theWidget("use_ggplot2")$getActive()
 
-  lib.cmd <- "require(ROCR, quietly=TRUE)"
+  lib.cmd <- "library(ROCR)"
   if (! packageIsAvailable("ROCR", Rtxt("plot an ROC curve"))) return()
 
   if (advanced.graphics)
@@ -2470,6 +2296,8 @@ executeEvaluateROC <- function(probcmd, testset, testname)
     addplot <- "TRUE"
 
     appendLog(Rtxt("ROC Curve: requires the ROCR package."), lib.cmd)
+    # 140906 Move to using namespaces within the code, though still
+    # expose the interactive commands.
     eval(parse(text=lib.cmd))
 
     if (advanced.graphics)
@@ -2582,7 +2410,7 @@ executeEvaluateROC <- function(probcmd, testset, testname)
 
 executeEvaluatePrecision <- function(probcmd, testset, testname)
 {
-  lib.cmd <- "require(ROCR, quietly=TRUE)"
+  lib.cmd <- "library(ROCR)"
   if (! packageIsAvailable("ROCR", Rtxt("plot a precision chart"))) return()
 
   newPlot()
@@ -2607,6 +2435,8 @@ executeEvaluatePrecision <- function(probcmd, testset, testname)
     addplot <- "TRUE"
 
     appendLog(Rtxt("Precision/Recall Plot: requires the ROCR package"), lib.cmd)
+    # 140906 Move to using namespaces within the code, though still
+    # expose the interactive commands.
     eval(parse(text=lib.cmd))
 
     appendLog(sprintf(Rtxt("Generate a Precision/Recall Plot for the %s model on %s."),
@@ -2697,7 +2527,7 @@ executeEvaluatePrecision <- function(probcmd, testset, testname)
 
 executeEvaluateSensitivity <- function(probcmd, testset, testname)
 {
-  lib.cmd <- "require(ROCR, quietly=TRUE)"
+  lib.cmd <- "library(ROCR)"
   if (! packageIsAvailable("ROCR", Rtxt("plot a sensitivity chart"))) return()
 
   newPlot()
@@ -2834,16 +2664,15 @@ executeEvaluateScore <- function(probcmd, respcmd, testset, testname, dfedit.don
       # 100307 Not quite ready yet - needs to know when to continue
       # after the data has been editted. Tom is fixing this up for
       # RGtk2Extras so I will be able to start using it then.
-      require(RGtk2Extras)
 #      infoDialog(Rtxt ("RGtk2Extras will be used to edit",
 #                      "a data frame called 'rattle.entered.dataset'. Once you have",
 #                      "edited the dataset and the window is closed the dataset",
 #                      "will be scored."))
       dsname <- "rattle.entered.dataset"
       if (exists(dsname))
-        rattle.edit.obj <- dfedit(rattle.entered.dataset, size=c(800, 400))
+        rattle.edit.obj <- RGtk2Extras::dfedit(rattle.entered.dataset, size=c(800, 400))
       else
-        rattle.edit.obj <- dfedit(crs$dataset[nrow(crs$dataset),
+        rattle.edit.obj <- RGtk2Extras::dfedit(crs$dataset[nrow(crs$dataset),
                                               c(crs$ident, crs$input, crs$target)],
                                   size=c(800, 400), dataset.name=dsname)
 
@@ -2852,7 +2681,7 @@ executeEvaluateScore <- function(probcmd, respcmd, testset, testname, dfedit.don
       testset <- lapply(testset, function(x) sub("crs\\$dataset", dsname, x))
       testname <- "manually entered data"
 
-      gSignalConnect(rattle.edit.obj, "unrealize", data=rattle.edit.obj,
+      RGtk2::gSignalConnect(rattle.edit.obj, "unrealize", data=rattle.edit.obj,
                      function(obj, data)
                      {
                        #print(paste("Exited", data$getDatasetName()))
@@ -2922,26 +2751,26 @@ executeEvaluateScore <- function(probcmd, respcmd, testset, testname, dfedit.don
                          sinclude)
       # fname <- paste(getwd(), default, sep="/")
 
-      dialog <- gtkFileChooserDialog(Rtxt("Score Files"), NULL, "save",
-                                     "gtk-cancel", GtkResponseType["cancel"],
-                                     "gtk-save", GtkResponseType["accept"])
+      dialog <- RGtk2::gtkFileChooserDialog(Rtxt("Score Files"), NULL, "save",
+                                     "gtk-cancel", RGtk2::GtkResponseType["cancel"],
+                                     "gtk-save", RGtk2::GtkResponseType["accept"])
       dialog$setDoOverwriteConfirmation(TRUE)
 
       if(not.null(testname)) dialog$setCurrentName(default)
 
       #dialog$setCurrentFolder(crs$dwd) Generates errors.
 
-      ff <- gtkFileFilterNew()
+      ff <- RGtk2::gtkFileFilterNew()
       ff$setName(Rtxt("CSV Files"))
       ff$addPattern("*.csv")
       dialog$addFilter(ff)
 
-      ff <- gtkFileFilterNew()
+      ff <- RGtk2::gtkFileFilterNew()
       ff$setName(Rtxt("All Files"))
       ff$addPattern("*")
       dialog$addFilter(ff)
 
-      if (dialog$run() == GtkResponseType["accept"])
+      if (dialog$run() == RGtk2::GtkResponseType["accept"])
       {
         fname <- dialog$getFilename()
         dialog$destroy()
@@ -3535,9 +3364,11 @@ executeEvaluateHand <- function(probcmd, testset, testname)
 {
   # 130119 Replace with the HMeasure package functionality.
 
-  lib.cmd <- "require(hmeasure, quietly=TRUE)"
+  lib.cmd <- "library(hmeasure)"
   if (! packageIsAvailable("hmeasure", "compute Hand's performance measures")) return()
   appendLog(Rtxt("David Hand's Performance Measures"), lib.cmd)
+  # 140906 Move to using namespaces within the code, though still
+  # expose the interactive commands.
   eval(parse(text=lib.cmd))
   
   model.list <- getEvaluateModels()
@@ -3561,11 +3392,11 @@ executeEvaluateHand <- function(probcmd, testset, testname)
     # 130119 Use the now released package rather than David's original
     # code.
 
-    result <- HMeasure(obs, pr)
-    plotROC(result, which=1)
-    plotROC(result, which=2)
-    plotROC(result, which=3)
-    plotROC(result, which=4)
+    result <- hmeasure::HMeasure(obs, pr)
+    hmeasure::plotROC(result, which=1)
+    hmeasure::plotROC(result, which=2)
+    hmeasure::plotROC(result, which=3)
+    hmeasure::plotROC(result, which=4)
 
     with(result$metric,
          cat(sprintf("%s: H=%f,  Gini=%f, AUC=%f,AUCH=%f, KS=%f\n",

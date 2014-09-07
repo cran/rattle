@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-03-06 18:42:56 Graham Williams>
+# Time-stamp: <2014-09-06 09:27:12 gjw>
 #
 # Implement LOG functionality.
 #
@@ -34,7 +34,7 @@ initiateLog <- function()
   # 100407 Change the font to monospace, like all other textviews.
   
   if (! isJapanese())
-    theWidget("log_textview")$modifyFont(pangoFontDescriptionFromString(crv$textview.font))
+    theWidget("log_textview")$modifyFont(RGtk2::pangoFontDescriptionFromString(crv$textview.font))
   
   if (! is.null(crv$log.intro))
     appendTextview("log_textview", crv$log.intro, tvsep=FALSE)
@@ -134,25 +134,25 @@ exportLogTab <- function()
 {
   # Obtain filename to the LOG textview to.
   
-  dialog <- gtkFileChooserDialog(Rtxt("Export Log"), NULL, "save",
-                                 "gtk-cancel", GtkResponseType["cancel"],
-                                 "gtk-save", GtkResponseType["accept"])
+  dialog <- RGtk2::gtkFileChooserDialog(Rtxt("Export Log"), NULL, "save",
+                                 "gtk-cancel", RGtk2::GtkResponseType["cancel"],
+                                 "gtk-save", RGtk2::GtkResponseType["accept"])
   dialog$setDoOverwriteConfirmation(TRUE)
 
   if(not.null(crs$dataname))
     dialog$setCurrentName(sprintf("%s_script.R", get.stem(crs$dataname)))
 
-  ff <- gtkFileFilterNew()
+  ff <- RGtk2::gtkFileFilterNew()
   ff$setName(Rtxt("R Files"))
   ff$addPattern("*.R")
   dialog$addFilter(ff)
 
-  ff <- gtkFileFilterNew()
+  ff <- RGtk2::gtkFileFilterNew()
   ff$setName(Rtxt("All Files"))
   ff$addPattern("*")
   dialog$addFilter(ff)
   
-  if (dialog$run() == GtkResponseType["accept"])
+  if (dialog$run() == RGtk2::GtkResponseType["accept"])
   {
     save.name <- dialog$getFilename()
     dialog$destroy()

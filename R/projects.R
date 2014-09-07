@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-08-07 20:39:21 Graham Williams>
+# Time-stamp: <2014-09-06 08:27:02 gjw>
 #
 # Project functionality.
 #
@@ -152,9 +152,9 @@ saveProject <- function()
 
   # Obtain a filename to save to.
   
-  dialog <- gtkFileChooserDialog(Rtxt("Save Project"), NULL, "save",
-                                 "gtk-cancel", GtkResponseType["cancel"],
-                                 "gtk-save", GtkResponseType["accept"])
+  dialog <- RGtk2::gtkFileChooserDialog(Rtxt("Save Project"), NULL, "save",
+                                 "gtk-cancel", RGtk2::GtkResponseType["cancel"],
+                                 "gtk-save", RGtk2::GtkResponseType["accept"])
   dialog$setDoOverwriteConfirmation(TRUE)
 
   # 090707 Add the crs$projext extension by default to be consistent
@@ -171,23 +171,23 @@ saveProject <- function()
 
   if (length(crv$project.extensions))
   {
-    ff <- gtkFileFilterNew()
+    ff <- RGtk2::gtkFileFilterNew()
     ff$setName(Rtxt("Projects"))
     lapply(paste("*.", crv$project.extensions, sep=""), ff$addPattern)
     dialog$addFilter(ff)
   }
  
-  ff <- gtkFileFilterNew()
+  ff <- RGtk2::gtkFileFilterNew()
   ff$setName(Rtxt("RData Files"))
   ff$addPattern("*.Rdata")
   dialog$addFilter(ff)
 
-  ff <- gtkFileFilterNew()
+  ff <- RGtk2::gtkFileFilterNew()
   ff$setName(Rtxt("All Files"))
   ff$addPattern("*")
   dialog$addFilter(ff)
   
-  if (dialog$run() == GtkResponseType["accept"])
+  if (dialog$run() == RGtk2::GtkResponseType["accept"])
   {
     save.name <- dialog$getFilename()
     save.ext <- get.extension(save.name)
@@ -333,31 +333,31 @@ loadProject <- function()
 
   # Request the rattle filename to be loaded
 
-  dialog <- gtkFileChooserDialog(Rtxt("Open Project"), NULL, "load",
-                                 "gtk-cancel", GtkResponseType["cancel"],
-                                 "gtk-open", GtkResponseType["accept"])
+  dialog <- RGtk2::gtkFileChooserDialog(Rtxt("Open Project"), NULL, "load",
+                                 "gtk-cancel", RGtk2::GtkResponseType["cancel"],
+                                 "gtk-open", RGtk2::GtkResponseType["accept"])
 
   if (! is.null(crs$pwd)) dialog$setCurrentFolder(crs$pwd)
 
   if (length(crv$project.extensions))
   {
-    ff <- gtkFileFilterNew()
+    ff <- RGtk2::gtkFileFilterNew()
     ff$setName(Rtxt("Projects"))
     lapply(paste("*.", crv$project.extensions, sep=""), ff$addPattern)
     dialog$addFilter(ff)
   }
   
-  ff <- gtkFileFilterNew()
+  ff <- RGtk2::gtkFileFilterNew()
   ff$setName(Rtxt("RData Files"))
   ff$addPattern("*.RData")
   dialog$addFilter(ff)
 
-  ff <- gtkFileFilterNew()
+  ff <- RGtk2::gtkFileFilterNew()
   ff$setName(Rtxt("All Files"))
   ff$addPattern("*")
   dialog$addFilter(ff)
   
-  if (dialog$run() == GtkResponseType["accept"])
+  if (dialog$run() == RGtk2::GtkResponseType["accept"])
   {
     load.name <- dialog$getFilename()
     dialog$destroy()

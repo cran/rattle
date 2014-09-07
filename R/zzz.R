@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-07-14 20:58:17 gjw>
+# Time-stamp: <2014-09-06 09:33:28 gjw>
 #
 # Copyright (c) 2009-2014 Togaware Pty Ltd
 
@@ -15,8 +15,8 @@ if (! exists("RATTLE.SCORE.OUT")) RATTLE.SCORE.OUT <- NULL
 
 on_aboutdialog_response <- function(object, ...)
 {
-  checkPtrType(object, "GtkWidget")
-  w <- .RGtkCall("S_gtk_widget_destroy", object, PACKAGE = "RGtk2")
+  RGtk2::checkPtrType(object, "GtkWidget")
+  w <- RGtk2::.RGtkCall("S_gtk_widget_destroy", object, PACKAGE = "RGtk2")
   return(invisible(w))
 }
 

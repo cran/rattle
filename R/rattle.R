@@ -1,9 +1,26 @@
-# Gnome R Data Miner: GNOME interface to R for Data Mining
+# Rattle: A GUI for Data Mining in R
 #
-# Time-stamp: <2014-07-18 10:50:59 gjw>
+# BASE FUNCTIONS
+#
+# Time-stamp: <2014-09-07 14:09:55 gjw>
 #
 # Copyright (c) 2009-2014 Togaware Pty Ltd
 #
+# This files is part of Rattle.
+#
+# Rattle is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# Rattle is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+
 # 120704 Avoid "no visible binding for global variable" warnings on a
 # check. However, this then requires R >= 2.15.1, so only do this
 # conditionally, particularly that a lot of users are not in the
@@ -55,8 +72,8 @@ Rtxt <- function(...)
 
 RtxtNT <- Rtxt
 
-VERSION <- "3.1.0"
-DATE <- "2014-07-18"
+VERSION <- "3.3.0"
+DATE <- "2014-09-07"
 
 # 091223 Rtxt does not work until the rattle GUI has started, perhaps?
 COPYRIGHT <- paste(Rtxt("Copyright"), "(C) 2006-2014 Togaware Pty Ltd.")
@@ -181,197 +198,6 @@ COPYRIGHT <- paste(Rtxt("Copyright"), "(C) 2006-2014 Togaware Pty Ltd.")
 
 toga <- function() browseURL("http://rattle.togaware.com")
 
-rattleInfo <- function(all.dependencies=FALSE,
-                       include.not.installed=FALSE,
-                       include.not.available=FALSE,
-                       include.libpath=FALSE)
-{
-  # Alternatives include:
-  # http://mirror.aarnet.edu.au/pub/CRAN/
-
-  # 120221 Brian Ripley seems to be checking for packages using
-  # installed.packages() and warning about it being a "very slow way
-  # to find information on one or a small number of packages," as
-  # stated on the man page, and as I am very aware. He goes on to say:
-  # "In addition, many of you are using it to find out if a package is
-  # installed, when actually you want to know if it is usable (it
-  # might for example be installed for a different architecture or
-  # require a later version of R), for which you need to use
-  # require()." I have already fixed my usage of installed.packages()
-  # within packageIsAvailable(), where there was a better way of
-  # checking for an installed package. But here I think it might be
-  # appropriate to use it.
-  
-  iv <- utils::installed.packages()
-  av <- available.packages(contriburl=contrib.url("http://cran.r-project.org"))
-
-  cat(sprintf("Rattle: version %s cran %s\n",
-              crv$version, av["rattle", "Version"]))
-
-  up <- NULL # List of packages that can be upgraded.
-
-  if (compareVersion(av["rattle", "Version"], crv$version) == 1)
-    up <- "rattle"
-  
-  cat(sprintf("%s\n",
-              sub(" version", ": version", version$version.string)))
-
-  cat("\n")
-  si <- Sys.info()
-  for (i in seq_along(si))
-    cat(sprintf("%s%s: %s\n", toupper(substr(names(si)[i], 1, 1)),
-                substring(names(si)[i], 2), si[i]))
-
-  cat("\nInstalled Dependencies\n")
-
-  if (all.dependencies)
-  {
-    cat("  please wait a few seconds whilst all dependencies are searched for...")
-    # This version removes the suggests.only and uses all of Depends,
-    # Import, and Suggests.
-    makeDepGraph <- function (repList, type = getOption("pkgType"), 
-                              keep.builtin = FALSE, dosize = TRUE) 
-    {
-      pkgMatList <- lapply(repList, function(x) {
-        available.packages(contrib.url(x, type = type))
-      })
-      if (!keep.builtin) 
-        baseOrRecPkgs <- rownames(utils::installed.packages(priority = "high"))
-      allPkgs <- unlist(sapply(pkgMatList, function(x) rownames(x)))
-      if (!length(allPkgs)) 
-        stop("no packages in specified repositories")
-      allPkgs <- unique(allPkgs)
-      depG <- new("graphNEL", nodes = allPkgs, edgemode = "directed")
-      nodeDataDefaults(depG, attr = "size") <- as.numeric(NA)
-      for (pMat in pkgMatList) {
-        for (p in rownames(pMat)) {
-          deps <- pkgDepTools:::cleanPkgField(pMat[p, "Depends"])
-          deps <- c(deps, pkgDepTools:::cleanPkgField(pMat[p, "Imports"]))
-          deps <- c(deps, pkgDepTools:::cleanPkgField(pMat[p, "Suggests"]))
-          deps <- unique(deps)
-          if (length(deps) && !keep.builtin) 
-            deps <- deps[!(deps %in% baseOrRecPkgs)]
-          if (length(deps)) {
-            notFound <- !(deps %in% nodes(depG))
-            if (any(notFound)) 
-              depG <- addNode(deps[notFound], depG)
-            deps <- deps[!is.na(deps)]
-            depG <- addEdge(from = p, to = deps, depG)
-          }
-        }
-        if (dosize) {
-          sizes <- pkgDepTools:::getDownloadSizesBatched(pkgDepTools:::makePkgUrl(pMat))
-          nodeData(depG, n = rownames(pMat), attr = "size") <- sizes
-        }
-      }
-      depG
-    }
-
-    suppressPackageStartupMessages({
-      require(pmml, quietly=TRUE)
-      require(methods, quietly=TRUE)
-      require(colorspace, quietly=TRUE)
-      require(cairoDevice, quietly=TRUE)
-      require(RGtk2, quietly=TRUE)
-      require(utils, quietly=TRUE)
-      require(XML, quietly=TRUE)
-      require(graph, quietly=TRUE, warn.conflicts=FALSE)
-
-      require(RBGL, quietly=TRUE)
-      require(bitops, quietly=TRUE)
-      require(grid, quietly=TRUE)
-
-      if (! require(pkgDepTools, quietly=TRUE))
-      {
-        source("http://bioconductor.org/biocLite.R")
-        pkg <- "pkgDepTools"
-        biocLite("pkgDepTools")
-        cmd <- sprintf("require(%s, quietly=TRUE)", pkg)
-        eval(parse(text=cmd))
-      }
-      if (! require(Rgraphviz, quietly=TRUE))
-      {
-        source("http://bioconductor.org/biocLite.R")
-        biocLite("Rgraphviz")
-        require(Rgraphviz, quietly=TRUE)
-      }
-    })
-      
-    cran.repos <- "http://cran.r-project.org"
-    if (isWindows())
-      cran.deps <- makeDepGraph(cran.repos, type="win.binary", dosize=TRUE)
-    else
-      cran.deps <- makeDepGraph(cran.repos, type="source", dosize=TRUE)
-
-    deps <- c("rattle", names(acc(cran.deps, "rattle")[[1]]))
-    cat("\n")
-  }    
-  else
-    deps <- strsplit(gsub("\\n", " ",
-                          paste0(gsub(' \\([^\\)]+\\)', '', iv["rattle", "Depends"]),
-                                 ", ",
-                                 gsub(' \\([^\\)]+\\)', '', iv["rattle", "Suggests"])
-                                 )), ", ")[[1]]
-
-  for (p in deps)
-  {
-    if (! p %in% rownames(av))
-    {
-      if (include.not.available) cat(sprintf("%s: not available\n", p))
-    }
-    else if (! p %in% rownames(iv))
-    {
-      if (include.not.installed) cat(sprintf("%s: not installed\n", p))
-    }
-    else
-      cat(sprintf("%s: version %s%s%s%s", p, iv[p,"Version"],
-                  ifelse(compareVersion(av[p,"Version"], iv[p,"Version"]) == 1,
-                         {
-                           up <- c(up, p);
-                           sprintf(" upgrade available %s", av[p,"Version"])
-                         },
-                         ""),
-                  ifelse(include.libpath, paste("\t", iv[p,"LibPath"]), ""),
-                  "\n"))
-  }
-
-  cat("\nThat was",
-      sum(sapply(deps, function(p) p %in% rownames(iv))),
-      "packages.\n")
-  
-  if (! is.null(up))
-  {
-    cat(sprintf(paste('\nUpdate the packages with either',
-                      'of the following commands:\n\n ',
-                      '> install.packages(c("%s"))\n\n ',
-                      '> install.packages(rattleInfo(%s%s%s%s%s%s%s))\n\n'),
-                paste(strwrap(paste(up, collapse='", "'),
-                              width=60, exdent=23), collapse="\n"),
-                ifelse(all.dependencies, "all.dependencies=TRUE", ""),
-                ifelse(all.dependencies &&
-                       (include.not.installed ||
-                        include.not.available ||
-                        include.libpath), ", ", ""),
-                ifelse(include.not.installed, "include.not.installed=TRUE", ""),
-                ifelse(include.not.installed &&
-                       (include.not.available ||
-                        include.libpath), ", ", ""),
-                ifelse(include.not.available, "include.not.available=TRUE", ""),
-                ifelse(include.not.available &&
-                       include.libpath, ", ", ""),
-                ifelse(include.libpath, "include.libpath=TRUE", "")))
-    if (isWindows() && "rattle" %in% up)
-      cat("Detach rattle (and other attached packages) before updating:\n\n ",
-          '> detach("rattle")\n\n')
-    cat("Alternatively update all installed packages:\n\n ",
-        '> update.packages()\n\n')
-
-  }
-
-  invisible(up)
-
-}
-
 ########################################################################
 # RATTLE Version 2
 
@@ -451,7 +277,7 @@ rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=NULL)
   if (missing(useGtkBuilder))
   {
     op <- options(warn=-1)
-    g <- gtkBuilderNew()
+    g <- RGtk2::gtkBuilderNew()
     res <- g$addFromString('<requires/>', 20)
     options(op)
 
@@ -468,15 +294,6 @@ rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=NULL)
   else
     crv$useGtkBuilder <- useGtkBuilder
   
-  
-  if (packageIsAvailable("colorspace", Rtxt("choose appropriate colors for plots")))
-  {
-    # 080921 Load here to keep the loading quiet!
-    suppressPackageStartupMessages(require("colorspace", quietly=TRUE))
-  }
-
-  suppressPackageStartupMessages(require(RGtk2, quietly=TRUE)) # From http://www.ggobi.org/rgtk2/
-
   # Check to make sure libglade is available.
 
   if (! crv$useGtkBuilder)
@@ -515,7 +332,7 @@ rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=NULL)
 
   if (crv$useGtkBuilder)
   {
-    crv$rattleGUI <- gtkBuilderNew()
+    crv$rattleGUI <- RGtk2::gtkBuilderNew()
     crv$rattleGUI$setTranslationDomain("R-rattle")
   }
   
@@ -590,7 +407,7 @@ rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=NULL)
   # in case configureGUI is overriddent to not change the icon.
 
   theWidget("rattle_window")$setIcon(crv$icon)
-  if (! is.null(crv$icon)) gtkWindowSetDefaultIcon(crv$icon)
+  if (! is.null(crv$icon)) RGtk2::gtkWindowSetDefaultIcon(crv$icon)
 
   # 080511 Record the current options and set the scientific penalty
   # to be 5 so we generally get numerics pinted using fixed rather
@@ -1073,7 +890,7 @@ rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=NULL)
 
   # Make sure the text is shown on startup.
 
-  while (gtkEventsPending()) gtkMainIterationDo(blocking=FALSE)
+  while (RGtk2::gtkEventsPending()) RGtk2::gtkMainIterationDo(blocking=FALSE)
 
   # Now deal with any arguments to rattle.
 
@@ -1102,7 +919,7 @@ rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=NULL)
                         }))
     theWidget("data_name_combobox")$setActive(which(dataset == dl)[1]-1)
     # Make sure GUI updates
-    while (gtkEventsPending()) gtkMainIterationDo(blocking=FALSE)
+    while (RGtk2::gtkEventsPending()) RGtk2::gtkMainIterationDo(blocking=FALSE)
     executeDataTab()
   }      
   else if (not.null(csvname))
@@ -1110,7 +927,7 @@ rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=NULL)
     if (!theWidget("data_filechooserbutton")$setUri(csvname))
       infoDialog(Rtxt("The setting of the filename box failed."), crv$support.msg)
     # Make sure GUI updates
-    while (gtkEventsPending()) gtkMainIterationDo(blocking=FALSE)
+    while (RGtk2::gtkEventsPending()) RGtk2::gtkMainIterationDo(blocking=FALSE)
     executeDataTab(csvname)
   }
 
@@ -1186,7 +1003,7 @@ configureGUI <- function()
   if (crv$icon == "")
     crv$icon <- NULL
   else
-    crv$icon <- gdkPixbufNewFromFile(crv$icon)$retval
+    crv$icon <- RGtk2::gdkPixbufNewFromFile(crv$icon)$retval
 
   # 101202 Remove the By Group button and instead if a rescale has a
   # categoric selected then do by group. TODO.
@@ -1239,47 +1056,47 @@ fixMacAndGtkBuilderTypes <- function()
   #   sed 's|".*$||' | sort -u | sed 's|^Gtk|gtk|' |\
   #   awk '{printf("%sGetType()\n", $1)}'
 
-  gtkAboutDialogGetType()
-  gtkAlignmentGetType()
-  gtkButtonGetType()
-  gtkCheckButtonGetType()
-  gtkCheckMenuItemGetType()
-  gtkComboBoxEntryGetType()
-  gtkComboBoxGetType()
-  gtkDrawingAreaGetType()
-  gtkEntryGetType()
-  gtkFileChooserButtonGetType()
-  gtkFileChooserDialogGetType()
-  gtkFrameGetType()
-  gtkHBoxGetType()
-  gtkHButtonBoxGetType()
-  gtkHSeparatorGetType()
-  gtkHandleBoxGetType()
-  gtkImageGetType()
-  gtkImageMenuItemGetType()
-  gtkLabelGetType()
-  gtkListStoreGetType()
-  gtkMenuBarGetType()
-  gtkMenuGetType()
-  gtkMenuItemGetType()
-  gtkMiscGetType()
-  gtkNotebookGetType()
-  gtkRadioButtonGetType()
-  gtkScrolledWindowGetType()
-  gtkSeparatorMenuItemGetType()
-  gtkSeparatorToolItemGetType()
-  gtkSpinButtonGetType()
-  gtkStatusbarGetType()
-  gtkTableGetType()
-  gtkTextViewGetType()
-  gtkToolButtonGetType()
-  gtkToolItemGetType()
-  gtkToolbarGetType()
-  gtkTreeViewGetType()
-  gtkVBoxGetType()
-  gtkVSeparatorGetType()
-  gtkWidgetGetType()
-  gtkWindowGetType()
+  RGtk2::gtkAboutDialogGetType()
+  RGtk2::gtkAlignmentGetType()
+  RGtk2::gtkButtonGetType()
+  RGtk2::gtkCheckButtonGetType()
+  RGtk2::gtkCheckMenuItemGetType()
+  RGtk2::gtkComboBoxEntryGetType()
+  RGtk2::gtkComboBoxGetType()
+  RGtk2::gtkDrawingAreaGetType()
+  RGtk2::gtkEntryGetType()
+  RGtk2::gtkFileChooserButtonGetType()
+  RGtk2::gtkFileChooserDialogGetType()
+  RGtk2::gtkFrameGetType()
+  RGtk2::gtkHBoxGetType()
+  RGtk2::gtkHButtonBoxGetType()
+  RGtk2::gtkHSeparatorGetType()
+  RGtk2::gtkHandleBoxGetType()
+  RGtk2::gtkImageGetType()
+  RGtk2::gtkImageMenuItemGetType()
+  RGtk2::gtkLabelGetType()
+  RGtk2::gtkListStoreGetType()
+  RGtk2::gtkMenuBarGetType()
+  RGtk2::gtkMenuGetType()
+  RGtk2::gtkMenuItemGetType()
+  RGtk2::gtkMiscGetType()
+  RGtk2::gtkNotebookGetType()
+  RGtk2::gtkRadioButtonGetType()
+  RGtk2::gtkScrolledWindowGetType()
+  RGtk2::gtkSeparatorMenuItemGetType()
+  RGtk2::gtkSeparatorToolItemGetType()
+  RGtk2::gtkSpinButtonGetType()
+  RGtk2::gtkStatusbarGetType()
+  RGtk2::gtkTableGetType()
+  RGtk2::gtkTextViewGetType()
+  RGtk2::gtkToolButtonGetType()
+  RGtk2::gtkToolItemGetType()
+  RGtk2::gtkToolbarGetType()
+  RGtk2::gtkTreeViewGetType()
+  RGtk2::gtkVBoxGetType()
+  RGtk2::gtkVSeparatorGetType()
+  RGtk2::gtkWidgetGetType()
+  RGtk2::gtkWindowGetType()
 }
 
 fixGtkBuilderAdjustments <- function()
@@ -1288,157 +1105,157 @@ fixGtkBuilderAdjustments <- function()
   # fixed.
 
   wid <- theWidget("sample_seed_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, NULL, 100000000, 1, 100, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, NULL, 100000000, 1, 100, 0)
   wid$setAdjustment(nad)
   wid$setValue(42)
   
   wid <- theWidget("data_odbc_limit_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 0, 100000000, 1, 100, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 0, 100000000, 1, 100, 0)
   wid$setAdjustment(nad)
   wid$setValue(0)
   
   wid <- theWidget("sample_percentage_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 0, 100, 1, 10, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 0, 100, 1, 10, 0)
   wid$setAdjustment(nad)
   wid$setValue(70)
   
   wid <- theWidget("sample_count_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 0, 100000000, 1, 10, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 0, 100000000, 1, 10, 0)
   wid$setAdjustment(nad)
   wid$setValue(0)
   
   wid <- theWidget("plots_per_page_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 1, 9, 1, 10, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 1, 9, 1, 10, 0)
   wid$setAdjustment(nad)
   wid$setValue(4)
   
   wid <- theWidget("benford_digits_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 1, 9, 1, 2, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 1, 9, 1, 2, 0)
   wid$setAdjustment(nad)
   wid$setValue(1)
   
   wid <- theWidget("normalise_interval_numgroups_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 0, 100000, 1, 10, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 0, 100000, 1, 10, 0)
   wid$setAdjustment(nad)
   wid$setValue(100)
 
   wid <- theWidget("remap_bins_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 0, 100, 1, 10, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 0, 100, 1, 10, 0)
   wid$setAdjustment(nad)
   wid$setValue(4)
   
   wid <- theWidget("kmeans_clusters_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 2, 100000000, 1, 10, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 2, 100000000, 1, 10, 0)
   wid$setAdjustment(nad)
   wid$setValue(10)
   
   wid <- theWidget("kmeans_seed_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 0, 100000000, 1, 10, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 0, 100000000, 1, 10, 0)
   wid$setAdjustment(nad)
   wid$setValue(42)
   
   wid <- theWidget("kmeans_runs_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 1, 1000, 1, 10, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 1, 1000, 1, 10, 0)
   wid$setAdjustment(nad)
   wid$setValue(1)
   
   wid <- theWidget("hclust_nbproc_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 1, 100, 1, 10, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 1, 100, 1, 10, 0)
   wid$setAdjustment(nad)
   wid$setValue(1)
   
   wid <- theWidget("hclust_clusters_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 2, 100000000, 1, 10, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 2, 100000000, 1, 10, 0)
   wid$setAdjustment(nad)
   wid$setValue(10)
   
   wid <- theWidget("associate_support_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 0, 1, 0.01, 0.1, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 0, 1, 0.01, 0.1, 0)
   wid$setAdjustment(nad)
   wid$setValue(0.1)
   
   wid <- theWidget("associate_confidence_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 0, 1, 0.01, 0.1, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 0, 1, 0.01, 0.1, 0)
   wid$setAdjustment(nad)
   wid$setValue(0.1)
   
   wid <- theWidget("associate_lift_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 0, 100, 0.1, 0.5, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 0, 100, 0.1, 0.5, 0)
   wid$setAdjustment(nad)
   wid$setValue(1.5)
   
   wid <- theWidget("rpart_minsplit_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 0, 100000000, 1, 10, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 0, 100000000, 1, 10, 0)
   wid$setAdjustment(nad)
   wid$setValue(20)
   
   wid <- theWidget("rpart_minbucket_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 1, 1000000000, 1, 10, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 1, 1000000000, 1, 10, 0)
   wid$setAdjustment(nad)
   wid$setValue(7)
   
   wid <- theWidget("rpart_maxdepth_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 1, 30, 1, 5, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 1, 30, 1, 5, 0)
   wid$setAdjustment(nad)
   wid$setValue(20)
   
   wid <- theWidget("model_tree_cp_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 0.00001, 1, 0.0001, 0.001, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 0.00001, 1, 0.0001, 0.001, 0)
   wid$setAdjustment(nad)
   wid$setValue(0.01)
   
   wid <- theWidget("ada_ntree_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 0, 10000, 10, 50, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 0, 10000, 10, 50, 0)
   wid$setAdjustment(nad)
   wid$setValue(50)
   
   wid <- theWidget("ada_maxdepth_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 1, 30, 1, 10, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 1, 30, 1, 10, 0)
   wid$setAdjustment(nad)
   wid$setValue(30)
   
   wid <- theWidget("ada_minsplit_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 0, 10000000, 1, 10, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 0, 10000000, 1, 10, 0)
   wid$setAdjustment(nad)
   wid$setValue(20)
   
   wid <- theWidget("ada_cp_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, -1, 1, 0.00001, 0.001, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, -1, 1, 0.00001, 0.001, 0)
   wid$setAdjustment(nad)
   wid$setValue(0.01)
   
   wid <- theWidget("ada_xval_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 0, 100, 1, 10, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 0, 100, 1, 10, 0)
   wid$setAdjustment(nad)
   wid$setValue(10)
   
   wid <- theWidget("ada_draw_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 0, 1000, 1, 10, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 0, 1000, 1, 10, 0)
   wid$setAdjustment(nad)
   wid$setValue(1)
   
   wid <- theWidget("rf_ntree_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 0, 10000, 10, 50, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 0, 10000, 10, 50, 0)
   wid$setAdjustment(nad)
   wid$setValue(500)
   
   wid <- theWidget("rf_mtry_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 1, 1000, 1, 10, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 1, 1000, 1, 10, 0)
   wid$setAdjustment(nad)
   wid$setValue(10)
   
   wid <- theWidget("rf_print_tree_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 0, 1000, 1, 10, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 0, 1000, 1, 10, 0)
   wid$setAdjustment(nad)
   wid$setValue(1)
   
   wid <- theWidget("svm_poly_degree_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 1, 10, 1, 2, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 1, 10, 1, 2, 0)
   wid$setAdjustment(nad)
   wid$setValue(1)
   
   wid <- theWidget("nnet_hidden_nodes_spinbutton")
-  nad <- gtkAdjustmentNew(NULL, 0, 10000, 1, 10, 0)
+  nad <- RGtk2::gtkAdjustmentNew(NULL, 0, 10000, 1, 10, 0)
   wid$setAdjustment(nad)
   wid$setValue(10)
 }  
@@ -1481,13 +1298,13 @@ fixTranslations <- function(w=theWidget("rattle_window"))
   if ("GtkLabel" %in% class(w))
     w$setLabel(Rtxt(w$getLabel()))
   else if ("GtkNotebook" %in% class(w))
-    lapply(gtkChildren(w),
+    lapply(RGtk2::gtkChildren(w),
            function(wc)
              w$getTabLabel(wc)$setLabel(Rtxt(w$getTabLabelText(wc))))
 
   #  if ("GtkLabel" %in% class(w)) w$setLabel("Fred")
   if ("GtkContainer" %in% class(w))
-    lapply(gtkChildren(w), fixTranslations)
+    lapply(RGtk2::gtkChildren(w), fixTranslations)
   
   return()
 }
@@ -1617,7 +1434,7 @@ gtkmain_handler <- function(widget, event)
   if (! crv$.gtkMain)
   {
     crv$.gtkMain <- TRUE
-    gtkMain()
+    RGtk2::gtkMain()
   }
   return(FALSE)
 }
@@ -1627,7 +1444,7 @@ gtkmainquit_handler <- function(widget, event)
   if (crv$.gtkMain)
   {
     crv$.gtkMain <- FALSE
-    gtkMainQuit()
+    RGtk2::gtkMainQuit()
   }
   return(FALSE)
 }
@@ -1956,9 +1773,9 @@ listVersions <- function(file="", ...)
 
 debugDialog <- function(...)
 {
-  dialog <- gtkMessageDialogNew(NULL, "destroy-with-parent", "info", "ok",
+  dialog <- RGtk2::gtkMessageDialogNew(NULL, "destroy-with-parent", "info", "ok",
                                 "Debug Message:", ...)
-  connectSignal(dialog, "response", gtkWidgetDestroy)
+  RGtk2::connectSignal(dialog, "response", RGtk2::gtkWidgetDestroy)
 }
 
 infoDialog <- function(...)
@@ -1968,9 +1785,9 @@ infoDialog <- function(...)
 
   if (exists("gtkMessageDialogNew"))
   {
-    dialog <- gtkMessageDialogNew(NULL, "destroy-with-parent", "info", "close",
+    dialog <- RGtk2::gtkMessageDialogNew(NULL, "destroy-with-parent", "info", "close",
                                   ...)
-    connectSignal(dialog, "response", gtkWidgetDestroy)
+    RGtk2::connectSignal(dialog, "response", RGtk2::gtkWidgetDestroy)
   }
   else
     # 080706 This fails the MS/Windows check with "crv" not defined?????
@@ -1979,9 +1796,9 @@ infoDialog <- function(...)
 
 warnDialog <- function(...)
 {
-  dialog <- gtkMessageDialogNew(NULL, "destroy-with-parent", "warn", "close",
+  dialog <- RGtk2::gtkMessageDialogNew(NULL, "destroy-with-parent", "warn", "close",
                                 ...)
-  connectSignal(dialog, "response", gtkWidgetDestroy)
+  RGtk2::connectSignal(dialog, "response", RGtk2::gtkWidgetDestroy)
 }
 
 errorDialog <- function(...)
@@ -1991,11 +1808,11 @@ errorDialog <- function(...)
   # dialogue contains instructions on "fixing" the error and you can
   # keep the dialogue visible whilst fixing the error.
   
-  dialog <- gtkMessageDialogNew(NULL, "destroy-with-parent", "error", "close",
+  dialog <- RGtk2::gtkMessageDialogNew(NULL, "destroy-with-parent", "error", "close",
                                 ...,
                                 sprintf("\n\n%s %s",
                                         crv$appname, crv$version))
-  connectSignal(dialog, "response", gtkWidgetDestroy)
+  RGtk2::connectSignal(dialog, "response", RGtk2::gtkWidgetDestroy)
   return(FALSE)
 }
 
@@ -2004,12 +1821,12 @@ questionDialog <- function(...)
   if (package.installed("RGtk2"))
   {
     require(RGtk2)
-    dialog <- gtkMessageDialogNew(NULL, "destroy-with-parent", "question",
+    dialog <- RGtk2::gtkMessageDialogNew(NULL, "destroy-with-parent", "question",
                                   "yes-no",
                                   ...)
     result <- dialog$run()
     dialog$destroy()
-    answer <- result == GtkResponseType["yes"]
+    answer <- result == RGtk2::GtkResponseType["yes"]
   }
   else
   {
@@ -2196,7 +2013,7 @@ setStatusBar <- function(..., sep=" ")
   msg <- paste(sep=sep, ...)
   if (length(msg) == 0) msg <-""
   theWidget("statusbar")$push(1, msg)
-  while (gtkEventsPending()) gtkMainIterationDo(blocking=FALSE) # Refresh status/windows
+  while (RGtk2::gtkEventsPending()) RGtk2::gtkMainIterationDo(blocking=FALSE) # Refresh status/windows
   invisible(NULL)
 }
 
@@ -2562,10 +2379,9 @@ newPlot <- function(pcnt=1)
     if (theWidget("use_cairo_graphics_device")$getActive() &&
         packageIsAvailable("cairoDevice", Rtxt("display plots")))
     {
-      require("cairoDevice", quietly=TRUE)
       if (crv$useGtkBuilder)
       {
-        plotGUI <- gtkBuilderNew()
+        plotGUI <- RGtk2::gtkBuilderNew()
         plotGUI$setTranslationDomain("R-rattle")
       }
 
@@ -2594,7 +2410,7 @@ newPlot <- function(pcnt=1)
         da <- plotGUI$getWidget("drawingarea")
       }
       
-      asCairoDevice(da)
+      cairoDevice::asCairoDevice(da)
       if (isJapanese())
       {
         # 091222 Use a font that MS/Windows can display Japanese
@@ -2687,8 +2503,8 @@ copyPlotToClipboard <- function(dev.num=dev.cur())
   require("RGtk2")
   temp.name <- paste(tempfile(), ".png", sep="")
   savePlotToFile(temp.name, dev.num)
-  im <- gdkPixbufNewFromFile(temp.name)$retval
-  gtkClipboardGet("CLIPBOARD")$setImage(im)
+  im <- RGtk2::gdkPixbufNewFromFile(temp.name)$retval
+  RGtk2::gtkClipboardGet("CLIPBOARD")$setImage(im)
   file.remove(temp.name)
 }
 
@@ -2707,20 +2523,20 @@ savePlotToFileGui <- function(dev.num=dev.cur(), name="plot")
   # Obtain a filename to save to. Ideally, this would also prompt for
   # the device to export, and the fontsize, etc.
 
-  dialog <- gtkFileChooserDialog(paste(Rtxt("Export Graphics"),
+  dialog <- RGtk2::gtkFileChooserDialog(paste(Rtxt("Export Graphics"),
                                        " (.pdf, .png, .jpg",
                                        ifelse(isWindows(), ", wmf", ""),
                                        ")", sep=""),
                                  NULL, "save",
-                                 "gtk-cancel", GtkResponseType["cancel"],
-                                 "gtk-save", GtkResponseType["accept"])
+                                 "gtk-cancel", RGtk2::GtkResponseType["cancel"],
+                                 "gtk-save", RGtk2::GtkResponseType["accept"])
   dialog$setDoOverwriteConfirmation(TRUE)
 
   if(not.null(crs$dataname))
     dialog$setCurrentName(paste(get.stem(crs$dataname),
                                 "_", name, ".pdf", sep=""))
 
-  ff <- gtkFileFilterNew()
+  ff <- RGtk2::gtkFileFilterNew()
   if (isWindows())
     ff$setName(paste(Rtxt("Graphics Files"), "(pdf png jpg wmf)"))
   else
@@ -2731,12 +2547,12 @@ savePlotToFileGui <- function(dev.num=dev.cur(), name="plot")
   if (isWindows()) ff$addPattern("*.wmf")
   dialog$addFilter(ff)
 
-  ff <- gtkFileFilterNew()
+  ff <- RGtk2::gtkFileFilterNew()
   ff$setName(Rtxt("All Files"))
   ff$addPattern("*")
   dialog$addFilter(ff)
 
-  if (dialog$run() == GtkResponseType["accept"])
+  if (dialog$run() == RGtk2::GtkResponseType["accept"])
   {
     save.name <- dialog$getFilename()
     dialog$destroy()
@@ -2780,7 +2596,7 @@ savePlotToFile <- function(file.name, dev.num=dev.cur())
     #if (isJapanese())
     #  dev.copy(pdf, file=file.name, width=10, height=10, version="1.4", family="Japan1")
     #else
-    dev.copy(Cairo_pdf, file=file.name, width=10, height=10)
+    dev.copy(cairoDevice::Cairo_pdf, file=file.name, width=10, height=10)
   else if (ext == "png")
     dev.copy(png, file=file.name, width=1000, height=1000)
   else if (ext == "jpg")
@@ -2854,7 +2670,7 @@ set.cursor <- function(cursor="left-ptr", message=NULL)
 {
   if (! is.null(message)) setStatusBar(message)
   theWidget("rattle_window")$getWindow()$
-  setCursor(gdkCursorNew(cursor))
+  setCursor(RGtk2::gdkCursorNew(cursor))
 
   # 091106 For now, set cursor specifically on the textview
   # windows. Under Ubuntu it is not needed, but is on Vista. Is this a
@@ -2880,7 +2696,7 @@ set.cursor <- function(cursor="left-ptr", message=NULL)
   for (tv in allTextviews())
   {
     win <- theWidget(tv)$getWindow("GTK_TEXT_WINDOW_TEXT")
-    if (! is.null(win)) win$setCursor(gdkCursorNew(cursor))
+    if (! is.null(win)) win$setCursor(RGtk2::gdkCursorNew(cursor))
   }
 }
 
@@ -3062,7 +2878,7 @@ on_about_menu_activate <-  function(action, window)
                 silent=TRUE)
   if (crv$useGtkBuilder)
   {
-    about <<- gtkBuilderNew()
+    about <<- RGtk2::gtkBuilderNew()
     about$setTranslationDomain("R-rattle")
   }
   
@@ -3136,10 +2952,10 @@ on_tooltips_activate <- function(action, window)
   if(action$getActive())
   {
     myWin <- theWidget("rattle_window")
-    myWin$addEvents(GdkEventMask["focus-change-mask"])
-    gSignalConnect(myWin, "focus-in-event", gtkmain_handler)
-    gSignalConnect(myWin, "focus-out-event", gtkmainquit_handler)
-    gSignalConnect(myWin, "delete-event", gtkmainquit_handler)
+    myWin$addEvents(RGtk2::GdkEventMask["focus-change-mask"])
+    RGtk2::gSignalConnect(myWin, "focus-in-event", gtkmain_handler)
+    RGtk2::gSignalConnect(myWin, "focus-out-event", gtkmainquit_handler)
+    RGtk2::gSignalConnect(myWin, "delete-event", gtkmainquit_handler)
   }
   ## else
   ## {
@@ -3237,57 +3053,6 @@ switchToPage <- function(page)
 
   if (is.numeric(page))
     page <- getNotebookPageLabel(crv$NOTEBOOK, page)
-
-  # 091112 This is now done in configureEvaluateTab.
-  ## if (page == crv$NOTEBOOK.EVALUATE.NAME)
-  ## {
-
-  ##   # On moving to the EVALUATE page, ensure each built model's
-  ##   # checkbox is active, and check the active model's checkbox, but
-  ##   # leave all the other as they are.
-
-  ##   mtypes <- listBuiltModels(exclude=crv$APRIORI)
-
-  ##   if (not.null(mtypes))
-  ##   {
-  ##     # We have some models, so make sure their checkboxes are
-  ##     # sensitive.
-
-  ##     lapply(mtypes,
-  ##            function(x) theWidget(paste(x, "_evaluate_checkbutton",
-  ##                                           sep=""))$setSensitive(TRUE))
-
-  ##     if (is.null(crs$page) || crs$page == crv$NOTEBOOK.MODEL.NAME)
-  ##     {
-  ##       # By default check the current model's check button if we
-  ##       # have just come from the MODEL page. This makes it easy when
-  ##       # swaping from the Model page to this page to evaluate the
-  ##       # just built model (usually). The NULL test on crs$page
-  ##       # simply covers the loading of a project that did not save
-  ##       # the crs$page, as was the case for old project files.
-  ##       if (currentModelTab() %in% mtypes)
-  ##         theWidget(paste(currentModelTab(), "_evaluate_checkbutton",
-  ##                         sep=""))$setActive(TRUE)
-  ##     }
-  ##   }
-  ## }
-
-
-  # When changing to the LOG page desensitise the Execute button. Not
-  # sure why anyone would push the execute button anyhow, so maybe
-  # this is just better to result in an errorDialog rather than extra
-  # logic here to greyt out the button?
-
-  if (page == crv$NOTEBOOK.LOG.NAME)
-  {
-    theWidget("execute_button")$setSensitive(FALSE)
-    theWidget("execute_menu")$setSensitive(FALSE)
-  }
-  else
-  {
-    theWidget("execute_button")$setSensitive(TRUE)
-    theWidget("execute_menu")$setSensitive(TRUE)
-  }
 
   # Record the current page so when we change we know which was last.
 

@@ -1,0 +1,112 @@
+# Rattle: A GUI for Data Mining in R
+#
+# Fancy Plot Of An Rpart Decision Tree
+#
+# Time-stamp: <2014-09-06 08:25:50 gjw>
+#
+# Copyright (c) 2009-2014 Togaware Pty Ltd
+#
+# This files is part of Rattle.
+#
+# Rattle is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# Rattle is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+
+fancyRpartPlot <- function(model,
+                           main="",
+                           sub,
+                           ...)
+{
+  if (missing(sub))
+    sub <- paste("Rattle",
+                 format(Sys.time(), "%Y-%b-%d %H:%M:%S"), 
+                 Sys.info()["user"])
+  
+  num.classes <- length(attr(model, "ylevels"))
+
+  # Generate a colour pallete, with a range of 5 (palsize) colours for
+  # each of the 6 (numpals) palettes. The pallete is collapsed into
+  # one list. We index it according to the class. Keep to the lighter
+  # end of the pallete to ensure printing is okay otherwise the black
+  # text is hard to read.
+
+  numpals <- 6
+  palsize <- 5
+  pals <- c(RColorBrewer::brewer.pal(9, "Greens")[1:5],
+            RColorBrewer::brewer.pal(9, "Blues")[1:5],
+            RColorBrewer::brewer.pal(9, "Oranges")[1:5],
+            RColorBrewer::brewer.pal(9, "Purples")[1:5],
+            RColorBrewer::brewer.pal(9, "Reds")[1:5],
+            RColorBrewer::brewer.pal(9, "Greys")[1:5])
+  
+  # Extract the scores/percentages for each of the nodes for the
+  # majority decision.  The decisions are in column 1 of yval2 and the
+  # percentages are in the final num.classes columns.
+
+  # 121106 Need to handle regression as pointed out by Yana
+  # Kane-Esrig, 26 October 2012.
+
+  if (model$method == "class")
+  {
+    yval2per <- -(1:num.classes)-1
+    per <- apply(model$frame$yval2[,yval2per], 1, function(x) x[1+x[1]])
+  }
+  else
+  {
+    # 130329 This is the deviance relative the the total deviance measured at
+    # the root node. We use this to colour the strength of the node -
+    # so more intense colour means less relative deviance.
+    
+    #per <- 1 - (model$frame$dev/model$frame$dev[1])
+
+    # 130329 Perhaps instead we want to use the yval as the intensity
+    # of the predicted value. Currently not handling negative values.
+
+    per <- model$frame$yval/max(model$frame$yval)
+    
+  }
+  
+  # The conversion of a tree in CORElearn to an rpart tree results in these
+  # being character, so ensure we have numerics.
+  
+  per <- as.numeric(per)
+  
+  # Calculate an index into the combined colour sequence. Once we go
+  # above numpals * palsize (30) start over.
+
+  if (model$method == "class")
+    col.index <- ((palsize*(model$frame$yval-1) +
+                   trunc(pmin(1 + (per * palsize), palsize))) %%
+                  (numpals * palsize))
+  else
+    col.index <- round(per * (palsize-1)) + 1
+
+  # Determine the amount of extra information added to the nodes.
+
+  if (model$method == "class")
+    extra <- 104
+  else
+    extra <- 101
+  
+  # Generate the plot and title.
+ 
+  rpart.plot::prp(model, type=2, extra=extra,
+                  box.col=pals[col.index],
+                  nn=TRUE,
+                  varlen=0, faclen=0,
+                  shadow.col="grey",
+                  fallen.leaves=TRUE,
+                  branch.lty=3, ...)
+  
+  title(main=main, sub=sub)
+}
+

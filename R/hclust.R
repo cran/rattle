@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-03-11 10:04:20 Graham Williams>
+# Time-stamp: <2014-09-06 08:30:31 gjw>
 #
 # Implement hclust functionality.
 #
@@ -182,7 +182,7 @@ executeClusterHClust <- function(include)
   # up).
 
   TV <- "hclust_textview"
-  theWidget(TV)$modifyFont(pangoFontDescriptionFromString(crv$textview.font))
+  theWidget(TV)$modifyFont(RGtk2::pangoFontDescriptionFromString(crv$textview.font))
   
   # TODO : If data is large put up a question about wanting to
   # continue?
@@ -608,7 +608,7 @@ exportHClustTab <- function()
   {
     appendLog(Rtxt("Export hierarchical cluster as PMML."),
               sprintf('saveXML(%s, "%s")', pmml.cmd, save.name))
-    saveXML(eval(parse(text=pmml.cmd)), save.name)
+    XML::saveXML(eval(parse(text=pmml.cmd)), save.name)
   }
   else if (ext == "c")
   {

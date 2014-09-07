@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-10-20 18:12:51 Graham Williams>
+# Time-stamp: <2014-09-06 08:28:33 gjw>
 #
 # Implement functionality associated with the Export button and Menu.
 #
@@ -134,8 +134,8 @@ dispatchExportButton <- function()
 
 ##   dialog <- gtkFileChooserDialog("Export Graphics (pdf, png, jpg)",
 ##                                  NULL, "save",
-##                                  "gtk-cancel", GtkResponseType["cancel"],
-##                                  "gtk-save", GtkResponseType["accept"])
+##                                  "gtk-cancel", RGtk2::GtkResponseType["cancel"],
+##                                  "gtk-save", RGtk2::GtkResponseType["accept"])
 
 ##   if(not.null(crs$dataname))
 ##     dialog$setCurrentName(paste(get.stem(crs$dataname),
@@ -153,7 +153,7 @@ dispatchExportButton <- function()
 ##   ff$addPattern("*")
 ##   dialog$addFilter(ff)
   
-##   if (dialog$run() == GtkResponseType["accept"])
+##   if (dialog$run() == RGtk2::GtkResponseType["accept"])
 ##   {
 ##     save.name <- dialog$getFilename()
 ##     dialog$destroy()
@@ -220,7 +220,7 @@ getExportSaveName <- function(mtype)
 
   if (crv$useGtkBuilder)
   {
-    dialogGUI <- gtkBuilderNew()
+    dialogGUI <- RGtk2::gtkBuilderNew()
     dialogGUI$setTranslationDomain("R-rattle")
   }
   
@@ -259,18 +259,18 @@ getExportSaveName <- function(mtype)
 
   if (crv$export.to.c.available)
   {
-    ff <- gtkFileFilterNew()
+    ff <- RGtk2::gtkFileFilterNew()
     ff$setName(Rtxt("C Files"))
     ff$addPattern("*.c")
     dialog$addFilter(ff)
   }
 
-  ff <- gtkFileFilterNew()
+  ff <- RGtk2::gtkFileFilterNew()
   ff$setName(Rtxt("PMML Files"))
   ff$addPattern("*.xml")
   dialog$addFilter(ff)
 
-  ff <- gtkFileFilterNew()
+  ff <- RGtk2::gtkFileFilterNew()
   ff$setName(Rtxt("All Files"))
   ff$addPattern("*")
   dialog$addFilter(ff)
@@ -330,7 +330,7 @@ getExportSaveName <- function(mtype)
     }
   }
 
-  if (dialog$run() == GtkResponseType["accept"])
+  if (dialog$run() == RGtk2::GtkResponseType["accept"])
   {
     save.name <- dialog$getFilename()
     save.type <- dialog$getFilter()$getName()

@@ -1,6 +1,6 @@
 # Rattle Survival
 #
-# Time-stamp: <2013-10-20 18:09:58 Graham Williams>
+# Time-stamp: <2014-09-06 08:31:57 gjw>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -266,7 +266,7 @@ exportSurvivalModel <- function()
   {
     appendLog(Rtxt("Export survival regression as PMML."),
               sprintf('saveXML(%s, "%s")', pmml.cmd, save.name))
-    saveXML(eval(parse(text=pmml.cmd)), save.name)
+    XML::saveXML(eval(parse(text=pmml.cmd)), save.name)
   }
   
   setStatusBar("The", toupper(ext), "file", save.name, "has been written.")

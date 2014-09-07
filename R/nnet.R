@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2011-01-13 06:54:40 Graham Williams>
+# Time-stamp: <2014-09-06 08:31:20 gjw>
 #
 # NNET OPTION 061230
 #
@@ -251,7 +251,7 @@ exportNNetModel <- function()
   {
     appendLog(Rtxt("Export the Neural Net model as PMML."),
               sprintf('saveXML(%s, "%s")', pmml.cmd, save.name))
-    saveXML(eval(parse(text=pmml.cmd)), save.name)
+    XML::saveXML(eval(parse(text=pmml.cmd)), save.name)
   }
   else if (ext == "c")
   {

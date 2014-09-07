@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-08-16 19:22:38 Graham Williams>
+# Time-stamp: <2014-09-06 08:30:44 gjw>
 #
 # Implement kmeans functionality.
 #
@@ -303,7 +303,7 @@ exportKMeansTab <- function()
   {
     appendLog(sprintf(Rtxt("Export %s as PMML."), commonName(crv$KMEANS)),
               sprintf('saveXML(%s, "%s")', pmml.cmd, save.name))
-    saveXML(eval(parse(text=pmml.cmd)), save.name)
+    XML::saveXML(eval(parse(text=pmml.cmd)), save.name)
   }
   else if (ext == "c")
   {
@@ -498,7 +498,7 @@ displayClusterStatsKMeans <- function()
   
   set.cursor("watch", Rtxt("Determining the cluster statistics...."))
   on.exit(set.cursor("left-ptr"))
-  while (gtkEventsPending()) gtkMainIteration()
+  while (RGtk2::gtkEventsPending()) RGtk2::gtkMainIteration()
 
   stats.cmd <- sprintf(paste("cluster.stats(dist(na.omit(crs$dataset[%s, %s]%s)),",
                              "crs$kmeans$cluster%s)\n"),

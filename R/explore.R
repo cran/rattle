@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-07-17 21:42:56 gjw>
+# Time-stamp: <2014-09-07 11:50:21 gjw>
 #
 # Implement EXPLORE functionality.
 #
@@ -465,8 +465,6 @@ calcInitialDigitDistr <- function(l,
 
 digitDistr <- function(x, digit=1, len=1, name="freq")
 {
-  require(plyr)
-  
   # From the numbers in x return a data frame of digit
   # frequencies. The specified DIGIT is analysed (default is the first
   # digit). For first digit analysis, LEN can be provided as the
@@ -507,7 +505,7 @@ digitDistr <- function(x, digit=1, len=1, name="freq")
     if (length(missing) > 0)
       x <- rbind(x, data.frame(digit=missing, value=0))
     
-    x <- ddply(x, .(digit), function(y) sum(y$value))
+    x <- plyr::ddply(x, plyr::.(digit), function(y) sum(y$value))
     x$V1 <- x$V1/sum(x$V1)
   }
 
@@ -540,21 +538,18 @@ benfordDistr <- function(digit, len=1)
 
 plotDigitFreq <- function(ds)
 {
-  require(ggplot2)
-  require(reshape)
-
-  dsm <- melt(ds, id.vars="digit")
+  dsm <- reshape::melt(ds, id.vars="digit")
   len <- nchar(as.character(ds[1,1]))
   
-  p <- ggplot(dsm, aes(x=digit, y=value, colour=variable))
-  p <- p + geom_line()
-  if (len < 3) p <- p + geom_point()
+  p <- ggplot2::ggplot(dsm, ggplot2::aes_string(x="digit", y="value", colour="variable"))
+  p <- p + ggplot2::geom_line()
+  if (len < 3) p <- p + ggplot2::geom_point()
   if (substr(as.character(ds[1,1]), 1, 1)=="1")
-    p <- p + scale_x_continuous(breaks=seq(10^(len-1), (10^len)-1, 10^(len-1)))
+    p <- p + ggplot2::scale_x_continuous(breaks=seq(10^(len-1), (10^len)-1, 10^(len-1)))
   else
-    p <- p + scale_x_continuous(breaks=seq(0, 9, 1))
-  p <- p + ylab("Frequency") + xlab("Digits")
-  p <- p + theme(legend.title=element_blank())
+    p <- p + ggplot2::scale_x_continuous(breaks=seq(0, 9, 1))
+  p <- p + ggplot2::ylab("Frequency") + ggplot2::xlab("Digits")
+  p <- p + ggplot2::theme(legend.title=ggplot2::element_blank())
   return(p)
 }
 
@@ -872,7 +867,7 @@ executeExplorePlot <- function(dataset,
     # http://statmath.wu.ac.at/~zeileis/papers/Zeileis+Hornik+Murrell-2009.pdf
     
     if (packageIsAvailable("colorspace"))
-      cols <- "col=rainbow_hcl(%d)," # 090524, start = 270, end = 150),"
+      cols <- "col=colorspace::rainbow_hcl(%d)," # 090524, start = 270, end = 150),"
     else
       cols <- "col=rainbow(%d),"
     
@@ -1002,7 +997,7 @@ executeExplorePlot <- function(dataset,
     
     if (packageIsAvailable("colorspace")) # 090524 Why vcd? comes from colorspace....
       # cols <- "col=rainbow_hcl(%s, start = 270, end = 150)"
-      cols <- "col=rainbow_hcl(%s)"# 090524, start = 0, end = 150)"
+      cols <- "col=colorspace::rainbow_hcl(%s)"# 090524, start = 0, end = 150)"
     else
       cols <- "col=rainbow(%s)"
 
@@ -1103,7 +1098,7 @@ executeExplorePlot <- function(dataset,
     # grouping.
 
     #if (packageIsAvailable("vcd"))
-    #  cols2 <- "col=rainbow_hcl(30, start = 270, end = 150)"
+    #  cols2 <- "col=colorspace::rainbow_hcl(30, start = 270, end = 150)"
     #else
     #  cols2 <- "col=rainbow(30)"
 
@@ -1223,7 +1218,7 @@ executeExplorePlot <- function(dataset,
       startLog()
 
       if (packageIsAvailable("colorspace"))
-        col <- rainbow_hcl(length(targets)+1) #, start = 30, end = 300)
+        col <- colorspace::rainbow_hcl(length(targets)+1) #, start = 30, end = 300)
       else
         col <- rainbow(length(targets)+1)
       
@@ -1243,7 +1238,7 @@ executeExplorePlot <- function(dataset,
         }
 
       if (packageIsAvailable("colorspace"))
-        cols <- "col=rainbow_hcl(%d)" # 090524, start = 30, end = 300)"
+        cols <- "col=colorspace::rainbow_hcl(%d)" # 090524, start = 30, end = 300)"
       else
         cols <- "col=rainbow(%d)"
 
@@ -1330,7 +1325,7 @@ executeExplorePlot <- function(dataset,
     lib.cmd <- "require(gplots, quietly=TRUE)"
 
     if (packageIsAvailable("colorspace"))
-      cols <- "rainbow_hcl(%d)" # 090524, start = 30, end = 300)"
+      cols <- "colorspace::rainbow_hcl(%d)" # 090524, start = 30, end = 300)"
     else
       cols <- "rainbow(%d)"
 
@@ -1697,7 +1692,7 @@ executeExplorePlot <- function(dataset,
         ord <- eval(parse(text=ord.cmd))
 
         cols <- sprintf(ifelse(packageIsAvailable("colorspace"),
-                               "rainbow_hcl(%s)", # 090524, start = 270, end = 150)",
+                               "colorspace::rainbow_hcl(%s)", # 090524, start = 270, end = 150)",
                                "rainbow(%s)"),
                        length(targets)+1) 
         
@@ -1994,7 +1989,7 @@ executeExplorePlot <- function(dataset,
                                 vector=TRUE)
 
       cols <- sprintf(ifelse(packageIsAvailable("colorspace"),
-                             "rainbow_hcl(%s)", # 090524, start = 270, end = 150)",
+                             "colorspace::rainbow_hcl(%s)", # 090524, start = 270, end = 150)",
                              "rainbow(%s)"),
                       length(targets)+1) 
 
@@ -2081,7 +2076,7 @@ executeExplorePlot <- function(dataset,
     titles <- genPlotTitleCmd(title.txt, vector=TRUE)
 
     if (packageIsAvailable("colorspace"))
-      cols <- "color=rainbow_hcl(%d)" # 090524, start = 270, end = 150)"
+      cols <- "color=colorspace::rainbow_hcl(%d)" # 090524, start = 270, end = 150)"
     else
       cols <- "color=rainbow(%d)"
 
@@ -2118,9 +2113,7 @@ executeBoxPlot2 <- function(dataset, vars, target, targets, stratify, sampling, 
   
   startLog(Rtxt("Box Plot"))
 
-  lib.cmd <- "require(ggplot2, quietly=TRUE)"
-  appendLog(packageProvides("ggplot2", "ggplot"), lib.cmd)
-  eval(parse(text=lib.cmd))
+  libs <- loadLibs(c("ggplot2", "ggplot"))
 
   for (s in seq_along(vars))
   {
@@ -2148,48 +2141,7 @@ executeBoxPlot2 <- function(dataset, vars, target, targets, stratify, sampling, 
     appendLog(paste(Rtxt("Box Plot for"), vars[s]), plot.cmd)
     eval(parse(text=plot.cmd))
   }
-}
-
-executeHistPlot2 <- function(dataset, vars, target, targets, stratify, sampling, pmax)
-{
-  startLog(Rtxt("Histogram Plots"))
-
-  lib.cmd <- "require(ggplot2, quietly=TRUE)"
-  appendLog(packageProvides("ggplot2", "ggplot"), lib.cmd)
-  eval(parse(text=lib.cmd))
-
-  lib.cmd <- "require(dplyr, quietly=TRUE)"
-  appendLog(packageProvides("dplyr", "select"), lib.cmd)
-  eval(parse(text=lib.cmd))
-
-  for (s in seq_along(vars))
-  {
-    newPlot()
-
-    title.txt <- genPlotTitleCmd(generateTitleText(vars[s], target, sampling,
-                                                   stratify && length(targets)),
-                                 vector=TRUE)
-
-    plot.cmd <- paste(sprintf('ar <- range(with(crs, select(%s, %s)))',
-                              dataset, vars[s]),
-                      sprintf('bw <- (ar[2]-ar[1])/nclass.FD(with(crs, %s$%s))',
-                              dataset, vars[s]),
-                      sprintf(paste('p <- ggplot(with(crs, select(%s, %s, %s)),',
-                                    'aes(x=%s))'),
-                              dataset, vars[s], target, vars[s]),
-                      paste('p <- p + geom_histogram(aes(y=..density..),',
-                            'binwidth=bw, fill="grey", colour="black")'),
-                      'p <- p + geom_density()',
-                      sprintf('p <- p + geom_density(aes(colour=%s))', target),
-                      sprintf('p <- p + xlab("%s\\n\\n%s")', vars[s], title.txt[2]),
-                      sprintf('p <- p + ggtitle("%s")',  title.txt[1]),
-                      'p <- p + labs(colour="") + xlab("Density")',
-                      'print(p)',
-                      sep="\n")
-  
-    appendLog(paste(Rtxt("Histogram Plot for"), vars[s]), plot.cmd)
-    eval(parse(text=plot.cmd))
-  }
+  unloadLibs(libs)
 }
 
 # 120205 The following is migrating into the original
@@ -2387,7 +2339,7 @@ executeExplorePlot2 <- function(dataset,
     # http://statmath.wu.ac.at/~zeileis/papers/Zeileis+Hornik+Murrell-2009.pdf
     
     if (packageIsAvailable("colorspace"))
-      cols <- "fill=rainbow_hcl(%d)," # 090524, start = 270, end = 150),"
+      cols <- "fill=colorspace::rainbow_hcl(%d)," # 090524, start = 270, end = 150),"
     else
       cols <- "fill=rainbow(%d),"
 
@@ -2521,7 +2473,7 @@ executeExplorePlot2 <- function(dataset,
     #else
     if (packageIsAvailable("colorspace")) # 090524 Why vcd? comes from colorspace....
       # cols <- "col=rainbow_hcl(%s, start = 270, end = 150)"
-      cols <- "col=rainbow_hcl(%s)"# 090524, start = 0, end = 150)"
+      cols <- "col=colorspace::rainbow_hcl(%s)"# 090524, start = 0, end = 150)"
     else
       cols <- "col=rainbow(%s)"
 
@@ -2618,7 +2570,7 @@ executeExplorePlot2 <- function(dataset,
     # grouping.
 
     #if (packageIsAvailable("vcd"))
-    #  cols2 <- "col=rainbow_hcl(30, start = 270, end = 150)"
+    #  cols2 <- "col=colorspace::rainbow_hcl(30, start = 270, end = 150)"
     #else
     #  cols2 <- "col=rainbow(30)"
 
@@ -2747,7 +2699,7 @@ executeExplorePlot2 <- function(dataset,
       startLog()
 
       if (packageIsAvailable("colorspace"))
-        col <- rainbow_hcl(length(targets)+1) #, start = 30, end = 300)
+        col <- colorspace::rainbow_hcl(length(targets)+1) #, start = 30, end = 300)
       else
         col <- rainbow(length(targets)+1)
       
@@ -2767,7 +2719,7 @@ executeExplorePlot2 <- function(dataset,
         }
 
       if (packageIsAvailable("colorspace"))
-        cols <- "col=rainbow_hcl(%d)" # 090524, start = 30, end = 300)"
+        cols <- "col=colorspace::rainbow_hcl(%d)" # 090524, start = 30, end = 300)"
       else
         cols <- "col=rainbow(%d)"
 
@@ -2849,7 +2801,7 @@ executeExplorePlot2 <- function(dataset,
     lib.cmd <- "require(gplots, quietly=TRUE)"
 
     if (packageIsAvailable("colorspace"))
-      cols <- "rainbow_hcl(%d)" # 090524, start = 30, end = 300)"
+      cols <- "colorspace::rainbow_hcl(%d)" # 090524, start = 30, end = 300)"
     else
       cols <- "rainbow(%d)"
 
@@ -3170,7 +3122,7 @@ executeExplorePlot2 <- function(dataset,
         ord <- eval(parse(text=ord.cmd))
 
         cols <- sprintf(ifelse(packageIsAvailable("colorspace"),
-                               "rainbow_hcl(%s)", # 090524, start = 270, end = 150)",
+                               "colorspace::rainbow_hcl(%s)", # 090524, start = 270, end = 150)",
                                "rainbow(%s)"),
                        length(targets)+1) 
         
@@ -3472,7 +3424,7 @@ executeExplorePlot2 <- function(dataset,
                                 vector=TRUE)
 
       cols <- sprintf(ifelse(packageIsAvailable("colorspace"),
-                             "rainbow_hcl(%s)", # 090524, start = 270, end = 150)",
+                             "colorspace::rainbow_hcl(%s)", # 090524, start = 270, end = 150)",
                              "rainbow(%s)"),
                       length(targets)+1) 
 
@@ -3555,7 +3507,7 @@ executeExplorePlot2 <- function(dataset,
                                 vector=TRUE)
 
     if (packageIsAvailable("colorspace"))
-      cols <- "color=rainbow_hcl(%d)" # 090524, start = 270, end = 150)"
+      cols <- "color=colorspace::rainbow_hcl(%d)" # 090524, start = 270, end = 150)"
     else
       cols <- "color=rainbow(%d)"
 
@@ -4218,7 +4170,7 @@ cat_toggled <- function(cell, path.str, model)
 
   ## The data passed in is the model used in the treeview.
 
-  checkPtrType(model, "GtkTreeModel")
+  RGtk2::checkPtrType(model, "GtkTreeModel")
 
   ## Extract the column number of the model that has changed.
 
@@ -4226,7 +4178,7 @@ cat_toggled <- function(cell, path.str, model)
 
   ## Get the current value of the corresponding flag
   
-  path <- gtkTreePathNewFromString(path.str) # Current row
+  path <- RGtk2::gtkTreePathNewFromString(path.str) # Current row
   iter <- model$getIter(path)$iter           # Iter for the row
   current <- model$get(iter, column)[[1]]    # Get data from specific column
 
@@ -4243,7 +4195,7 @@ con_toggled <- function(cell, path.str, model)
 
   ## The data passed in is the model used in the treeview.
 
-  checkPtrType(model, "GtkTreeModel")
+  RGtk2::checkPtrType(model, "GtkTreeModel")
 
   ## Extract the column number of the model that has changed.
 
@@ -4251,7 +4203,7 @@ con_toggled <- function(cell, path.str, model)
   
   ## Get the current value of the corresponding flag
   
-  path <- gtkTreePathNewFromString(path.str) # Current row
+  path <- RGtk2::gtkTreePathNewFromString(path.str) # Current row
   iter <- model$getIter(path)$iter           # Iter for the row
   current <- model$get(iter, column)[[1]]    # Get data from specific column
 
@@ -4354,7 +4306,7 @@ summarySearch <- function(tv, search.str, start.iter)
     last.search.pos <-tvb$createMark('last.search.pos', found$match.end)
 
     tv$scrollToMark(last.search.pos, 0.2)
-    while(gtkEventsPending()) gtkMainIterationDo(blocking=FALSE)
+    while(RGtk2::gtkEventsPending()) RGtk2::gtkMainIterationDo(blocking=FALSE)
 
     setStatusBar(sprintf(Rtxt("The string '%s' was found."), search.str))
   }

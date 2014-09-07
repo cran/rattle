@@ -1,8 +1,8 @@
 Package: rattle
 Type: Package
 Title: Graphical user interface for data mining in R
-Version: 3.1.0
-Date: 2014-07-18
+Version: 3.3.0
+Date: 2014-09-07
 Authors@R: c(person("Graham", "Williams", 
 	   	    role=c("aut", "cph", "cre"),
 	            email="Graham.Williams@togaware.com"),
@@ -14,7 +14,7 @@ Authors@R: c(person("Graham", "Williams",
 	     person("Akbar", "Waljee", role="ctb", 
 	     	    comment="OOB AUC for Random Forest"),
              person("Brian", "Ripley", role="cph",
-	            comment="Original author of print.summary.nnet"))
+	            comment="Author of original print.summary.nnet"))
 Depends: R (>= 2.13.0)
 Suggests: RGtk2, pmml (>= 1.2.13), bitops, colorspace, ada, amap,
         arules, arulesViz, biclust, cairoDevice, cba, corrplot, descr,
@@ -42,7 +42,7 @@ License: GPL (>= 2)
 LazyLoad: yes
 LazyData: yes
 URL: http://rattle.togaware.com/
-Packaged: 2014-07-18 10:03:43 UTC; gjw
+Packaged: 2014-09-07 06:45:54 UTC; gjw
 Author: Graham Williams [aut, cph, cre],
   Mark Vere Culp [cph],
   Ed Cox [ctb],
@@ -50,11 +50,11 @@ Author: Graham Williams [aut, cph, cre],
   Denis White [cph],
   Daniele Medri [ctb],
   Akbar Waljee [ctb] (OOB AUC for Random Forest),
-  Brian Ripley [cph] (Original author of print.summary.nnet)
+  Brian Ripley [cph] (Author of original print.summary.nnet)
 Maintainer: Graham Williams <Graham.Williams@togaware.com>
 NeedsCompilation: no
 X-CRAN-Comment: Earlier versions of this package have been removed: it
         contained copies of copyright code used contrary to its license
         and with no acknowledgment of copyright.
 Repository: CRAN
-Date/Publication: 2014-07-18 13:58:57
+Date/Publication: 2014-09-07 09:20:32

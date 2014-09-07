@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-11-14 06:11:34 Graham Williams>
+# Time-stamp: <2014-09-06 09:26:54 gjw>
 #
 # DATA TAB
 #
@@ -231,27 +231,27 @@ updateFilenameFilters <- function(button, fname)
     {
       lapply(filters, function(x) button$removeFilter(x))
 
-      ff <- gtkFileFilterNew()
+      ff <- RGtk2::gtkFileFilterNew()
       ff$setName(Rtxt("CSV Files"))
       ff$addPattern("*.csv")
       button$addFilter(ff)
 
-      ff <- gtkFileFilterNew()
+      ff <- RGtk2::gtkFileFilterNew()
       ff$setName(Rtxt("TXT Files"))
       ff$addPattern("*.txt")
       button$addFilter(ff)
 
-      ff <- gtkFileFilterNew()
+      ff <- RGtk2::gtkFileFilterNew()
       ff$setName(Rtxt("Excel Files"))
       ff$addPattern("*.xls")
       button$addFilter(ff)
 
-      ff <- gtkFileFilterNew()
+      ff <- RGtk2::gtkFileFilterNew()
       ff$setName(Rtxt("Excel 2007 Files"))
       ff$addPattern("*.xlsx")
       button$addFilter(ff)
 
-      ff <- gtkFileFilterNew()
+      ff <- RGtk2::gtkFileFilterNew()
       ff$setName(Rtxt("All Files"))
       ff$addPattern("*")
       button$addFilter(ff)
@@ -263,12 +263,12 @@ updateFilenameFilters <- function(button, fname)
     {
       lapply(filters, function(x) button$removeFilter(x))
 
-      ff <- gtkFileFilterNew()
+      ff <- RGtk2::gtkFileFilterNew()
       ff$setName(Rtxt("ARFF Files"))
       ff$addPattern("*.arff")
       button$addFilter(ff)
 
-      ff <- gtkFileFilterNew()
+      ff <- RGtk2::gtkFileFilterNew()
       ff$setName(Rtxt("All Files"))
       ff$addPattern("*")
       button$addFilter(ff)
@@ -280,12 +280,12 @@ updateFilenameFilters <- function(button, fname)
     {
       lapply(filters, function(x) button$removeFilter(x))
 
-      ff <- gtkFileFilterNew()
+      ff <- RGtk2::gtkFileFilterNew()
       ff$setName(Rtxt("Rdata Files"))
       ff$addPattern("*.R[Dd]ata")
       button$addFilter(ff)
 
-      ff <- gtkFileFilterNew()
+      ff <- RGtk2::gtkFileFilterNew()
       ff$setName(Rtxt("All Files"))
       ff$addPattern("*")
       button$addFilter(ff)
@@ -295,7 +295,7 @@ updateFilenameFilters <- function(button, fname)
   # Kick the GTK event loop otherwise you end up waiting until the
   # mouse is moved, for example.
 
-  while (gtkEventsPending()) gtkMainIterationDo(blocking=FALSE)
+  while (RGtk2::gtkEventsPending()) RGtk2::gtkMainIterationDo(blocking=FALSE)
 }
 
 newSampling <- function()
@@ -861,7 +861,7 @@ executeDataCSV <- function(filename=NULL)
 
     # 090314 Do this because it was done below.
 
-    while (gtkEventsPending()) gtkMainIterationDo(blocking=FALSE)
+    while (RGtk2::gtkEventsPending()) RGtk2::gtkMainIterationDo(blocking=FALSE)
 
   }
   else if (is.null(filename))
@@ -908,7 +908,7 @@ executeDataCSV <- function(filename=NULL)
       # since otherwise we have to lose focus before the screen gets
       # updated.
 
-      while (gtkEventsPending()) gtkMainIterationDo(blocking=FALSE)
+      while (RGtk2::gtkEventsPending()) RGtk2::gtkMainIterationDo(blocking=FALSE)
 
       #gtkmainquit_handler(NULL, NULL)
       #gtkmain_handler(NULL, NULL)
@@ -977,7 +977,7 @@ executeDataCSV <- function(filename=NULL)
                               # as the result as that is assumed.
                               "crs$dataset",
                               sep="\n"),
-                         sub("file:///", "/", filename))
+                         sub("file:///", ifelse(isWindows(), "", "/"), filename))
 # 130612 Still needed for isWindows? sub("file:///", "", filename))
   }
   else
@@ -1229,7 +1229,7 @@ openODBCSetTables <- function()
   
   # Generate commands to connect to the database and retrieve the tables.
 
-  lib.cmd <- sprintf("require(RODBC, quietly=TRUE)")
+  lib.cmd <- sprintf("library(RODBC)")
   connect.cmd <- sprintf('crs$odbc <- odbcConnect("%s"%s)', DSNname, bnumrows)
   tables.cmd  <- sprintf('crs$odbc.tables <- sqlTables(crs$odbc)$TABLE_NAME')
 
@@ -1240,15 +1240,17 @@ openODBCSetTables <- function()
   startLog(Rtxt("Open an ODBC connection."))
 
   appendLog(Rtxt("Require the RODBC library."), lib.cmd)
-  set.cursor("watch")
-  eval(parse(text=lib.cmd))
-  set.cursor()
+  # 140906 Move to using namespaces within the code, though still
+  # expose the interactive commands.
+  #set.cursor("watch")
+  #eval(parse(text=lib.cmd))
+  #set.cursor()
 
   # Close all currently open channels. This assumes that the user is
   # not openning channels themselves. It could be a bad choice, but
   # assume we are addressing the usual Rattle user.
 
-  odbcCloseAll()
+  RODBC::odbcCloseAll()
 
   appendLog(Rtxt("Open the connection to the ODBC service."), connect.cmd)
   result <- try(eval(parse(text=connect.cmd)))
@@ -1501,7 +1503,7 @@ executeDataODBC <- function()
     # Double check with the user if we are about to extract a large
     # number of rows.
 
-    numRows <- sqlQuery(crs$odbc, sprintf("SELECT count(*) FROM %s", table))
+    numRows <- RODBC::sqlQuery(crs$odbc, sprintf("SELECT count(*) FROM %s", table))
     if (crv$odbc.large != 0 && numRows > crv$odbc.large)
       if (! questionDialog(sprintf(Rtxt("You are about to extract %s",
                                         "rows from the table %s",
@@ -1778,7 +1780,7 @@ viewData <- function()
                                root="viewdata_window")
     gladeXMLSignalAutoconnect(crs$viewdataGUI)
     tv <- crs$viewdataGUI$getWidget("viewdata_textview")
-    tv$modifyFont(pangoFontDescriptionFromString(crv$textview.font))
+    tv$modifyFont(RGtk2::pangoFontDescriptionFromString(crv$textview.font))
     op <- options(width=10000)
     tv$getBuffer()$setText(collectOutput("print(crs$dataset)"))
     options(op)
@@ -1881,9 +1883,9 @@ exportDataTab <- function()
 
   # Obtain filename to write the dataset as CSV to.
 
-  dialog <- gtkFileChooserDialog("Export Dataset", NULL, "save",
-                                 "gtk-cancel", GtkResponseType["cancel"],
-                                 "gtk-save", GtkResponseType["accept"])
+  dialog <- RGtk2::gtkFileChooserDialog("Export Dataset", NULL, "save",
+                                 "gtk-cancel", RGtk2::GtkResponseType["cancel"],
+                                 "gtk-save", RGtk2::GtkResponseType["accept"])
   dialog$setDoOverwriteConfirmation(TRUE)
 
   if(not.null(crs$dataname))
@@ -1903,17 +1905,17 @@ exportDataTab <- function()
   # "file:///usr/local/lib/R/site-library/rattle/csv" which is not
   # what I want anyhow!
 
-  ff <- gtkFileFilterNew()
+  ff <- RGtk2::gtkFileFilterNew()
   ff$setName(Rtxt("CSV Files"))
   ff$addPattern("*.csv")
   dialog$addFilter(ff)
 
-  ff <- gtkFileFilterNew()
+  ff <- RGtk2::gtkFileFilterNew()
   ff$setName(Rtxt("All Files"))
   ff$addPattern("*")
   dialog$addFilter(ff)
 
-  if (dialog$run() == GtkResponseType["accept"])
+  if (dialog$run() == RGtk2::GtkResponseType["accept"])
   {
     save.name <- dialog$getFilename()
     dialog$destroy()
@@ -2019,7 +2021,7 @@ item.toggled <- function(cell, path.str, model)
 
   # The data passed in is the model used in the treeview.
 
-  checkPtrType(model, "GtkTreeModel")
+  RGtk2::checkPtrType(model, "GtkTreeModel")
 
   # Extract the column number of the model that has changed.
 
@@ -2027,7 +2029,7 @@ item.toggled <- function(cell, path.str, model)
 
   # Get the current value of the corresponding flag
 
-  path <- gtkTreePathNewFromString(path.str) # Current row
+  path <- RGtk2::gtkTreePathNewFromString(path.str) # Current row
   iter <- model$getIter(path)$iter           # Iter for the row
   current <- model$get(iter, column)[[1]]    # Get data from specific column
 
@@ -2778,18 +2780,18 @@ initialiseVariableViews <- function()
 {
   # Define the data models for the various treeviews.
 
-  model <- gtkListStoreNew("gchararray", "gchararray", "gchararray",
+  model <- RGtk2::gtkListStoreNew("gchararray", "gchararray", "gchararray",
                            "gboolean", "gboolean", "gboolean", "gboolean",
                            "gboolean", "gboolean", "gchararray")
 
-  impute <- gtkListStoreNew("gchararray", "gchararray", "gchararray")
+  impute <- RGtk2::gtkListStoreNew("gchararray", "gchararray", "gchararray")
 
-  continuous <- gtkListStoreNew("gchararray", "gchararray",
+  continuous <- RGtk2::gtkListStoreNew("gchararray", "gchararray",
                                 "gboolean", "gboolean",
                                 "gboolean", "gboolean", "gchararray")
 
 
-  categorical <- gtkListStoreNew("gchararray", "gchararray",
+  categorical <- RGtk2::gtkListStoreNew("gchararray", "gchararray",
                                  "gboolean", "gboolean", "gboolean",
                                  "gchararray")
 
@@ -2810,7 +2812,7 @@ initialiseVariableViews <- function()
 
   ## Add the NUMBER column as the row number.
 
-  renderer <- gtkCellRendererTextNew()
+  renderer <- RGtk2::gtkCellRendererTextNew()
   renderer$set(xalign = 0.0)
   col.offset <-
     treeview$insertColumnWithAttributes(-1,
@@ -2818,7 +2820,7 @@ initialiseVariableViews <- function()
                                         renderer,
                                         text= crv$COLUMN[["number"]])
 
-  renderer <- gtkCellRendererTextNew()
+  renderer <- RGtk2::gtkCellRendererTextNew()
   renderer$set(xalign = 0.0)
   imp.offset <-
     impview$insertColumnWithAttributes(-1,
@@ -2826,7 +2828,7 @@ initialiseVariableViews <- function()
                                        renderer,
                                        text= crv$IMPUTE[["number"]])
 
-  renderer <- gtkCellRendererTextNew()
+  renderer <- RGtk2::gtkCellRendererTextNew()
   renderer$set(xalign = 0.0)
   cat.offset <-
     catview$insertColumnWithAttributes(-1,
@@ -2834,7 +2836,7 @@ initialiseVariableViews <- function()
                                        renderer,
                                        text= crv$CATEGORICAL[["number"]])
 
-  renderer <- gtkCellRendererTextNew()
+  renderer <- RGtk2::gtkCellRendererTextNew()
   renderer$set(xalign = 0.0)
   con.offset <-
     conview$insertColumnWithAttributes(-1,
@@ -2844,7 +2846,7 @@ initialiseVariableViews <- function()
 
   ## Add the VARIABLE NAME column to the views.
 
-  renderer <- gtkCellRendererTextNew()
+  renderer <- RGtk2::gtkCellRendererTextNew()
   renderer$set(xalign = 0.0)
   col.offset <-
     treeview$insertColumnWithAttributes(-1,
@@ -2852,7 +2854,7 @@ initialiseVariableViews <- function()
                                         renderer,
                                         text = crv$COLUMN[["variable"]])
 
-  renderer <- gtkCellRendererTextNew()
+  renderer <- RGtk2::gtkCellRendererTextNew()
   renderer$set(xalign = 0.0)
   imp.offset <-
     impview$insertColumnWithAttributes(-1,
@@ -2860,7 +2862,7 @@ initialiseVariableViews <- function()
                                        renderer,
                                        text = crv$IMPUTE[["variable"]])
 
-  renderer <- gtkCellRendererTextNew()
+  renderer <- RGtk2::gtkCellRendererTextNew()
   renderer$set(xalign = 0.0)
   cat.offset <-
     catview$insertColumnWithAttributes(-1,
@@ -2868,7 +2870,7 @@ initialiseVariableViews <- function()
                                        renderer,
                                        text = crv$CATEGORICAL[["variable"]])
 
-  renderer <- gtkCellRendererTextNew()
+  renderer <- RGtk2::gtkCellRendererTextNew()
   renderer$set(xalign = 0.0)
   con.offset <-
     conview$insertColumnWithAttributes(-1,
@@ -2878,7 +2880,7 @@ initialiseVariableViews <- function()
 
   ## Add the TYPE column.
 
-  renderer <- gtkCellRendererTextNew()
+  renderer <- RGtk2::gtkCellRendererTextNew()
   renderer$set(xalign = 0.0)
   col.offset <-
     treeview$insertColumnWithAttributes(-1,
@@ -2888,12 +2890,12 @@ initialiseVariableViews <- function()
 
   # Add the INPUT column.
 
-  renderer <- gtkCellRendererToggleNew()
+  renderer <- RGtk2::gtkCellRendererToggleNew()
   renderer$set(xalign = 0.0)
   renderer$set(radio = TRUE)
   renderer$set(width = 60)
   renderer$setData("column", crv$COLUMN["input"])
-  connectSignal(renderer, "toggled", item.toggled, model)
+  RGtk2::connectSignal(renderer, "toggled", item.toggled, model)
   col.offset <-
     treeview$insertColumnWithAttributes(-1,
                                         Rtxt("Input"),
@@ -2902,12 +2904,12 @@ initialiseVariableViews <- function()
 
   ## Add the TARGET column.
 
-  renderer <- gtkCellRendererToggleNew()
+  renderer <- RGtk2::gtkCellRendererToggleNew()
   renderer$set(xalign = 0.0)
   renderer$set(radio = TRUE)
   renderer$set(width = 60)
   renderer$setData("column", crv$COLUMN["target"])
-  connectSignal(renderer, "toggled", item.toggled, model)
+  RGtk2::connectSignal(renderer, "toggled", item.toggled, model)
   col.offset <-
     treeview$insertColumnWithAttributes(-1,
                                         Rtxt("Target"),
@@ -2916,12 +2918,12 @@ initialiseVariableViews <- function()
 
   ## Add the RISK column.
 
-  renderer <- gtkCellRendererToggleNew()
+  renderer <- RGtk2::gtkCellRendererToggleNew()
   renderer$set(xalign = 0.0)
   renderer$set(radio = TRUE)
   renderer$set(width = 60)
   renderer$setData("column", crv$COLUMN["risk"])
-  connectSignal(renderer, "toggled", item.toggled, model)
+  RGtk2::connectSignal(renderer, "toggled", item.toggled, model)
   col.offset <-
     treeview$insertColumnWithAttributes(-1,
                                         Rtxt("Risk"),
@@ -2930,12 +2932,12 @@ initialiseVariableViews <- function()
 
   ## Add the IDENT column.
 
-  renderer <- gtkCellRendererToggleNew()
+  renderer <- RGtk2::gtkCellRendererToggleNew()
   renderer$set(xalign = 0.0)
   renderer$set(radio = TRUE)
   renderer$set(width = 60)
   renderer$setData("column", crv$COLUMN["ident"])
-  connectSignal(renderer, "toggled", item.toggled, model)
+  RGtk2::connectSignal(renderer, "toggled", item.toggled, model)
   col.offset <-
     treeview$insertColumnWithAttributes(-1,
                                         Rtxt("Ident"),
@@ -2944,12 +2946,12 @@ initialiseVariableViews <- function()
 
   ## Add the IGNORE column (the Ignore check button) to the view.
 
-  renderer <- gtkCellRendererToggleNew()
+  renderer <- RGtk2::gtkCellRendererToggleNew()
   renderer$set(xalign = 0.0)
   renderer$set(radio = TRUE)
   renderer$set(width = 60)
   renderer$setData("column", crv$COLUMN["ignore"])
-  connectSignal(renderer, "toggled", item.toggled, model)
+  RGtk2::connectSignal(renderer, "toggled", item.toggled, model)
   col.offset <-
     treeview$insertColumnWithAttributes(-1,
                                         Rtxt("Ignore"),
@@ -2958,12 +2960,12 @@ initialiseVariableViews <- function()
 
   ## Add the WEIGHT column (the Weight check button) to the view.
 
-  renderer <- gtkCellRendererToggleNew()
+  renderer <- RGtk2::gtkCellRendererToggleNew()
   renderer$set(xalign = 0.0)
   renderer$set(radio = TRUE)
   renderer$set(width = 60)
   renderer$setData("column", crv$COLUMN["weight"])
-  connectSignal(renderer, "toggled", item.toggled, model)
+  RGtk2::connectSignal(renderer, "toggled", item.toggled, model)
   col.offset <-
     treeview$insertColumnWithAttributes(-1,
                                         Rtxt("Weight"),
@@ -2972,11 +2974,11 @@ initialiseVariableViews <- function()
 
   ## Add the barplot and dotplot and mosplot.
 
-  renderer <- gtkCellRendererToggleNew()
+  renderer <- RGtk2::gtkCellRendererToggleNew()
   renderer$set(xalign = 0.0)
   renderer$set(width = 60)
   renderer$setData("column", crv$CATEGORICAL["barplot"])
-  connectSignal(renderer, "toggled", cat_toggled, categorical)
+  RGtk2::connectSignal(renderer, "toggled", cat_toggled, categorical)
   cat.offset <-
     catview$insertColumnWithAttributes(-1,
                                        Rtxt("Bar Plot"),
@@ -2984,22 +2986,22 @@ initialiseVariableViews <- function()
                                        active = crv$CATEGORICAL[["barplot"]])
 
 
-  renderer <- gtkCellRendererToggleNew()
+  renderer <- RGtk2::gtkCellRendererToggleNew()
   renderer$set(xalign = 0.0)
   renderer$set(width = 60)
   renderer$setData("column", crv$CATEGORICAL["dotplot"])
-  connectSignal(renderer, "toggled", cat_toggled, categorical)
+  RGtk2::connectSignal(renderer, "toggled", cat_toggled, categorical)
   cat.offset <-
     catview$insertColumnWithAttributes(-1,
                                        Rtxt("Dot Plot"),
                                        renderer,
                                        active = crv$CATEGORICAL[["dotplot"]])
 
-  renderer <- gtkCellRendererToggleNew()
+  renderer <- RGtk2::gtkCellRendererToggleNew()
   renderer$set(xalign = 0.0)
   renderer$set(width = 60)
   renderer$setData("column", crv$CATEGORICAL["mosplot"])
-  connectSignal(renderer, "toggled", cat_toggled, categorical)
+  RGtk2::connectSignal(renderer, "toggled", cat_toggled, categorical)
   cat.offset <-
     catview$insertColumnWithAttributes(-1,
                                        Rtxt("Mosaic"),
@@ -3008,44 +3010,44 @@ initialiseVariableViews <- function()
 
   ## Add the boxplot, hisplot, cumplot, benplot buttons
 
-  renderer <- gtkCellRendererToggleNew()
+  renderer <- RGtk2::gtkCellRendererToggleNew()
   renderer$set(xalign = 0.0)
   renderer$set(width = 60)
   renderer$setData("column", crv$CONTINUOUS["boxplot"])
-  connectSignal(renderer, "toggled", con_toggled, continuous)
+  RGtk2::connectSignal(renderer, "toggled", con_toggled, continuous)
   con.offset <-
     conview$insertColumnWithAttributes(-1,
                                        Rtxt("Box Plot"),
                                        renderer,
                                        active = crv$CONTINUOUS[["boxplot"]])
 
-  renderer <- gtkCellRendererToggleNew()
+  renderer <- RGtk2::gtkCellRendererToggleNew()
   renderer$set(xalign = 0.0)
   renderer$set(width = 60)
   renderer$setData("column", crv$CONTINUOUS["hisplot"])
-  connectSignal(renderer, "toggled", con_toggled, continuous)
+  RGtk2::connectSignal(renderer, "toggled", con_toggled, continuous)
   con.offset <-
     conview$insertColumnWithAttributes(-1,
                                        Rtxt("Histogram"),
                                        renderer,
                                        active = crv$CONTINUOUS[["hisplot"]])
 
-  renderer <- gtkCellRendererToggleNew()
+  renderer <- RGtk2::gtkCellRendererToggleNew()
   renderer$set(xalign = 0.0)
   renderer$set(width = 60)
   renderer$setData("column", crv$CONTINUOUS["cumplot"])
-  connectSignal(renderer, "toggled", con_toggled, continuous)
+  RGtk2::connectSignal(renderer, "toggled", con_toggled, continuous)
   con.offset <-
     conview$insertColumnWithAttributes(-1,
                                        Rtxt("Cumulative"),
                                        renderer,
                                        active = crv$CONTINUOUS[["cumplot"]])
 
-  renderer <- gtkCellRendererToggleNew()
+  renderer <- RGtk2::gtkCellRendererToggleNew()
   renderer$set(xalign = 0.0)
   renderer$set(width = 60)
   renderer$setData("column", crv$CONTINUOUS["benplot"])
-  connectSignal(renderer, "toggled", con_toggled, continuous)
+  RGtk2::connectSignal(renderer, "toggled", con_toggled, continuous)
   con.offset <-
     conview$insertColumnWithAttributes(-1,
                                        Rtxt("Benford"),
@@ -3054,7 +3056,7 @@ initialiseVariableViews <- function()
 
   ## Add the COMMENT column.
 
-  renderer <- gtkCellRendererTextNew()
+  renderer <- RGtk2::gtkCellRendererTextNew()
   renderer$set(xalign = 0.0)
   col.offset <-
     treeview$insertColumnWithAttributes(-1,
@@ -3062,7 +3064,7 @@ initialiseVariableViews <- function()
                                         renderer,
                                         text = crv$COLUMN[["comment"]])
 
-  renderer <- gtkCellRendererTextNew()
+  renderer <- RGtk2::gtkCellRendererTextNew()
   renderer$set(xalign = 0.0)
   imp.offset <-
     impview$insertColumnWithAttributes(-1,
@@ -3070,7 +3072,7 @@ initialiseVariableViews <- function()
                                         renderer,
                                         text = crv$IMPUTE[["comment"]])
 
-  renderer <- gtkCellRendererTextNew()
+  renderer <- RGtk2::gtkCellRendererTextNew()
   renderer$set(xalign = 0.0)
   cat.offset <-
     catview$insertColumnWithAttributes(-1,
@@ -3078,7 +3080,7 @@ initialiseVariableViews <- function()
                                        renderer,
                                        text = crv$CATEGORICAL[["comment"]])
 
-  renderer <- gtkCellRendererTextNew()
+  renderer <- RGtk2::gtkCellRendererTextNew()
   renderer$set(xalign = 0.0)
   con.offset <-
     conview$insertColumnWithAttributes(-1,
@@ -3437,10 +3439,10 @@ createVariablesModel <- function(variables, input=NULL, target=NULL,
       else
         mtext <- ""
 
-      imp.options <- gtkListStoreNew("gchararray")
+      imp.options <- RGtk2::gtkListStoreNew("gchararray")
       imp.options.iter <- imp.options$append()$iter
       imp.options$set(imp.options.iter, 0, "xx")
-      combo <- gtkComboBoxNewWithModel(imp.options, 0)
+      combo <- RGtk2::gtkComboBoxNewWithModel(imp.options, 0)
       impiter <- impute$append()$iter
       impute$set(impiter,
                  crv$IMPUTE["number"], i,

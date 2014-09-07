@@ -1,3 +1,16 @@
+rattle 3.2.0 Graham.Williams@togaware.com 2014-09-04 06:14:03 +1100
+
+	* Execute button when clicked from the Log Tab will execute all of
+	the code in the Log tab. Suggested by Scott MacLean, 24 July 2014)
+
+	* Add the average error rate to the evaluations, as proposed
+          on http://www.connect-r.com/.
+
+	* Numerous ggplot2 updates and bug fixes.
+
+	* MS-Windows support for xlsx files bug fixed. Allow sub=
+          option in fancyRpartPlot.
+
 rattle (3.1.0)
 
 	* Numerous updates of plots to use ggplot2 rather than base

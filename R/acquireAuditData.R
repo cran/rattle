@@ -1,10 +1,10 @@
-# Gnome R Data Miner: GNOME interface to R for Data Mining
-#
-# Time-stamp: <2009-03-09 12:07:05 Graham Williams>
+# Rattle: A GUI for Data Mining in R
 #
 # AUDIT DATASET
 #
-# Copyright (c) 2009 Togaware Pty Ltd
+# Time-stamp: <2014-09-05 21:28:19 gjw>
+#
+# Copyright (c) 2009-2014 Togaware Pty Ltd
 #
 # This file is part of Rattle.
 #
@@ -172,10 +172,9 @@ acquireAuditData <- function(write.to.file=FALSE)
     save(audit, file="audit.RData", compress=TRUE)
     write.table(audit, "audit.csv", sep=",", row.names=FALSE)
   
-    library(foreign)
     arff <- audit
     arff$TARGET_Adjusted <- as.factor(arff$TARGET_Adjusted)
-    if (write.to.file) write.arff(arff, "audit.arff")
+    if (write.to.file) foreign::write.arff(arff, "audit.arff")
   
     # Create a dataset with special variable names.
     # 080709 I now do this as default.

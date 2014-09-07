@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-08-16 19:26:09 Graham Williams>
+# Time-stamp: <2014-09-06 08:30:19 gjw>
 #
 # Implement biclust functionality.
 #
@@ -226,7 +226,7 @@ exportEwkmTab <- function()
   {
     appendLog(sprintf(Rtxt("Export %s as PMML."), commonName(crv$EWKM)),
               sprintf('saveXML(%s, "%s")', pmml.cmd, save.name))
-    saveXML(eval(parse(text=pmml.cmd)), save.name)
+    XML::saveXML(eval(parse(text=pmml.cmd)), save.name)
   }
   else if (ext == "c")
   {

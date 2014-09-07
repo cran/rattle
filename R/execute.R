@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-01-19 10:38:03 Graham Williams>
+# Time-stamp: <2014-07-24 21:23:34 gjw>
 #
 # Implement functionality associated with the Execute button and Menu.
 #
@@ -114,6 +114,10 @@ dispatchExecuteButton <- function()
 
     theWidget("confusion_textview")$setWrapMode("none")
     executeEvaluateTab()
+  }
+  else if (ct == crv$NOTEBOOK.LOG.NAME)
+  {
+    executeLogTab()
   }
   else
   {
