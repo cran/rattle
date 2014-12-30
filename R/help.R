@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-09-19 05:32:13 Graham Williams>
+# Time-stamp: <2014-12-29 09:29:04 gjw>
 #
 # Help Menu
 #
@@ -378,17 +378,17 @@ on_help_distributions_activate <- function(action, window)
     popupTextviewHelpWindow("boxplot")
 }
 
-on_help_latticist_activate <- function(action, window)
-{
-  if (showHelpPlus(Rtxt("The Latticist application is used to visually explore",
-                        "a dataset. Latticist is an R-based interactive",
-                        "data visualizer.")))
-    if (packageIsAvailable("latticist", viewDocMsg("latticist")))
-      {
-        require(latticist, quietly=TRUE)
-        popupTextviewHelpWindow("latticist")
-      }
-}
+## on_help_latticist_activate <- function(action, window)
+## {
+##   if (showHelpPlus(Rtxt("The Latticist application is used to visually explore",
+##                         "a dataset. Latticist is an R-based interactive",
+##                         "data visualizer.")))
+##     if (packageIsAvailable("latticist", viewDocMsg("latticist")))
+##       {
+##         require(latticist, quietly=TRUE)
+##         popupTextviewHelpWindow("latticist")
+##       }
+## }
 
 on_help_ggobi_activate <- function(action, window)
 {

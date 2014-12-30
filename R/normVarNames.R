@@ -4,20 +4,20 @@ normVarNames <- function(vars, sep="_")
     
   # Replace all _ and . and ' ' with the nominated separator.
   
-  pat  <- '_|\\.| '
+  pat  <- '_|\\.| |,'
   rep  <- sep
   vars <- stringr::str_replace_all(vars, pat, rep)
   
   # Replace any all capitals words with Initial capitals
   
-  pat  <- stringr::perl('(?<![[:upper:]])([[:upper:]])([[:upper:]]*)')
+  pat  <- stringr::perl('(?<!\\p{Lu})(\\p{Lu})(\\p{Lu}*)')
   rep  <- '\\1\\L\\2'
   vars <- stringr::str_replace_all(vars, pat, rep)
   
   # Replace any capitals not at the beginning of the string with _ 
   # and then the lowercase letter.
   
-  pat  <- stringr::perl('(?<!^)([[:upper:]])')
+  pat  <- stringr::perl('(?<!^)(\\p{Lu})')
   rep  <- paste0(sep, '\\L\\1')
   vars <- stringr::str_replace_all(vars, pat, rep)
   
@@ -25,7 +25,7 @@ normVarNames <- function(vars, sep="_")
   # underscore, with it preceded by an underscore. The (?<!...) is a
   # lookbehind operator.
   
-  pat  <- stringr::perl(paste0('(?<![', sep, '[[:digit:]]])([[:digit:]]+)'))
+  pat  <- stringr::perl(paste0('(?<![', sep, '\\p{N}])(\\p{N}+)'))
   rep  <- paste0(sep, '\\1')
   vars <- stringr::str_replace_all(vars, pat, rep)
 

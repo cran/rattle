@@ -15,23 +15,16 @@ Kurtosis and Skewness allow these measures to be compared across the
 available numeric variables.</textview>
   <textview widget="interactive_textview">Interactive Data Exploration
 
-Latticist, GGobi, and PlotBuilder are independent applications which
-provide highly dynamic and interactive graphic data visualisation for
-exploratory data analysis.
+GGobi is an independent applications which provide highly dynamic and
+interactive graphic data visualisation for exploratory data analysis.
 
-Latticist is based on R whilst GGobi is written in C. PlotBuilder is
-Java based and is essentially an interactive tool for generating
-ggplot2 commands to produce very nice plots.
+GGobi is written in C.
 
-Specialist tools in these packages include tours, scatterplots,
-barcharts and parallel coordinates plots.
+Specialist tools include tours, scatterplots, barcharts and parallel
+coordinates plots.
 
-The tools also allow points to be identified and linked with brushing
-across multiple plots.
-
-With PlotBuilder, once you have the desired plot, click the Run button
-and the actual ggplot2 commands are displayed in the console, and the
-actual plot appears in a separate window.</textview>
+Points can be identified and linked with brushing across multiple
+plots.</textview>
   <textview widget="correlation_textview">Numeric Variable Correlation
 
 A correlation analysis provides insights into the independence of the

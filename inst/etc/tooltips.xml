@@ -131,10 +131,6 @@
   to explore the distribution of the data.</tooltip>
   <tooltip widget="explore_interactive_radiobutton">Interactively
     explore the data.</tooltip>
-  <tooltip widget="explore_interactive_latticist_radiobutton">Run the
-  interactive plot builder called PlayWith, which is based on lattice
-  graphics. The user interface is built using GTK2, in common with
-  Rattle.</tooltip>
   <tooltip widget="explore_interactive_ggobi_radiobutton">Run the
   external GGobi data visualisation application, if available. The
   GGobi application is independent of R/Rattle and the rggobi package

@@ -2,7 +2,7 @@
 #
 # Fancy Plot Of An Rpart Decision Tree
 #
-# Time-stamp: <2014-09-06 08:25:50 gjw>
+# Time-stamp: <2014-12-09 05:47:13 gjw>
 #
 # Copyright (c) 2009-2014 Togaware Pty Ltd
 #
@@ -89,6 +89,15 @@ fancyRpartPlot <- function(model,
                   (numpals * palsize))
   else
     col.index <- round(per * (palsize-1)) + 1
+
+  # Ensure the index is positive. Thanks to John Vorwald, 8 Dec
+  # 2014. The bug can arise when model$frame$yval are all
+  # negative. The error is:
+  #
+  #  fancyRpartPlot(rtreeFit,main=paste('RPART:',cName))
+  #  Error in pals[col.index] : only 0's may be mixed with negative subscripts
+  
+  col.index <- abs(col.index)
 
   # Determine the amount of extra information added to the nodes.
 

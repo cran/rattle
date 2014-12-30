@@ -1,3 +1,23 @@
+rattle 3.5.0 Graham.Williams@togaware.com
+
+       * Revert to using only exported functions from pkgDepTools.
+
+rattle 3.4.0 Graham.Williams@togaware.com 2014-12-29 19:11:59 +11:00
+
+       * Revert traditional ROC eval plot to overlay all models on the
+         one plot. Eugene Dubossarsky
+
+       * Bug fix to fancyRpartPlot() from John Vorwald when
+         model$frame$yval all negative.
+
+       * Replace comma in normVarNames().
+
+       * Remove latticist - no longer avaliable on CRAN.
+
+rattle 3.3.0 Graham.Williams@togaware.com 2014-09-09 18:25:21 +1100
+
+       * Migrate to using namespace for external functions.
+
 rattle 3.2.0 Graham.Williams@togaware.com 2014-09-04 06:14:03 +1100
 
 	* Execute button when clicked from the Log Tab will execute all of

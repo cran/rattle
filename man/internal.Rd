@@ -11,7 +11,6 @@
 \alias{on_svm_kernel_combobox_changed}
 \alias{on_model_survival_plot_residual_button_clicked}
 \alias{on_model_survival_plot_survival_button_clicked}
-\alias{on_help_latticist_activate}
 \alias{on_help_precision_activate}
 \alias{on_help_prvob_activate}
 \alias{on_help_roc_activate}

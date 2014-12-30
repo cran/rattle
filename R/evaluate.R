@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-09-07 16:16:18 gjw>
+# Time-stamp: <2014-09-11 06:17:20 gjw>
 #
 # Implement evaluate functionality.
 #
@@ -2244,17 +2244,22 @@ executeEvaluateROC <- function(probcmd, testset, testname)
     req.ggplot2.cmd <- "require(ggplot2, quietly=TRUE)"
     if (! packageIsAvailable("ggplot2", "plot an ROC curve")) return()
   }
+  else
+  {
+    newPlot()
+    addplot <- "FALSE"
+  }
 
   nummodels <- length(probcmd)
   mcolors <- rainbow(nummodels, 1, .8)
   mcount <- 0
 
+
   for (mtype in getEvaluateModels())
   {
     # A new plot for each chart.
     
-    newPlot()
-    addplot <- "FALSE"
+    if (advanced.graphics) newPlot()
 
     # Inform the user what is going on.
     

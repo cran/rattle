@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-09-07 11:50:21 gjw>
+# Time-stamp: <2014-12-29 09:28:23 gjw>
 #
 # Implement EXPLORE functionality.
 #
@@ -94,9 +94,10 @@ executeExploreTab <- function()
   }
   else if (theWidget("explore_interactive_radiobutton")$getActive())
   {
-    if (theWidget("explore_interactive_latticist_radiobutton")$getActive())
-      executeExplorePlaywith(dataset)
-    else if (theWidget("explore_interactive_ggobi_radiobutton")$getActive())
+#    if (theWidget("explore_interactive_latticist_radiobutton")$getActive())
+#      executeExplorePlaywith(dataset)
+#    else
+      if (theWidget("explore_interactive_ggobi_radiobutton")$getActive())
       executeExploreGGobi(dataset, crs$dataname)
 #    else if (theWidget("explore_interactive_plotbuilder_radiobutton")$getActive())
 #      executeExplorePlotBuilder()
@@ -4041,24 +4042,26 @@ executeExplorePrcomp <- function(dataset)
 
 }
 
-executeExplorePlaywith <- function(dataset)
-{
-  if (! packageIsAvailable("latticist", Rtxt("interactively explore data"))) return()
-  if (! packageIsAvailable("playwith", Rtxt("interactively explore data"))) return()
+## Removed - Felix decided not to update as per CRAN request.
+##
+## executeExplorePlaywith <- function(dataset)
+## {
+##   if (! packageIsAvailable("latticist", Rtxt("interactively explore data"))) return()
+##   if (! packageIsAvailable("playwith", Rtxt("interactively explore data"))) return()
 
-  startLog(Rtxt("Explore Data"))
+##   startLog(Rtxt("Explore Data"))
 
-  lib.cmd <- "require(latticist)"
-  appendLog(packageProvides("latticist", "latticist"), lib.cmd)
-  eval(parse(text=lib.cmd))
+##   lib.cmd <- "require(latticist)"
+##   appendLog(packageProvides("latticist", "latticist"), lib.cmd)
+##   eval(parse(text=lib.cmd))
 
-  latopts <- ""
-  if (length(crs$target))
-    latopts <- sprintf(', spec=list(groups = "%s")', crs$target)
-  plot.cmd <- sprintf("latticist(%s%s)", dataset, latopts)
-  appendLog(Rtxt("Start up latticist."), plot.cmd)
-  eval(parse(text=plot.cmd))
-}
+##   latopts <- ""
+##   if (length(crs$target))
+##     latopts <- sprintf(', spec=list(groups = "%s")', crs$target)
+##   plot.cmd <- sprintf("latticist(%s%s)", dataset, latopts)
+##   appendLog(Rtxt("Start up latticist."), plot.cmd)
+##   eval(parse(text=plot.cmd))
+## }
 
 ## executeExplorePlotBuilder <- function()
 ## {

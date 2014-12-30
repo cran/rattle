@@ -44,45 +44,6 @@ rattleInfo <- function(all.dependencies=FALSE,
   if (all.dependencies)
   {
     cat("  please wait a few seconds whilst all dependencies are searched for...")
-    # This version removes the suggests.only and uses all of Depends,
-    # Import, and Suggests.
-    makeDepGraph <- function (repList, type = getOption("pkgType"), 
-                              keep.builtin = FALSE, dosize = TRUE) 
-    {
-      pkgMatList <- lapply(repList, function(x) {
-        available.packages(contrib.url(x, type = type))
-      })
-      if (!keep.builtin) 
-        baseOrRecPkgs <- rownames(utils::installed.packages(priority = "high"))
-      allPkgs <- unlist(sapply(pkgMatList, function(x) rownames(x)))
-      if (!length(allPkgs)) 
-        stop("no packages in specified repositories")
-      allPkgs <- unique(allPkgs)
-      depG <- new("graphNEL", nodes=allPkgs, edgemode="directed")
-      graph::nodeDataDefaults(depG, attr="size") <- as.numeric(NA)
-      for (pMat in pkgMatList) {
-        for (p in rownames(pMat)) {
-          deps <- pkgDepTools:::cleanPkgField(pMat[p, "Depends"])
-          deps <- c(deps, pkgDepTools:::cleanPkgField(pMat[p, "Imports"]))
-          deps <- c(deps, pkgDepTools:::cleanPkgField(pMat[p, "Suggests"]))
-          deps <- unique(deps)
-          if (length(deps) && !keep.builtin) 
-            deps <- deps[!(deps %in% baseOrRecPkgs)]
-          if (length(deps)) {
-            notFound <- !(deps %in% graph::nodes(depG))
-            if (any(notFound)) 
-              depG <- graph::addNode(deps[notFound], depG)
-            deps <- deps[!is.na(deps)]
-            depG <- graph::addEdge(from = p, to = deps, depG)
-          }
-        }
-        if (dosize) {
-          sizes <- pkgDepTools:::getDownloadSizesBatched(pkgDepTools:::makePkgUrl(pMat))
-          graph::nodeData(depG, n=rownames(pMat), attr="size") <- sizes
-        }
-      }
-      depG
-    }
 
     suppressPackageStartupMessages({
       require(pmml, quietly=TRUE)
@@ -116,9 +77,9 @@ rattleInfo <- function(all.dependencies=FALSE,
       
     cran.repos <- "http://cran.r-project.org"
     if (isWindows())
-      cran.deps <- makeDepGraph(cran.repos, type="win.binary", dosize=TRUE)
+      cran.deps <- pkgDepTools::makeDepGraph(cran.repos, type="win.binary", dosize=TRUE)
     else
-      cran.deps <- makeDepGraph(cran.repos, type="source", dosize=TRUE)
+      cran.deps <- pkgDepTools::makeDepGraph(cran.repos, type="source", dosize=TRUE)
 
     deps <- c("rattle", names(graph::acc(cran.deps, "rattle")[[1]]))
     cat("\n")

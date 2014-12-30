@@ -1293,15 +1293,6 @@ Contributions also from:
                               </object>
                             </child>
                             <child>
-                              <object class="GtkMenuItem" id="latticist1">
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="label" translatable="yes">_Latticist</property>
-                                <property name="use_underline">True</property>
-                                <signal name="activate" handler="on_help_latticist_activate" swapped="no"/>
-                              </object>
-                            </child>
-                            <child>
                               <object class="GtkMenuItem" id="ggobi1">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
@@ -4239,8 +4230,8 @@ Contributions also from:
                                 <property name="can_focus">False</property>
                                 <property name="spacing">5</property>
                                 <child>
-                                  <object class="GtkRadioButton" id="explore_interactive_latticist_radiobutton">
-                                    <property name="label" translatable="yes">Latticist</property>
+                                  <object class="GtkRadioButton" id="explore_interactive_ggobi_radiobutton">
+                                    <property name="label" translatable="yes">GGobi</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">False</property>
@@ -4256,23 +4247,6 @@ Contributions also from:
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkRadioButton" id="explore_interactive_ggobi_radiobutton">
-                                    <property name="label" translatable="yes">GGobi</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="receives_default">False</property>
-                                    <property name="xalign">0.5</property>
-                                    <property name="active">True</property>
-                                    <property name="draw_indicator">True</property>
-                                    <property name="group">explore_interactive_latticist_radiobutton</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                                <child>
                                   <object class="GtkRadioButton" id="explore_interactive_plotbuilder_radiobutton">
                                     <property name="label" translatable="yes">Plot Builder</property>
                                     <property name="visible">False</property>
@@ -4281,12 +4255,12 @@ Contributions also from:
                                     <property name="xalign">0.5</property>
                                     <property name="active">True</property>
                                     <property name="draw_indicator">True</property>
-                                    <property name="group">explore_interactive_latticist_radiobutton</property>
+                                    <property name="group">explore_interactive_ggobi_radiobutton</property>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
                                     <property name="fill">False</property>
-                                    <property name="position">2</property>
+                                    <property name="position">1</property>
                                   </packing>
                                 </child>
                                 <child>
