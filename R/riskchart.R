@@ -1,5 +1,6 @@
 riskchart <- function(pr, ac, ri=NULL,
                       title=NULL,
+                      title.size=10,
                       show.legend=TRUE,
                       optimal=NULL, optimal.label="",
                       chosen=NULL, chosen.label="",
@@ -12,7 +13,8 @@ riskchart <- function(pr, ac, ri=NULL,
                       risk.name="Risk",
                       recall.name="Recall",
                       precision.name="Precision",
-                      thresholds=NULL)
+                      thresholds=NULL,
+                      legend.horiz=TRUE)
 {
   # 121209 Initialise variables otherwise appearing to be unintialised
   # to R CMD check.
@@ -94,13 +96,20 @@ riskchart <- function(pr, ac, ri=NULL,
   p <- p + ggplot2::geom_line(ggplot2::aes(y=100*Recall, colour="Recall", linetype="Recall"))
   p <- p + ggplot2::geom_line(ggplot2::aes(y=100*Precision, colour="Precision", linetype="Precision"))
   p <- p + ggplot2::geom_text(data=scores, ggplot2::aes(x=100*pos, y=102, label=ticks), size=2)
-  p <- p + ggplot2::annotate("text", x=0, y=105, label="Risk Scores", hjust=0, size=3)
+  p <- p + ggplot2::annotate("text", x=0, y=110, label="Risk Scores", hjust=0, size=3)
   p <- p + ggplot2::geom_line(ggplot2::aes(y=100*Caseload))
   p <- p + ggplot2::ggtitle(title) + ggplot2::xlab("Caseload (%)") + ggplot2::ylab("Performance (%)")
-  p <- p + ggplot2::theme(legend.title=ggplot2::element_blank(),
-                 plot.title=ggplot2::element_text(size=10),
-                 legend.justification=c(0, 0),
-                 legend.position=c(.30, .02))
+  if (legend.horiz)
+    p <- p + ggplot2::theme(legend.title=ggplot2::element_blank(),
+                            plot.title=ggplot2::element_text(size=title.size),
+                            legend.justification=c(0, 0),
+                            legend.position=c(.10, 0.01),
+                            legend.direction="horizontal")
+  else
+    p <- p + ggplot2::theme(legend.title=ggplot2::element_blank(),
+                            plot.title=ggplot2::element_text(size=title.size),
+                            legend.justification=c(0, 0),
+                            legend.position=c(.30, .02))
   p <- p + ggplot2::guides(colour=ggplot2::guide_legend(keywidth=3, labels=1:3))
   p <- p + ggplot2::scale_x_continuous(breaks=seq(0, 100, 20))
   p <- p + ggplot2::scale_y_continuous(breaks=seq(0, 100, 20))
@@ -123,7 +132,7 @@ riskchart <- function(pr, ac, ri=NULL,
     # So use aes_string
     p <- p + ggplot2::geom_text(data=lifts,
                                 ggplot2::aes_string("x", "y", label="label"), size=3)
-    p <- p + ggplot2::geom_text(ggplot2::aes(x=110, y=101.5, label="Lift"), size=3)
+    p <- p + ggplot2::annotate("text", x=110, y=101.5, label="Lift", size=3)
   }
 
   if (! is.null(thresholds))

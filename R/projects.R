@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-09-06 08:27:02 gjw>
+# Time-stamp: <2015-07-12 15:52:44 gjw>
 #
 # Project functionality.
 #
@@ -549,42 +549,40 @@ loadProject <- function()
 
   showModelHClustExists() # 100424 Enable appropriate widgets if hclust exists.
   
-  ## MODELS - Ensure libraries are loaded.
+  # TODO - Heading toward using namespace rather than loading
+  # libraries and interfering with user's environment - Bit by
+  # bit. The current eval parse stuff was for display of the libray
+  # command on Log but no longer should be used.
 
 #  crs$page     <- crs$page
 #  crs$smodel   <- crs$smodel
 
 #  crs$rpart    <- crs$rpart
   setTextviewContents("rpart_textview", crs$text$rpart)
-  if (not.null(crs$rpart)) require(rpart, quietly=TRUE)
+  if (not.null(crs$rpart)) eval(parse(text="library(rpart, quietly=TRUE)"))
   
 #  crs$rf       <- crs$rf
   setTextviewContents("rf_textview", crs$text$rf)
-  if (not.null(crs$rf)) require(randomForest, quietly=TRUE)
+  if (not.null(crs$rf)) eval(parse(text="library(randomForest, quietly=TRUE)"))
 
 #  crs$svm      <- crs$svm
   setTextviewContents("esvm_textview", crs$text$esvm)
-  if (not.null(crs$svm)) require(e1071, quietly=TRUE)
+  if (not.null(crs$svm)) eval(parse(text="library(e1071, quietly=TRUE)"))
 
 #  crs$ksvm     <- crs$ksvm
   setTextviewContents("ksvm_textview", crs$text$ksvm)
-  if (not.null(crs$ksvm)) require(kernlab, quietly=TRUE)
+  if (not.null(crs$ksvm)) eval(parse(text="library(kernlab, quietly=TRUE)"))
 
 #  crs$glm      <- crs$glm
   setTextviewContents("glm_textview", crs$text$glm)
 
-#  crs$ada      <- crs$ada
   setTextviewContents("ada_textview", crs$text$ada)
-  if (not.null(crs$ada)) require(ada, quietly=TRUE)
 
   setTextviewContents("nnet_textview", crs$text$nnet)
-  if (not.null(crs$nnet)) require(nnet, quietly=TRUE)
+  if (not.null(crs$nnet)) eval(parse(text="library(nnet, quietly=TRUE)"))
 
   setTextviewContents("model_survival_textview", crs$text$survival)
-  if (not.null(crs$survival)) require(survival, quietly=TRUE)
-
-  #REMOVE crs$gbm      <- crs$gbm
-  #REMOVE setTextviewContents("gbm_textview", crs$text$gbm)
+  if (not.null(crs$survival)) eval(parse(text="library(survival, quietly=TRUE)"))
 
   if (not.null(crs$rpart.opt$priors))
     theWidget("model_tree_priors_entry")$setText(crs$rpart.opt$priors)

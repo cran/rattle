@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2010-03-28 21:18:22 Graham Williams>
+# Time-stamp: <2015-05-17 08:58:56 gjw>
 #
 # Test Tab
 #
@@ -190,7 +190,7 @@ executeTestTab <- function()
 
   # Ensure the package is available.
 
-  lib.cmd <- "require(fBasics, quietly=TRUE)"
+  lib.cmd <- "library(fBasics, quietly=TRUE)"
   if (! packageIsAvailable("fBasics", Rtxt("location T-Test"))) return(FALSE)
   appendLog(Rtxt("Use the fBasics package for statistical tests."), lib.cmd)
   eval(parse(text=lib.cmd))

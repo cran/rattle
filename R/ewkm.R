@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-09-06 08:30:19 gjw>
+# Time-stamp: <2015-07-09 19:13:01 gjw>
 #
 # Implement biclust functionality.
 #
@@ -60,10 +60,10 @@ executeClusterEwkm <- function(include)
 
   # Load the required package.
   
-  lib.cmd <- "require(weightedKmeans, quietly=TRUE)"
-  if (! packageIsAvailable("weightedKmeans", Rtxt("perform subspace cluster analysis")))
+  lib.cmd <- "library(wskm, quietly=TRUE)"
+  if (! packageIsAvailable("wskm", Rtxt("perform subspace cluster analysis")))
     return(FALSE)
-  appendLog(packageProvides('weightedKmeans', 'ewkm'), lib.cmd)
+  appendLog(packageProvides('wskm', 'ewkm'), lib.cmd)
   eval(parse(text=lib.cmd))
 
   # Set the seed so we can repeat.
@@ -82,7 +82,7 @@ executeClusterEwkm <- function(include)
 
   if (theWidget("kmeans_rescale_checkbutton")$getActive())
   {
-    lib.cmd <- "require(reshape, quietly=TRUE)"
+    lib.cmd <- "library(reshape, quietly=TRUE)"
     if (! packageIsAvailable("reshape", Rtxt("rescale for ewkm"))) return(FALSE)
     appendLog(packageProvides('reshape', 'rescaler'), lib.cmd)
     eval(parse(text=lib.cmd))
@@ -174,11 +174,11 @@ weightsPlotEwkm <- function()
 
   startLog(sprintf("Plot variable weights from the %s algorithm.", commonName(crv$EWKM)))
 
-  # The weightedKmeans package provides the plot and levelplot methods.
+  # The wskm package provides the plot and levelplot methods.
   
-  if (!packageIsAvailable("weightedKmeans", "plot variable weights")) return()
-  lib.cmd <- "require(weightedKmeans, quietly=TRUE)"
-  appendLog(packageProvides("weightedKmeans", "plot"), lib.cmd)
+  if (!packageIsAvailable("wskm", "plot variable weights")) return()
+  lib.cmd <- "library(wskm, quietly=TRUE)"
+  appendLog(packageProvides("wskm", "plot"), lib.cmd)
   eval(parse(text=lib.cmd))
 
   advancedPlot <- theWidget("use_ggplot2")$getActive() # Not really ggplot2 but convenient.

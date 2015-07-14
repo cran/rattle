@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-12-29 09:28:23 gjw>
+# Time-stamp: <2015-07-04 07:30:20 gjw>
 #
 # Implement EXPLORE functionality.
 #
@@ -178,7 +178,7 @@ executeExploreSummary <- function(dataset)
     contents.cmd <- ""
     if (packageIsAvailable("Hmisc", Rtxt("describe the contents of a data frame")))
     {
-      lib.cmd <- "require(Hmisc, quietly=TRUE)"
+      lib.cmd <- "library(Hmisc, quietly=TRUE)"
       appendLog(packageProvides("Hmisc", "contents"), lib.cmd)
       eval(parse(text=lib.cmd))
       contents.cmd <- sprintf("contents(%s)", dataset)
@@ -215,7 +215,7 @@ executeExploreSummary <- function(dataset)
   
     if (packageIsAvailable("Hmisc", Rtxt("describe the data")))
     {
-      lib.cmd <- "require(Hmisc, quietly=TRUE)"
+      lib.cmd <- "library(Hmisc, quietly=TRUE)"
       appendLog(packageProvides("Hmisc", "describe"), lib.cmd)
       eval(parse(text=lib.cmd))
       
@@ -236,7 +236,7 @@ executeExploreSummary <- function(dataset)
     
     if (packageIsAvailable("fBasics", Rtxt("calculate basic stats, skew and kurtosis")))
     {
-      lib.cmd <- "require(fBasics, quietly=TRUE)"
+      lib.cmd <- "library(fBasics, quietly=TRUE)"
       
       if (do.basics)
       {
@@ -295,7 +295,7 @@ executeExploreSummary <- function(dataset)
     {
       ## Load the mice package into the library
 
-      lib.cmd <- "require(mice, quietly=TRUE)"
+      lib.cmd <- "library(mice, quietly=TRUE)"
       appendLog(packageProvides("md.pattern", "mice"), lib.cmd)
       eval(parse(text=lib.cmd))
       
@@ -325,7 +325,7 @@ executeExploreSummary <- function(dataset)
   {
     if (packageIsAvailable("descr", Rtxt("produce a cross tabulation")))
     {
-      lib.cmd <- "require(descr, quietly=TRUE)"
+      lib.cmd <- "library(descr, quietly=TRUE)"
       appendLog(packageProvides("CrossTable", "descr"), lib.cmd)
       eval(parse(text=lib.cmd))
       crosstab.cmd <- paste(sprintf("for (i in %s)", getCategoricVariables()),
@@ -445,7 +445,7 @@ calcInitialDigitDistr <- function(l,
 ## plotBenfordsLaw <- function(l)
 ## {
 ##   if (! packageIsAvailable("gplots", Rtxt("plot Benford's law"))) return()
-##   require(gplots, quietly=TRUE)
+##   library(gplots, quietly=TRUE)
   
 ##   actual <- calcInitialDigitDistr(l)
   
@@ -562,11 +562,11 @@ executeBenfordPlot2 <- function(dname, benplots, target, targets, stratify, samp
   
   startLog("Benford's Law")
 
-  lib.cmd <- "require(ggplot2, quietly=TRUE)"
+  lib.cmd <- "library(ggplot2, quietly=TRUE)"
   appendLog(packageProvides("ggplot2", "ggplot"), lib.cmd)
   eval(parse(text=lib.cmd))
 
-  lib.cmd <- "require(reshape, quietly=TRUE)"
+  lib.cmd <- "library(reshape, quietly=TRUE)"
   appendLog(packageProvides("reshape", "melt"), lib.cmd)
   eval(parse(text=lib.cmd))
 
@@ -890,7 +890,7 @@ executeExplorePlot <- function(dataset,
                           "\nif (length(bp$out))",
                           "text(x=bp$group+0.1, y=bp$out, labels=bp$out, cex=0.5)")
     
-    lib.cmd <- "require(doBy, quietly=TRUE)"
+    lib.cmd <- "library(doBy, quietly=TRUE)"
     
     # TODO: Try using "by" instead of needing another package to
     # provide summaryBy. Also, the new version of doBy (061006) seems
@@ -1212,7 +1212,7 @@ executeExplorePlot <- function(dataset,
 
     nplots <- length(cumplots)
 
-    lib.cmd <- "require(Hmisc, quietly=TRUE)"
+    lib.cmd <- "library(Hmisc, quietly=TRUE)"
     
     for (s in seq_len(nplots))
     {
@@ -1323,7 +1323,7 @@ executeExplorePlot <- function(dataset,
     
     # Using barplot2 from gplots
     
-    lib.cmd <- "require(gplots, quietly=TRUE)"
+    lib.cmd <- "library(gplots, quietly=TRUE)"
 
     if (packageIsAvailable("colorspace"))
       cols <- "colorspace::rainbow_hcl(%d)" # 090524, start = 30, end = 300)"
@@ -1636,7 +1636,7 @@ executeExplorePlot <- function(dataset,
 
     # Use barplot2 from gplots.
     
-    lib.cmd <- "require(gplots, quietly=TRUE)"
+    lib.cmd <- "library(gplots, quietly=TRUE)"
 
     # Construct a generic data command built using the genericDataSet
     # values. To generate a barplot we use the output of the summary
@@ -1753,7 +1753,7 @@ executeExplorePlot <- function(dataset,
 ###     # 080817 Use barchart from lattice instead of barplot2 from
 ###     # ggplots.
 
-###     lib.cmd <- "require(lattice, quietly=TRUE)"
+###     lib.cmd <- "library(lattice, quietly=TRUE)"
     
 ###     # Construct a generic data command built using the genericDataSet
 ###     # values. To generate a barplot we use the output of the summary
@@ -1848,7 +1848,7 @@ executeExplorePlot <- function(dataset,
 ###     # yet since it uses a different mechanism to get multiple plots on
 ###     # one device and I've not set that up yet.
 
-###     # lib.cmd <- "require(lattice, quietly=TRUE)"
+###     # lib.cmd <- "library(lattice, quietly=TRUE)"
 
 ###     # Construct a generic data command built using the genericDataSet
 ###     # values. To generate a barplot we use the output of the summary
@@ -2372,7 +2372,7 @@ executeExplorePlot2 <- function(dataset,
     ##                       "- min(ds$dat, na.rm=TRUE)),",
     ##                       "labels=bp$stats[,i])}")
     
-    ## lib.cmd <- "require(doBy, quietly=TRUE)"
+    ## lib.cmd <- "library(doBy, quietly=TRUE)"
     
     ## # TODO: Try using "by" instead of needing another package to
     ## # provide summaryBy. Also, the new version of doBy (061006) seems
@@ -2693,7 +2693,7 @@ executeExplorePlot2 <- function(dataset,
 
     nplots <- length(cumplots)
 
-    lib.cmd <- "require(Hmisc, quietly=TRUE)"
+    lib.cmd <- "library(Hmisc, quietly=TRUE)"
     
     for (s in seq_len(nplots))
     {
@@ -2799,7 +2799,7 @@ executeExplorePlot2 <- function(dataset,
     
     # Using barplot2 from gplots
     
-    lib.cmd <- "require(gplots, quietly=TRUE)"
+    lib.cmd <- "library(gplots, quietly=TRUE)"
 
     if (packageIsAvailable("colorspace"))
       cols <- "colorspace::rainbow_hcl(%d)" # 090524, start = 30, end = 300)"
@@ -3066,7 +3066,7 @@ executeExplorePlot2 <- function(dataset,
 
     # Use barplot2 from gplots.
     
-    lib.cmd <- "require(gplots, quietly=TRUE)"
+    lib.cmd <- "library(gplots, quietly=TRUE)"
 
     # Construct a generic data command built using the genericDataSet
     # values. To generate a barplot we use the output of the summary
@@ -3185,7 +3185,7 @@ executeExplorePlot2 <- function(dataset,
 ###     # 080817 Use barchart from lattice instead of barplot2 from
 ###     # ggplots.
 
-###     lib.cmd <- "require(lattice, quietly=TRUE)"
+###     lib.cmd <- "library(lattice, quietly=TRUE)"
     
 ###     # Construct a generic data command built using the genericDataSet
 ###     # values. To generate a barplot we use the output of the summary
@@ -3280,7 +3280,7 @@ executeExplorePlot2 <- function(dataset,
 ###     # yet since it uses a different mechanism to get multiple plots on
 ###     # one device and I've not set that up yet.
 
-###     # lib.cmd <- "require(lattice, quietly=TRUE)"
+###     # lib.cmd <- "library(lattice, quietly=TRUE)"
 
 ###     # Construct a generic data command built using the genericDataSet
 ###     # values. To generate a barplot we use the output of the summary
@@ -3589,7 +3589,7 @@ panel.cor <- function(x, y, digits=2, prefix="", cex.cor, ...)
     # 100131 Use the pairs.panels function from the psych package
     # which does the panels functions for us.
 
-    lib.cmd <- "require(psych, quietly=TRUE)"
+    lib.cmd <- "library(psych, quietly=TRUE)"
     appendLog(packageProvides("psych", "pairs.panels"), lib.cmd)
     eval(parse(text=lib.cmd))
   
@@ -3644,7 +3644,7 @@ displayPairsPlot2 <- function(dataset)
   startLog(Rtxt("Scatter or Pairs Plot (Plot a Correlation Matrix)"))
 
   if (! packageIsAvailable("Deducer", Rtxt("plot correlations"))) return()
-  lib.cmd <- "require(Deducer, quietly=TRUE)"
+  lib.cmd <- "library(Deducer, quietly=TRUE)"
   appendLog(packageProvides("Deducer", "ggcorplot"), lib.cmd)
   eval(parse(text=lib.cmd))
 
@@ -3676,7 +3676,7 @@ executeExploreGGobi <- function(dataset, name=NULL)
   
   # Construct the commands.
 
-  lib.cmd <- "require(rggobi, quietly=TRUE)"
+  lib.cmd <- "library(rggobi, quietly=TRUE)"
   ggobi.cmd <- paste('crs$gg <- ggobi(', dataset, # 140206 Remove <<-
                      ifelse(not.null(name), sprintf(', name="%s"', name), ""),
                      ')')
@@ -3713,9 +3713,9 @@ executeExploreCorrelation <- function(dataset, newplot=TRUE)
 
   # Map the GUI options to the right names - in case the translation
   # (like Japanese) has translated the options. 100331 The
-  # getActiveText here is returning garbage (繝斐い繧ｽ繝ｳ) instead of
-  # (ピアソ). So tried using getActive to get the index instead, but
-  # then found that Encoding is the right approach.
+  # getActiveText here is returning garbage. So tried using getActive
+  # to get the index instead, but then found that Encoding is the
+  # right approach.
   
   method <- theWidget("explore_correlation_method_combobox")$getActiveText()
   Encoding(method) <- "UTF-8"
@@ -3769,7 +3769,7 @@ executeExploreCorrelation <- function(dataset, newplot=TRUE)
     }
   }
 
-  lib.cmd <- sprintf("require(%s, quietly=TRUE)",
+  lib.cmd <- sprintf("library(%s, quietly=TRUE)",
                      ifelse(advanced.graphics, "corrplot", "ellipse"))
   crscor.cmd  <- sprintf('%scrs$cor <- cor(%s, use="pairwise", method="%s")',
                          ifelse(nas, naids.cmd, ""),
@@ -4051,7 +4051,7 @@ executeExplorePrcomp <- function(dataset)
 
 ##   startLog(Rtxt("Explore Data"))
 
-##   lib.cmd <- "require(latticist)"
+##   lib.cmd <- "library(latticist)"
 ##   appendLog(packageProvides("latticist", "latticist"), lib.cmd)
 ##   eval(parse(text=lib.cmd))
 
@@ -4074,7 +4074,7 @@ executeExplorePrcomp <- function(dataset)
 
 ##   startLog(Rtxt("Use the Plot Builder dialog from the Deducer package."))
 
-##   lib.cmd <- "require(Deducer, quietly=TRUE)"
+##   lib.cmd <- "library(Deducer, quietly=TRUE)"
 ##   appendLog(packageProvides("Deducer", "deducer"), lib.cmd)
 ##   eval(parse(text=lib.cmd))
 

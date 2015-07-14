@@ -5,9 +5,7 @@
 }
 \description{
   
-   The mode is the most common or modal value of a list.  This function
-   calculates the mode of a vector, array or list (lists are
-   flattened).
+   The mode is the most common or modal value of a list.
   
 }
 \usage{
@@ -21,9 +19,9 @@ modalvalue(x, na.rm=FALSE)
 }
 \details{
 
-  Rattle needed this function, and R does not provide one. This version
-  came from the R Wiki.
+  This function calculates the mode of a vector, array or list (lists
+   are flattened). This code originated from an anonymous post on the R
+   Wiki.
 
 }
-\references{R Wiki: \url{http://wiki.r-project.org/rwiki/doku.php?id=tips:stats-basic:modalvalue}}
 \keyword{hplot}

@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2013-03-11 13:43:09 Graham Williams>
+# Time-stamp: <2015-05-17 08:59:10 gjw>
 #
 # 080921 TEXT MINING DATA
 #
@@ -109,12 +109,12 @@ executeDataCorpus <- function()
 
   # Ensure the package is available.
 
-  lib.cmd <- "require(tm, quietly=TRUE)"
+  lib.cmd <- "library(tm, quietly=TRUE)"
   if (! packageIsAvailable("tm", "text mining")) return(FALSE)
   appendLog("Use the tm package to support text mining.", lib.cmd)
   eval(parse(text=lib.cmd))
 
-  # This seems to be avaiable somewhere? require(RStem)
+  # This seems to be avaiable somewhere? library(RStem)
   
   # Load the document corpus.
 
@@ -137,7 +137,7 @@ executeDataCorpus <- function()
                              'removeWords, stopwords("english"))'), map.cmd)
   if (stemw)
   {
-    lib.cmd <- "require(SnowballC, quietly=TRUE)"
+    lib.cmd <- "library(SnowballC, quietly=TRUE)"
     if (! packageIsAvailable("SnowballC", "word stemming")) return(FALSE)
     appendLog(packageProvides("SnowballC", "stemDocument"), lib.cmd)
     eval(parse(text=lib.cmd))

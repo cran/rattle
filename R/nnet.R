@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-09-06 08:31:20 gjw>
+# Time-stamp: <2015-07-13 20:25:20 gjw>
 #
 # NNET OPTION 061230
 #
@@ -80,7 +80,7 @@ executeModelNNet <- function()
   # Load the package into the library
 
   startLog("Neural Network")
-  lib.cmd <-  "require(nnet, quietly=TRUE)"
+  lib.cmd <-  "library(nnet, quietly=TRUE)"
   if (! packageIsAvailable("nnet", Rtxt("build a neural network"))) return(FALSE)
   appendLog(Rtxt("Build a neural network model using the nnet package."), lib.cmd)
   eval(parse(text=lib.cmd))
@@ -238,7 +238,7 @@ exportNNetModel <- function()
   ##
   ## # Require the pmml package
   ##
-  ## lib.cmd <- "require(pmml, quietly=TRUE)"
+  ## lib.cmd <- "library(pmml, quietly=TRUE)"
   ## if (! packageIsAvailable("pmml", "export neural net")) return(FALSE)
   ## appendLog("Load the PMML package to export a neural net.", lib.cmd)
   ## # Load the package unless we already have a pmml defined (through source).
@@ -290,9 +290,11 @@ exportNNetModel <- function()
 # think is safe since it is a print method, intended for display
 # rather than down stream processing.
 
+print.summary <- function(...) UseMethod("print.summary")
+
 print.summary.nnet <- function(x, ...)
 {
-  require(nnet)
+  eval(parse(text="library(nnet)")) # No longer for Log - remove it
   cat(Rtxt("Neural Network build options:"))
   tconn <- diff(x$nconn)
   ssep <- ""

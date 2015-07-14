@@ -74,17 +74,17 @@ a change, usually from one time period to another.
 
 Distribution of the Data
 
-* Kolomogorov-Smirnov     Non-parametric    Are the distributions the same?
-* Wilcoxon Signed Rank    Non-parametric    Do paired samples have the same distribution?
+* Kolomogorov-Smirnov     Non-parametric    Are the distributions different?
+* Wilcoxon Signed Rank    Non-parametric    Do paired samples have different distribution?
 
 Location of the Average
 
-* T-test               Parametric        Are the means the same?
-* Wilcoxon Rank-Sum    Non-parametric    Are the medians the same?
+* T-test               Parametric        Are the means different?
+* Wilcoxon Rank-Sum    Non-parametric    Are the medians different?
 
 Variation in the Data
 
-* F-test    Parametric    Are the variances the same?
+* F-test    Parametric    Are the variances different?
 
 Correlation
 

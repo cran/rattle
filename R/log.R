@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-09-06 09:27:12 gjw>
+# Time-stamp: <2015-07-12 12:38:26 gjw>
 #
 # Implement LOG functionality.
 #
@@ -71,13 +71,15 @@ initiateLog <- function()
                       "as when scoring a dataset."),
                  "\n\nbuilding <- TRUE",
                  "\nscoring  <- ! building\n",
-                 ifelse(packageIsAvailable("colorspace"),
-                        paste("\n",
-                              Rtxt("# The colorspace package is used to generate",
-                                   "the colours used in plots,",
-                                   "if available."),
-                              "\n\n",
-                              "library(colorspace)", sep=""), ""),
+                 # Removed to avoid loading librarys or suggesting such
+                 # Moving to using namespace :: in the script.
+                 #ifelse(packageIsAvailable("colorspace"),
+                 #       paste("\n",
+                 #             Rtxt("# The colorspace package is used to generate",
+                 #                  "the colours used in plots,",
+                 #                  "if available."),
+                 #             "\n\n",
+                 #             "library(colorspace)", sep=""), ""),
                  "\n\n",
                  Rtxt("# A pre-defined value is used to reset the random seed",
                       "so that results are repeatable."),
@@ -122,6 +124,10 @@ appendLog <- function(start, cont=NULL, ..., sep=" ", no.start=FALSE)
     msg <- paste(sep="", crv$start.log.comment, start, crv$end.log.comment, cont, ...)
   if (length(msg) == 0) msg <-""
 
+  # 150712 Remove and Rtxt(...), leaving just ...
+
+  
+  
   # Always place text at the end, irrespective of where the cursor is.
 
   log.buf <- theWidget("log_textview")$getBuffer()

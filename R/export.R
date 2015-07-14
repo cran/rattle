@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-09-06 08:28:33 gjw>
+# Time-stamp: <2015-05-17 08:56:28 gjw>
 #
 # Implement functionality associated with the Export button and Menu.
 #
@@ -203,7 +203,7 @@ getExportSaveName <- function(mtype)
   # Require the pmml package for either exporting to PMML or C (which
   # goes via PMML).
   
-  lib.cmd <- "require(pmml, quietly=TRUE)"
+  lib.cmd <- "library(pmml, quietly=TRUE)"
   if (! (exists("pmml") ||
          packageIsAvailable("pmml", sprintf(Rtxt("export a %s model"),
                                             commonName(mtype)))))

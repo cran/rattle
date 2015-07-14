@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-09-06 08:29:55 gjw>
+# Time-stamp: <2015-05-17 08:54:03 gjw>
 #
 # Implement associations functionality.
 #
@@ -155,7 +155,7 @@ executeAssociateTab <- function()
   if (! packageIsAvailable("arules", Rtxt("generate associations"))) return()
 
   startLog(commonName("arules"))
-  lib.cmd <- "require(arules, quietly=TRUE)"
+  lib.cmd <- "library(arules, quietly=TRUE)"
   appendLog(packageProvides("arules", "arules"), lib.cmd)
   eval(parse(text=lib.cmd))
  
@@ -299,7 +299,7 @@ plotAssociateFrequencies <- function()
 
   if (! packageIsAvailable("arules", Rtxt("generate associations"))) return()
   startLog(Rtxt("Relative Frequencies Plot"))
-  lib.cmd <- "require(arules, quietly=TRUE)"
+  lib.cmd <- "library(arules, quietly=TRUE)"
   appendLog(Rtxt("Association rules are implemented in the 'arules' package."), lib.cmd)
   eval(parse(text=lib.cmd))
  
@@ -359,7 +359,7 @@ plotAssociateRules <- function()
 
   if (! packageIsAvailable("arulesViz", Rtxt("generate a plot of association rules"))) return()
   startLog(Rtxt("Graph of Rules"))
-  lib.cmd <- "require(arulesViz, quietly=TRUE)"
+  lib.cmd <- "library(arulesViz, quietly=TRUE)"
   appendLog(Rtxt("Use 'arulesViz' to plot a graph representing the rules."), lib.cmd)
   eval(parse(text=lib.cmd))
 
@@ -510,7 +510,7 @@ exportAssociateTab <- function()
 
   # Require the pmml package
   
-  lib.cmd <- "require(pmml, quietly=TRUE)"
+  lib.cmd <- "library(pmml, quietly=TRUE)"
   if (! packageIsAvailable("pmml", Rtxt("export association rules"))) return(FALSE)
   appendLog(Rtxt("Load the PMML package to export association rules."), lib.cmd)
   # Load the package unless we already have a pmml defined (through source).

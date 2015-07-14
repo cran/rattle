@@ -203,7 +203,7 @@
     whether the means are different.</tooltip>
   <tooltip widget="test_wilcoxon_radiobutton">Two sample Wilcoxon
     rank-sum test, also known as the Mann-Whitney U test, to test
-    whether the two distributions are the same.</tooltip>
+    whether the two medians are different.</tooltip>
   <tooltip widget="test_distr_radiobutton">Test whether the two
     distributions are different.</tooltip>
   <tooltip widget="normalise_radiobutton">Transform numeric data to

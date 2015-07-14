@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-09-06 09:26:54 gjw>
+# Time-stamp: <2015-07-12 12:40:07 gjw>
 #
 # DATA TAB
 #
@@ -968,11 +968,13 @@ executeDataCSV <- function(filename=NULL)
 
   else if (tolower(get.extension(filename)) %in% c("xls", "xlsx"))
   {
-    if (! packageIsAvailable("xlsx", Rtxt("read .xls or .xlsx files"))) return(FALSE)
+    if (! packageIsAvailable("readxl", Rtxt("read .xls or .xlsx files"))) return(FALSE)
 
-    # 100114 A quick hack to allow reading MS/Excel files.
-    read.cmd <- sprintf(paste("require(xlsx, quietly=TRUE)",
-                              'crs$dataset <- read.xlsx("%s", sheetIndex=1)',
+    # 100114 A quick hack to allow reading MS/Excel files. 150517
+    # Notice the use of library() rather than require(). We really
+    # need to attach the package not try to attach the package.
+    read.cmd <- sprintf(paste("library(readxl, quietly=TRUE)",
+                              'crs$dataset <- read_excel("%s")',
                               # Make sure we return the actual dataset
                               # as the result as that is assumed.
                               "crs$dataset",
@@ -1394,7 +1396,7 @@ executeDataARFF <- function()
   # We need the foreign package to read ARFF data.
 
   if (! packageIsAvailable("foreign", Rtxt("read an ARFF dataset"))) return(FALSE)
-  lib.cmd <- "require(foreign, quietly=TRUE)"
+  lib.cmd <- "library(foreign, quietly=TRUE)"
 
   # If there is a model warn about losing it.
 
@@ -1723,50 +1725,16 @@ executeDataLibrary <- function()
 
 viewData <- function()
 {
-  startLog("View the dataset - edits are ignored.")
+  startLog(Rtxt("View the dataset."))
 
-  # 130127 Would like to do this but must edit a specific data frame
-  # in the users workspace and then move it to crs$dataset. Seems that
-  # data.viewer freezes on the second call to it, sometimes?
-
-  ## 131114 Deduce is too problematic.
-  #
-  ## if (packageIsAvailable("Deducer", Rtxt("view data in a spreadsheet")))
-  ## {
-  ##   require(Deducer)
-  ##   var.name <- paste("ds", format(Sys.time(), format="%y%m%d%H%M%S"), sep="_")
-  ##   if (!questionDialog(sprintf(Rtxt("To use Plot Builder the Rattle dataset needs to",
-  ##                                    "be available in the global environment (the",
-  ##                                    "user's workspace). To do this Rattle will copy",
-  ##                                    "its internal dataset to the variable '%s'.",
-  ##                                    "This will overwrite any variable of the same",
-  ##                                    "name. The copy of the dataset will be removed",
-  ##                                    "after you exit from Plot Builder.\n\n",
-  ##                                    "Are you okay with Rattle doing this?"),
-  ##                               var.name)))
-  ##     return()
-  ##   # I would really rather not do an assign, but is this the only
-  ##   # option - CRAN do not accept this and I must remove this on
-  ##   # submitting to CRAN even though the user is made fully aware of
-  ##   # the situation and the assign is included in the log.
-  ##   assign.cmd <- "assign(var.name, crs$dataset, envir=.GlobalEnv)"
-  ##   appendLog(Rtxt("Place dataset into Global Environment for PlotBuilder."),
-  ##             assign.cmd)
-  ##   eval(parse(text=assign.cmd))
-
-  ##   view.cmd <- 'data.viewer()'
-  ##   appendLog("Use data.viewer() from Deducer.", view.cmd)
-  ##   eval(parse(text=view.cmd))
-  ##   eval(parse(text=sprintf("rm(%s, envir=.GlobalEnv)", var.name)))
-  ## }   
-  ## else
   if (packageIsAvailable("RGtk2Extras", Rtxt("view data in a spreadsheet")))
   {
-    require(RGtk2Extras)
-    view.cmd <- paste('dfedit(crs$dataset,\n',
-                      '      dataset.name=Rtxt("Rattle Dataset"),\n',
-                      '      size=c(800, 400))')
-    appendLog("Use dfedit() from RGtk2Extras.", view.cmd)
+    view.cmd <- paste('RGtk2Extras::dfedit(crs$dataset,\n',
+                      '                  ',
+                      'dataset.name=Rtxt("Rattle Dataset"),\n',
+                      '                  ',
+                      'size=c(800, 400))')
+    appendLog(Rtxt("Note that edits are ignored."), view.cmd)
     eval(parse(text=view.cmd))
   }
   else
@@ -1796,54 +1764,30 @@ editData <- function()
 
   if (! overwriteModel()) return()
 
-  # Generate commands.
+  # Start logging.
 
-  if (is.null(crs$dataset))
-    assign.cmd <- 'crs$dataset <- edit(data.frame())'
-  # 130127 Would like to do this but must edit a specific data frame
-  # in the users workspace and then move it to crs$dataset.
-  # else if (packageIsAvailable("Deducer", Rtxt("edit data in a spreadsheet")))
-  # {
-  #   require(Deducer)
-  #   view.cmd <- 'data.viewer()'
-  #   appendLog("Use data.viewer() from Deducer.", view.cmd)
-  #   eval(parse(text=view.cmd))
-  # }   
-   else if (packageIsAvailable("RGtk2Extras"))
-    {
-      require(RGtk2Extras)
-      # 100215 Would like to do the following but results are not saved
-      # into crs$dataset. Perhaps it is an environment issue. So I can
-      # save the results into a global variable instead, and use the R
-      # Dataset tab to access this modified dataset.
-      # This is what I'd like to do but it is not saving the object.
-      ## assign.cmd <- paste('rattle.edit.obj <-',
-      ##                     'dfedit(crs$dataset,',
-      ##                     'size=c(800, 400))')
-      # 100602 Revert to this version since the above is not working.
-#      assign.cmd <- paste('rattle.edit.obj <<- dfedit(crs$dataset,\n',
-      # 121101 Seems like I can assign into crs$dataset now.
-      assign.cmd <- paste('crs$dataset <- dfedit(crs$dataset,\n',
-                          '                    ',
-                          'dataset.name=Rtxt("Rattle Dataset"),\n',
-                          '                    ',
-                          'size=c(800, 400))')
-    }
-  else
-    assign.cmd <- 'crs$dataset <- edit(crs$dataset)'
+  startLog(Rtxt("Edit the dataset."))
 
-  # Start logging and executing the R code.
+  # Generate command to execute.
 
-  startLog()
-  ##theWidget(TV)$setWrapMode("none") # On for welcome msg
-  ##resetTextview(TV)
+  assign.cmd <- if (is.null(crs$dataset))
+                  'crs$dataset <- edit(data.frame())'
+                else if (packageIsAvailable("RGtk2Extras"))
+                  paste('crs$dataset <- RGtk2Extras::dfedit(crs$dataset,\n',
+                        '                                 ',
+                        'dataset.name=Rtxt("Rattle Dataset"),\n',
+                        '                                 ',
+                        'size=c(800, 400))')
+                else
+                  'crs$dataset <- edit(crs$dataset)'
 
-  appendLog(Rtxt("Edit the Dataset"), sub("<<", "<", assign.cmd))
+  # Update the log withe the command that is run.
+
+  appendLog(Rtxt("Note that edits overwrite the current dataset."), assign.cmd)
 
   # These are needed because resetRattle clears everything
 
   ds <- crs$dataset
-  # TODO fn <- theWidget("data_filechooserbutton")$getFilename()
 
   resetRattle()
   crs$dataset <- ds
@@ -1856,15 +1800,16 @@ editData <- function()
 
   # Update the select treeview and samples.
 
-  ## resetVariableRoles(colnames(crs$dataset), nrow(crs$dataset))
   createVariablesModel(colnames(crs$dataset))
 
-  # Ensure we are viewing the treevie tab rather than the Welcome
+  # Ensure we are viewing the treeview tab rather than the Welcome
   # message.
 
   crv$DATA.DISPLAY.NOTEBOOK$setCurrentPage(crv$DATA.DISPLAY.TREEVIEW.TAB)
 
   setStatusBar(Rtxt("The supplied data is now available."))
+
+  set.cursor()
 
 }
 

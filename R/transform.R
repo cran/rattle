@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-08-01 06:29:29 gjw>
+# Time-stamp: <2015-07-12 15:58:16 gjw>
 #
 # TRANSFORM TAB
 #
@@ -174,8 +174,6 @@ modalvalue <- function(x, na.rm=FALSE)
 rescale.by.group <- function(x, by=NULL, type="irank", itop=100)
 {
   # 110529 TODO Check that by is a factor.
-
-  require("reshape")
 
   bylevels <- levels(by)
 
@@ -445,7 +443,7 @@ executeTransformNormalisePerform <- function(variables=NULL,
   if (action %in% c("scale01", "rank", "medianad", "interval"))
   {
     if (! packageIsAvailable("reshape", Rtxt("normalize data"))) return()
-    lib.cmd <- "require(reshape, quietly=TRUE)"
+    lib.cmd <- "library(reshape, quietly=TRUE)"
     appendLog(packageProvides("reshape", "rescaler"), lib.cmd)
     eval(parse(text=lib.cmd))
   }

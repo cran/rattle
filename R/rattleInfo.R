@@ -3,35 +3,38 @@ rattleInfo <- function(all.dependencies=FALSE,
                        include.not.available=FALSE,
                        include.libpath=FALSE)
 {
-  # Alternatives include:
-  # http://mirror.aarnet.edu.au/pub/CRAN/
 
-  # 120221 Brian Ripley seems to be checking for packages using
-  # installed.packages() and warning about it being a "very slow way
-  # to find information on one or a small number of packages," as
-  # stated on the man page, and as I am very aware. He goes on to say:
-  # "In addition, many of you are using it to find out if a package is
-  # installed, when actually you want to know if it is usable (it
-  # might for example be installed for a different architecture or
-  # require a later version of R), for which you need to use
-  # require()." I have already fixed my usage of installed.packages()
-  # within packageIsAvailable(), where there was a better way of
-  # checking for an installed package. But here I think it might be
-  # appropriate to use it.
+  # TODO: Add in support for BIOC
+
+  cran.repos <- "http://cran.rstudio.org"
+  bioc.repos <- ""
+
+  # Using installed.packages() can be a "very slow way to find
+  # information on one or a small number of packages" (Brian Riply
+  # 2012). This is stated in the man page and I am very aware of
+  # it. Brian also note: "In addition, many of you are using it to
+  # find out if a package is installed, when actually you want to know
+  # if it is usable (it might for example be installed for a different
+  # architecture or require a later version of R), for which you need
+  # to use require()." This was particularly relevant within
+  # packageIsAvailable() and there I use a better way of checking for
+  # an installed package.  Here I think it might still remain
+  # appropriate to use installed.packages().
   
   iv <- utils::installed.packages()
-  av <- available.packages(contriburl=contrib.url("http://cran.r-project.org"))
+  av <- available.packages(contriburl=contrib.url(cran.repos))
+  # not a cran repos bv <- available.packages(contriburl=contrib.url(cran.repos))
 
-  cat(sprintf("Rattle: version %s cran %s\n",
-              crv$version, av["rattle", "Version"]))
-
-  up <- NULL # List of packages that can be upgraded.
-
-  if (compareVersion(av["rattle", "Version"], crv$version) == 1)
-    up <- "rattle"
+  riv <- iv["rattle", "Version"]
+  rav <- av["rattle", "Version"]
   
-  cat(sprintf("%s\n",
-              sub(" version", ": version", version$version.string)))
+  cat(sprintf("Rattle: version %s CRAN %s\n", riv, rav))
+
+  # Record the packages that can be upgraded
+
+  up <- if (compareVersion(rav, riv) == 1) "rattle" else NULL
+    
+  cat(sprintf("%s\n", sub(" version", ": version", version$version.string)))
 
   cat("\n")
   si <- Sys.info()
@@ -41,57 +44,54 @@ rattleInfo <- function(all.dependencies=FALSE,
 
   cat("\nInstalled Dependencies\n")
 
+  deps2vec <- function(deps)
+  {
+    if (is.na(deps)) return(NULL)
+    strsplit(gsub("\\n", " ", gsub(' ?\\([^\\)]+\\)', '', deps)), ", ?")[[1]]
+  }
+    
   if (all.dependencies)
   {
-    cat("  please wait a few seconds whilst all dependencies are searched for...")
+    if (! "pkgDepTools" %in% rownames(iv))
+    {
+      source("http://bioconductor.org/biocLite.R")
+      pkg <- "pkgDepTools"
+      biocLite("pkgDepTools")
+    }
+    if (! "Rgraphviz" %in% rownames(iv))
+    {
+      source("http://bioconductor.org/biocLite.R")
+      biocLite("Rgraphviz")
+    }
 
-    suppressPackageStartupMessages({
-      require(pmml, quietly=TRUE)
-      require(methods, quietly=TRUE)
-      require(colorspace, quietly=TRUE)
-      require(cairoDevice, quietly=TRUE)
-      require(RGtk2, quietly=TRUE)
-      require(utils, quietly=TRUE)
-      require(XML, quietly=TRUE)
-      require(graph, quietly=TRUE, warn.conflicts=FALSE)
+    # 150711 There does not seem to be a way to get both suggest and
+    # depend links using pkgDepTools::makeDepGraph which I used to
+    # deploy here. It's either one or the other. Rattle only has
+    # suggests links. So I want to get what Rattle suggests and then
+    # find all the depends in cran.deps as the packages that are
+    # reported on. Instead of going through the repository and build a
+    # dependency graph, we've already dounloaded the available package
+    # information so use it here instead.
 
-      require(RBGL, quietly=TRUE)
-      require(bitops, quietly=TRUE)
-      require(grid, quietly=TRUE)
+    pkg.deps <- function(pkg, pkgs, av)
+    {
+      if (pkg %in% pkgs) return(pkgs)
 
-      if (! require(pkgDepTools, quietly=TRUE))
+      if (! pkg %in% rownames(av)) return(c(pkg, pkgs))
+
+      for (p in union(deps2vec(av[pkg, "Suggests"]), deps2vec(av[pkg, "Depends"])))
       {
-        source("http://bioconductor.org/biocLite.R")
-        pkg <- "pkgDepTools"
-        biocLite("pkgDepTools")
-        cmd <- sprintf("require(%s, quietly=TRUE)", pkg)
-        eval(parse(text=cmd))
+        pkgs <- pkg.deps(p, union(pkg, pkgs), av)
       }
-      if (! require(Rgraphviz, quietly=TRUE))
-      {
-        source("http://bioconductor.org/biocLite.R")
-        biocLite("Rgraphviz")
-        require(Rgraphviz, quietly=TRUE)
-      }
-    })
-      
-    cran.repos <- "http://cran.r-project.org"
-    if (isWindows())
-      cran.deps <- pkgDepTools::makeDepGraph(cran.repos, type="win.binary", dosize=TRUE)
-    else
-      cran.deps <- pkgDepTools::makeDepGraph(cran.repos, type="source", dosize=TRUE)
-
-    deps <- c("rattle", names(graph::acc(cran.deps, "rattle")[[1]]))
-    cat("\n")
+      return(union(pkg, pkgs))
+    }
+    
+    deps <- pkg.deps("rattle", NULL, av)
   }    
   else
-    deps <- strsplit(gsub("\\n", " ",
-                          paste0(gsub(' \\([^\\)]+\\)', '', iv["rattle", "Depends"]),
-                                 ", ",
-                                 gsub(' \\([^\\)]+\\)', '', iv["rattle", "Suggests"])
-                                 )), ", ")[[1]]
+    deps <- union(deps2vec(iv["rattle", "Depends"]), deps2vec(iv["rattle", "Suggests"]))
 
-  for (p in deps)
+  for (p in sort(setdiff(deps, 'rattle')))
   {
     if (! p %in% rownames(av))
     {
@@ -114,7 +114,11 @@ rattleInfo <- function(all.dependencies=FALSE,
   }
 
   cat("\nThat was",
-      sum(sapply(deps, function(p) p %in% rownames(iv))),
+      if (include.not.available)
+        length(deps)
+      else
+        sum(sapply(deps, function(p) p %in%
+                     if (include.not.installed) rownames(av) else rownames(iv))),
       "packages.\n")
   
   if (! is.null(up))

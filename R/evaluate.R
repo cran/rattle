@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-09-11 06:17:20 gjw>
+# Time-stamp: <2015-05-17 08:55:12 gjw>
 #
 # Implement evaluate functionality.
 #
@@ -1445,6 +1445,7 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
                           '\n                ',
                           'show.lift=', ifelse(numericTarget(), "FALSE", "TRUE"),
                           ', show.precision=', ifelse(numericTarget(), "FALSE", "TRUE"),
+                          ', legend.horiz=FALSE',
                           '))\n',
                           sep="")
       else
@@ -1473,6 +1474,7 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
                           paste("Performance Chart", commonName(mtype), testname, '"'),
                           ', show.lift=', ifelse(numericTarget(), "FALSE", "TRUE"),
                           ', show.precision=', ifelse(numericTarget(), "FALSE", "TRUE"),
+                          ', legend.horiz=FALSE',
                           '))\n',
                           sep="")
       else
@@ -2241,7 +2243,7 @@ executeEvaluateROC <- function(probcmd, testset, testname)
 
   if (advanced.graphics)
   {
-    req.ggplot2.cmd <- "require(ggplot2, quietly=TRUE)"
+    req.ggplot2.cmd <- "library(ggplot2, quietly=TRUE)"
     if (! packageIsAvailable("ggplot2", "plot an ROC curve")) return()
   }
   else

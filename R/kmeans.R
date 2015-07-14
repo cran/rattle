@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-09-06 08:30:44 gjw>
+# Time-stamp: <2015-06-30 20:17:47 gjw>
 #
 # Implement kmeans functionality.
 #
@@ -132,7 +132,7 @@ executeClusterKMeans <- function(include)
 
   if (theWidget("kmeans_rescale_checkbutton")$getActive())
   {
-    lib.cmd <- "require(reshape, quietly=TRUE)"
+    lib.cmd <- "library(reshape, quietly=TRUE)"
     if (! packageIsAvailable("reshape", Rtxt("rescale for kmeans"))) return(FALSE)
     appendLog(packageProvides('reshape', 'rescaler'), lib.cmd)
     eval(parse(text=lib.cmd))
@@ -153,7 +153,7 @@ executeClusterKMeans <- function(include)
   {
     if (nruns > 1)
     {
-      lib.cmd <- "require(fpc, quietly=TRUE)"
+      lib.cmd <- "library(fpc, quietly=TRUE)"
       if (! packageIsAvailable("fpc", Rtxt("run kmeans multiple times"))) return(FALSE)
       appendLog(packageProvides('fpc', 'kmeansruns'), lib.cmd)
       eval(parse(text=lib.cmd))
@@ -220,7 +220,6 @@ executeClusterKMeans <- function(include)
   {
     start.time <- Sys.time()
     css <- vector()
-    css[1] <- 0
     for (i in 2:nclust)
     {
       kmeans.cmd <- sprintf(paste('crs$kmeans <-',
@@ -230,19 +229,20 @@ executeClusterKMeans <- function(include)
       eval(parse(text=kmeans.cmd))
       css[i] <- sum(crs$kmeans$withinss)
     }
+    css[1] <- crs$kmeans$totss
     time.taken <- Sys.time()-start.time
     resetTextview(TV)
     setTextview(TV, sprintf(Rtxt("We have iterated over cluster sizes",
-                                 "from 2 to %d clusters.\n\n",
-                                 "The plot displays the 'sum(withinss)' for each clustering\n",
-                                 "and the change in this value from the previous clustering.\n",
-                                 "Plotting starts from 3 clusters.\n"), nclust))
+                                 "from 2 to %d clusters.\n",
+                                 "\nThe plot displays the 'sum(withinss)' for each clustering",
+                                 "\nand the change in this value from the previous clustering.\n"),
+                            nclust))
     newPlot()
-    plot(3:nclust, c(css[3:nclust]), ylim=c(0, max(css[3:nclust])),
+    plot(1:nclust, c(css[1:nclust]), ylim=c(0, max(css[1:nclust])),
          type="b", lty=1, col="blue",
          xlab=Rtxt("Number of Clusters"), ylab=Rtxt("Sum of WithinSS"),
          main=Rtxt("Sum of WithinSS Over Number of Clusters"))
-    points(3:nclust, css[2:(nclust-1)]-css[3:nclust],
+    points(2:nclust, css[1:(nclust-1)]-css[2:nclust],
            type="b", pch=4, lty=2, col="red")
     legend("topright", c(Rtxt("Sum(WithinSS)"), Rtxt("Diff previous Sum(WithinSS)")),
            col=c("blue", "red"), lty=c(1, 2), pch=c(1,4), inset=0.05)
@@ -426,7 +426,7 @@ displayClusterStatsKMeans <- function()
   # plot, and log the R command and execute.
   
   if (!packageIsAvailable("fpc", Rtxt("plot a cluster"))) return()
-  lib.cmd <- "require(fpc, quietly=TRUE)"
+  lib.cmd <- "library(fpc, quietly=TRUE)"
   appendLog(packageProvides("fpc", "cluster.stats"), lib.cmd)
   eval(parse(text=lib.cmd))
 
@@ -680,7 +680,7 @@ discriminantPlotKMeans <- function()
   # The fpc package provides the plotcluster command execute.
   
   if (!packageIsAvailable("fpc", "plot a cluster")) return()
-  lib.cmd <- "require(fpc, quietly=TRUE)"
+  lib.cmd <- "library(fpc, quietly=TRUE)"
   appendLog(packageProvides("fpc", "plotcluster"), lib.cmd)
   eval(parse(text=lib.cmd))
 

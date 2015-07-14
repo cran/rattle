@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-09-06 08:31:05 gjw>
+# Time-stamp: <2015-05-17 08:57:27 gjw>
 #
 # MODEL TAB
 #
@@ -793,13 +793,13 @@ executeModelGLM <- function()
   }
   else if (family == "Multinomial")
   {
-    lib.cmd <-  "require(nnet, quietly=TRUE)"
+    lib.cmd <-  "library(nnet, quietly=TRUE)"
     if (! packageIsAvailable("nnet", Rtxt("build a mulitnomial model"))) return(FALSE)
     appendLog(Rtxt("Build a multinomial model using the nnet package."), lib.cmd)
     eval(parse(text=lib.cmd))
 
     car.available <- TRUE
-    lib.cmd <- "require(car, quietly=TRUE)"
+    lib.cmd <- "library(car, quietly=TRUE)"
     if (! packageIsAvailable("car", Rtxt("use Anova to evaluate a mulitnomial model")))
       car.available <- FALSE
     else
@@ -1102,7 +1102,7 @@ executeModelSVM <- function()
   {
     if (packageIsAvailable("kernlab", Rtxt("build an SVM model using ksvm")))
     {
-      libCmd <- "require(kernlab, quietly=TRUE)"
+      libCmd <- "library(kernlab, quietly=TRUE)"
       appendLog(packageProvides('kernlab', 'ksvm'), libCmd)
     }
     else
@@ -1112,7 +1112,7 @@ executeModelSVM <- function()
   {
     if (packageIsAvailable("e1071", Rtxt("build an SVM model using svm")))
     {
-      libCmd <- "require(e1071, quietly=TRUE)"
+      libCmd <- "library(e1071, quietly=TRUE)"
       appendLog(packageProvides('e1071', 'svm'), libCmd)
     }
     else
@@ -1274,7 +1274,7 @@ exportSVMModel <- function()
 
   # Require the pmml package
   
-  lib.cmd <- "require(pmml, quietly=TRUE)"
+  lib.cmd <- "library(pmml, quietly=TRUE)"
   if (! packageIsAvailable("pmml", Rtxt("export SVM model"))) return(FALSE)
   appendLog(Rtxt("Load the PMML package to export a SVM model."), lib.cmd)
   # Load the package unless we already have a pmml defined (through source).

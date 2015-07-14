@@ -1,6 +1,6 @@
 # Rattle Survival
 #
-# Time-stamp: <2014-09-06 08:31:57 gjw>
+# Time-stamp: <2015-05-17 08:58:46 gjw>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -81,7 +81,7 @@ buildModelSurvival <- function(formula, dataset, tv=NULL, method=c("para", "coxp
 
   # Load the required package into the library.
 
-  lib.cmd <-  "require(survival, quietly=TRUE)"
+  lib.cmd <-  "library(survival, quietly=TRUE)"
   if (! packageIsAvailable("survival", Rtxt("build a Survival model"))) return(NULL)
   if (gui) appendLog(Rtxt("Require the survival package."), lib.cmd)
   eval(parse(text=lib.cmd))

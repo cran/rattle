@@ -47,3 +47,12 @@ export(
 exportPattern("_") # Needed for the Glade interface
 
 S3method(asRules, rpart)
+S3method(predict, hclust)
+S3method(predict, kmeans)
+S3method(print.summary, nnet)
+
+import(RGtk2)
+import(stats)
+import(utils)
+import(grDevices)
+import(graphics)

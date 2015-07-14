@@ -2,7 +2,7 @@
 #
 # RPART TAB
 #
-# Time-stamp: <2014-09-06 08:31:46 gjw>
+# Time-stamp: <2015-07-12 15:59:03 gjw>
 #
 # Copyright (c) 2009-2014 Togaware Pty Ltd except as noted:
 #
@@ -192,8 +192,7 @@ on_help_rpart_activate <- function(action, window)
                         "<<>>",
                         "The rpart package is used to build the decision tree.")))
   {
-    require(rpart, quietly=TRUE)
-    popupTextviewHelpWindow("rpart")
+    popupTextviewHelpWindow("rpart", "rpart")
   }
 }
 
@@ -390,12 +389,12 @@ executeModelRPart <- function(action="build")
 
   # Commands.
 
-  lib.cmd <- "require(rpart, quietly=TRUE)"
+  lib.cmd <- "library(rpart, quietly=TRUE)"
   if (! packageIsAvailable("rpart", Rtxt("build decision trees"))) return(FALSE)
 
   if (action %in%  c("tune", "best"))
   {
-    lib.cmd <- paste(lib.cmd, "require(e1071, quietly=TRUE)", sep="\n")
+    lib.cmd <- paste(lib.cmd, "library(e1071, quietly=TRUE)", sep="\n")
     if (! packageIsAvailable("e1071", Rtxt("tune decision trees"))) return(FALSE)
   }
 

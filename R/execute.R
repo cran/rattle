@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-07-24 21:23:34 gjw>
+# Time-stamp: <2015-05-17 08:55:47 gjw>
 #
 # Implement functionality associated with the Execute button and Menu.
 #
@@ -54,7 +54,7 @@ on_execute_button_clicked <- function(action, window)
            interrupt=function(m) setStatusBar(Rtxt("Processing interrupted by user.")),
            finally=set.cursor())
 
-#  require(multicore)
+#  library(multicore)
 #  set.cursor("watch")
 #  crs$process <- parallel(dispatchExecuteButton())
 #                                   interrupt=function(m)

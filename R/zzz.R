@@ -1,8 +1,8 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-09-06 09:33:28 gjw>
+# Time-stamp: <2015-07-12 12:41:22 gjw>
 #
-# Copyright (c) 2009-2014 Togaware Pty Ltd
+# Copyright (c) 2009-2015 Togaware Pty Ltd
 
 # These could be in rattle.R
 
@@ -117,7 +117,7 @@ on_aboutdialog_response <- function(object, ...)
   crv$rattleUI <- "rattle.ui"
   # if (Sys.info()["sysname"] == "Darwin") crv$rattleUI <- "rattle_macosx.ui"
 
-  crv$log.intro <- paste("#", sprintf(Rtxt("%s is Copyright (c) 2006-2014 %s."),
+  crv$log.intro <- paste("#", sprintf(Rtxt("%s is Copyright (c) 2006-2015 %s."),
                                       "Rattle", "Togaware Pty Ltd"))
   crv$support.msg <- sprintf(Rtxt("Contact %s.\n\n%s"), "support@togaware.com",
                              Rtxt("Please supply the output of rattleInfo()",
@@ -148,7 +148,6 @@ on_aboutdialog_response <- function(object, ...)
   # crv$textview.font <- "Courier New 10" # Okay but not found on MS/Windows
   # crv$textview.font <- "Bitstream Vera Sans Mono 10" # Better?
   # crv$textview.font <- "Andale Mono 10" # Not very nice
-  # crv$textview.font <- "ＭＳ ゴシック" # Not mono
   # crv$textview.font <- "Sans Italic 12" # For fun.
   
   crv$show.timestamp <- TRUE
@@ -243,7 +242,7 @@ on_aboutdialog_response <- function(object, ...)
   # 091221 The Rtxt does not seem to work from the rattle.R file, so
   # do it here again.
   
-  COPYRIGHT <- sprintf(Rtxt("Copyright (c) 2006-2014 %s."), "Togaware Pty Ltd")
+  COPYRIGHT <- sprintf(Rtxt("Copyright (c) 2006-2015 %s."), "Togaware Pty Ltd")
 
   msg <- paste(Rtxt("Rattle: A free graphical interface",
                     "for data mining with R."), "\n",

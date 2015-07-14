@@ -2,9 +2,9 @@
 #
 # BASE FUNCTIONS
 #
-# Time-stamp: <2014-09-07 14:09:55 gjw>
+# Time-stamp: <2015-07-13 20:20:29 gjw>
 #
-# Copyright (c) 2009-2014 Togaware Pty Ltd
+# Copyright (c) 2009-2015 Togaware Pty Ltd
 #
 # This files is part of Rattle.
 #
@@ -72,11 +72,11 @@ Rtxt <- function(...)
 
 RtxtNT <- Rtxt
 
-VERSION <- "3.4.1"
-DATE <- "2014-12-29"
+VERSION <- "3.5.0"
+DATE <- "2015-07-13"
 
 # 091223 Rtxt does not work until the rattle GUI has started, perhaps?
-COPYRIGHT <- paste(Rtxt("Copyright"), "(C) 2006-2014 Togaware Pty Ltd.")
+COPYRIGHT <- paste(Rtxt("Copyright"), "(C) 2006-2015 Togaware Pty Ltd.")
 
 # Acknowledgements: Frank Lu has provided much feedback and has
 # extensively tested early versions of Rattle. Many colleagues at the
@@ -257,13 +257,12 @@ rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=NULL)
 
   crv$.gtkMain <- FALSE # Initially gtkMain is not running.
 
-  # Load gloablly required packages if they are available.
-
-  if (packageIsAvailable("RGtk2", Rtxt("display the Rattle GUI")))
-    suppressPackageStartupMessages(require("RGtk2", quietly=TRUE))
-  else
-    stop(sprintf(Rtxt("The RGtk2 package is not available but is required",
-                      "for the %s GUI."), crv$appname))
+  # 150712 No longer required as the package DEPENDS on RGtk2 now
+  #if (packageIsAvailable("RGtk2", Rtxt("display the Rattle GUI")))
+  #  suppressPackageStartupMessages(library("RGtk2", quietly=TRUE))
+  #else
+  #  stop(sprintf(Rtxt("The RGtk2 package is not available but is required",
+  #                    "for the %s GUI."), crv$appname))
 
   # 101113 Use GtkBUilder or LibGlade?
   
@@ -436,7 +435,7 @@ rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=NULL)
   # this stage. The symptom is that median is not defined. So make
   # sure it is always available.
 
-  suppressPackageStartupMessages(require(stats, quietly=TRUE))
+  # suppressPackageStartupMessages(library(stats, quietly=TRUE))
 
   if (file.exists(".Rattle")) source(".Rattle")
 
@@ -1397,7 +1396,7 @@ displayWelcomeTabMessage <- function()
                             "See Help -> About for details."),
                        "\n\n",
                        sprintf(Rtxt("Rattle Version %s.",
-                                    "Copyright 2006-2014 Togaware Pty Ltd."),
+                                    "Copyright 2006-2015 Togaware Pty Ltd."),
                                VERSION),
 #LOG_LICENSE
                        "\n",
@@ -1820,7 +1819,6 @@ questionDialog <- function(...)
 {
   if (package.installed("RGtk2"))
   {
-    require(RGtk2)
     dialog <- RGtk2::gtkMessageDialogNew(NULL, "destroy-with-parent", "question",
                                   "yes-no",
                                   ...)
@@ -2074,7 +2072,7 @@ collectOutput <- function(command, use.print=FALSE, use.cat=FALSE,
   }
   else
   {
-    result <- try(commandsink <- capture.output(eval(parse(text=command))))#121212, envir=envir)))
+    result <- try(commandsink <- utils::capture.output(eval(parse(text=command))))#121212, envir=envir)))
   }
 
   if (inherits(result, "try-error"))
@@ -2251,30 +2249,7 @@ listBuiltModels <- function(exclude=NULL)
   return(models)
 }
 
-## setDefaultPath <- function(filename)
-## {
-##   # REMOVE THIS FUNCTION - SEE NOTES BELOW. Simply assign direct to
-##   # crs$dwd and don't setwd.
-
-##   # Record the default location for data. Also set R's current working
-##   # directory to the path. Note that I expect that for projects we
-##   # record the path as crs$pwd outside of this function but we don't
-##   # set R's cwd to it at any time. Note that we don't really need to
-##   # do this, in that we are moving R's cwd without the user actually
-##   # asking for this. Instead, we should perhaps not change cwd, but
-##   # record it in crs$dwd and then use
-##   # dialog$setCurrentFolder(crs$dwd), as I am doing now (080319) for
-##   # projects.
-
-##   if (not.null(filename))
-##   {
-##     crs$dwd <- dirname(filename)
-##     setwd(crs$dwd)
-##   }
-## }
-
 ########################################################################
-##
 ## PLOTTING
 ##
 ## Callbacks
@@ -2325,14 +2300,6 @@ on_plot_print_button_clicked <- function(action)
 
 on_plot_close_button_clicked <- function(action)
 {
-  # 100408 For some Japanese strings the title returned is not in the
-  # right encoding (on MS/Windows) and we get the error:
-  #
-  #   以下にエラー sub(".* ", "", ttl) : input string 1 is invalid in this locale
-  #
-  # Need to work out another way of getting the device number to
-  # close, since dev.cur() does not do it.
-
   ttl <- action$getParent()$getParent()$getParent()$getParent()$getTitle()
   dn <- dev.num(ttl)
   dev.off(dn)
@@ -2425,23 +2392,12 @@ newPlot <- function(pcnt=1)
       if (crv$useGtkBuilder)
         plotGUI$getObject("plot_window")$setTitle(paste(crv$appname, ": ",
                                                         Rtxt("Plot"), " ",
-                                                        dev.cur(), sep=""))
+                                                        grDevices::dev.cur(), sep=""))
       else
         plotGUI$getWidget("plot_window")$setTitle(paste(crv$appname, ": ",
                                                         Rtxt("Plot"), " ",
-                                                        dev.cur(), sep=""))
+                                                        grDevices::dev.cur(), sep=""))
     }
-# 140204 make check complains - do I need these anymore?
-#    
-#    else if (.Platform$GUI %in% c("X11", "unknown"))
-#    {
-#      # Add "unknown" to handle the case with the littler script
-#      # interface which runs with an "unknown" GUI.
-#      
-#      x11()
-#    }
-#    else if (isWindows())
-#      windows()
   }
 
   if (pcnt==1)
@@ -2500,7 +2456,6 @@ copyPlotToClipboard <- function(dev.num=dev.cur())
   #
   # Which can then be pasted into oowriter, for example.
 
-  require("RGtk2")
   temp.name <- paste(tempfile(), ".png", sep="")
   savePlotToFile(temp.name, dev.num)
   im <- RGtk2::gdkPixbufNewFromFile(temp.name)$retval

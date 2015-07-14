@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-09-06 08:30:31 gjw>
+# Time-stamp: <2015-07-13 20:19:14 gjw>
 #
 # Implement hclust functionality.
 #
@@ -123,7 +123,7 @@ on_hclust_discriminant_plot_button_clicked <- function(button)
   # The fpc package provides the plotcluster command.
   
   if (!packageIsAvailable("fpc", Rtxt("plot the cluster"))) return()
-  lib.cmd <- "require(fpc, quietly=TRUE)"
+  lib.cmd <- "library(fpc, quietly=TRUE)"
   appendLog(packageProvides("fpc", "plotcluster"), lib.cmd)
   eval(parse(text=lib.cmd))
 
@@ -193,7 +193,7 @@ executeClusterHClust <- function(include)
   # hcluster takes about 0.33 seconds, compared to hclust taking 11
   # seconds!
 
-  lib.cmd <- "require(amap, quietly=TRUE)"
+  lib.cmd <- "library(amap, quietly=TRUE)"
   if (packageIsAvailable("amap", Rtxt("perform an efficient hierarchical clustering")))
   {
     amap.available <- TRUE
@@ -311,8 +311,8 @@ centers.hclust <- function(x, h, nclust=10, use.median=FALSE)
     
   if (class(x) != "matrix") x <- as.matrix(x)
   if (use.median)
-    centres <- round(tapply(x, list(rep(cutree(h, nclust), ncol(x)),
-                                    col(x)), median))
+    centres <- round(tapply(x, list(rep(stats::cutree(h, nclust), ncol(x)),
+                                    col(x)), stats::median))
   else
     centres <- tapply(x, list(rep(cutree(h, nclust), ncol(x)),
                               col(x)), mean)
@@ -335,12 +335,12 @@ plotDendrogram2 <- function()
   
   # Load the required package into the library.
 
-  lib.cmd <- "require(ggplot2, quietly=TRUE)"
+  lib.cmd <- "library(ggplot2, quietly=TRUE)"
   if (! packageIsAvailable("ggplot2", Rtxt("plot a dendrogram"))) return(FALSE)
   appendLog(packageProvides("ggplot2", "ggplot"), lib.cmd)
   eval(parse(text=lib.cmd))
 
-  lib.cmd <- "require(ggdendro, quietly=TRUE)"
+  lib.cmd <- "library(ggdendro, quietly=TRUE)"
   if (! packageIsAvailable("ggdendro", Rtxt("plot a dendrogram"))) return(FALSE)
   appendLog(packageProvides("ggdendro", "dendro_data"), lib.cmd)
   eval(parse(text=lib.cmd))
@@ -395,7 +395,7 @@ plotDendrogram <- function()
   # Load the required package into the library.  The library, cba,
   # should already be loaded. But check anyhow.
 
-  lib.cmd <- "require(cba, quietly=TRUE)"
+  lib.cmd <- "library(cba, quietly=TRUE)"
   if (! packageIsAvailable("cba", Rtxt("plot a dendrogram"))) return(FALSE)
   appendLog(packageProvides("cba", "plot"), lib.cmd)
   eval(parse(text=lib.cmd))
@@ -453,7 +453,7 @@ displayHClustStats <- function()
   # The fpc package provides is available for cluster.stats function.
   
   if (!packageIsAvailable("fpc", Rtxt("calculate cluster statistics"))) return()
-  lib.cmd <- "require(fpc, quietly=TRUE)"
+  lib.cmd <- "library(fpc, quietly=TRUE)"
   appendLog(packageProvides("fpc", "cluster.stats"), lib.cmd)
   eval(parse(text=lib.cmd))
 
@@ -521,7 +521,7 @@ displayHClustStats <- function()
 ##   ## The library, cba, should already be loaded. But check anyhow. I
 ##   ## think this is required for the seriation. Need to check.
 
-##   lib.cmd <- "require(cba, quietly=TRUE)"
+##   lib.cmd <- "library(cba, quietly=TRUE)"
 ##   if (! packageIsAvailable("cba", "generate a seriation plot")) return()
 ##   appendLog(packageProvides("cba", "Seriation"), lib.cmd)
 ##   eval(parse(text=lib.cmd))

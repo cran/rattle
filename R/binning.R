@@ -4,7 +4,7 @@
 #
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-09-05 21:27:32 gjw>
+# Time-stamp: <2015-07-13 20:18:20 gjw>
 #
 # Copyright (c) 2009-2014 Togaware Pty Ltd
 #
@@ -44,10 +44,10 @@ binning <- function (x, bins=4,
     {
       x <- data.frame(new.x=x)
     }
-    KM <- kmeans(x=x, centers=centers, iter.max=iter.max)
+    KM <- stats::kmeans(x=x, centers=centers, iter.max=iter.max)
     for (i in seq_len(num.seeds))
     {
-      newKM <- kmeans(x=x, centers=centers, iter.max=iter.max)
+      newKM <- stats::kmeans(x=x, centers=centers, iter.max=iter.max)
       if (sum(newKM$withinss) < sum(KM$withinss))
       {
         KM <- newKM
@@ -56,7 +56,7 @@ binning <- function (x, bins=4,
     KM$tot.withinss <- sum(KM$withinss)
     xmean <- apply(x, 2, mean)
     centers <- rbind(KM$centers, xmean)
-    bss1 <- as.matrix(dist(centers)^2)
+    bss1 <- as.matrix(stats::dist(centers)^2)
     KM$betweenss <- sum(as.vector(bss1[nrow(bss1), ]) * c(KM$size, 0))
     return(KM)
   }
@@ -73,7 +73,7 @@ binning <- function (x, bins=4,
 
   x <- if (method == "quantile")
   {
-    breaks <- c(quantile(x, probs = seq(0, 1, 1/bins), na.rm = TRUE, type=8))
+    breaks <- c(stats::quantile(x, probs = seq(0, 1, 1/bins), na.rm = TRUE, type=8))
     breaks <- unique(breaks)
     breaks[1] <- min(x, na.rm=TRUE)
     breaks[length(breaks)] <- max(x, na.rm=TRUE)
@@ -114,7 +114,7 @@ binning <- function (x, bins=4,
   }
   else if (method == "kmeans")
   {
-    xx <- na.omit(x)
+    xx <- stats::na.omit(x)
     maxbins <-nlevels(as.factor(xx))
     if(maxbins < bins)
     { 

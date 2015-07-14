@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-12-29 09:29:04 gjw>
+# Time-stamp: <2015-07-11 15:41:47 gjw>
 #
 # Help Menu
 #
@@ -194,8 +194,7 @@ on_help_arff_activate <- function(action, window)
                    "The corresponding R code uses the 'read.arff' function from the",
                    "foreign package.")))
   {
-    require(foreign, quietly=TRUE)
-    popupTextviewHelpWindow("read.arff")
+    popupTextviewHelpWindow("read.arff", "foreign")
   }
 }
 
@@ -236,8 +235,7 @@ on_help_odbc_activate <- function(action, window)
                   "through the RODBC package. Tables avilable in the database will then be",
                   "listed for selection.")))
   {
-    require(RODBC, quietly=TRUE)
-    popupTextviewHelpWindow("RODBC")
+    popupTextviewHelpWindow("RODBC", "RODBC")
   }
 }
 
@@ -357,16 +355,14 @@ on_help_summary_activate <- function(action, window)
                    "The fBasics package is used for the Basic summary and",
                    "the kurtosis and skewness.")))
     {
-      popupTextviewHelpWindow("summary")
+      popupTextviewHelpWindow("summary", "base")
       if (packageIsAvailable("Hmisc", viewDocMsg("describe")))
       {
-        require(Hmisc, quietly=TRUE)
-        popupTextviewHelpWindow("describe")
+        popupTextviewHelpWindow("describe", "Hmisc")
       }
       if (packageIsAvailable("fBasics", viewDocMsg("basicStats")))
       {
-        require(fBasics, quietly=TRUE)
-        popupTextviewHelpWindow("basicStats")
+        popupTextviewHelpWindow("basicStats", "fBasics")
       }
     }
 }
@@ -385,8 +381,7 @@ on_help_distributions_activate <- function(action, window)
 ##                         "data visualizer.")))
 ##     if (packageIsAvailable("latticist", viewDocMsg("latticist")))
 ##       {
-##         require(latticist, quietly=TRUE)
-##         popupTextviewHelpWindow("latticist")
+##         popupTextviewHelpWindow("latticist", "latticist")
 ##       }
 ## }
 
@@ -398,8 +393,7 @@ on_help_ggobi_activate <- function(action, window)
                         " installed, as well as the rggobi R package.")))
     if (packageIsAvailable("rggobi", viewDocMsg("rggobi")))
       {
-        require(rggobi, quietly=TRUE)
-        popupTextviewHelpWindow("rggobi")
+        popupTextviewHelpWindow("rggobi", "rggobi")
       }
 }
 
@@ -491,8 +485,7 @@ on_help_test_kolmogorov_smirnov_activate <- function(action, window)
   {
     if (packageIsAvailable("fBasics", viewDocMsg("k2test")))
     {
-      require(fBasics, quietly=TRUE)
-      popupTextviewHelpWindow("ks2Test")
+      popupTextviewHelpWindow("ks2Test", "fBasics")
     }
   }
 }
@@ -511,8 +504,7 @@ on_help_test_wilcoxon_activate <- function(action, window)
   {
     if (packageIsAvailable("fBasics", viewDocMsg("wilcox.test")))
     {
-      require(fBasics, quietly=TRUE)
-      popupTextviewHelpWindow("wilcox.test")
+      popupTextviewHelpWindow("wilcox.test", "fBasics")
     }
   }
 }
@@ -531,8 +523,7 @@ on_help_test_t_activate <- function(action, window)
   {
     if (packageIsAvailable("fBasics", viewDocMsg("locationTest")))
     {
-      require(fBasics, quietly=TRUE)
-      popupTextviewHelpWindow("locationTest")
+      popupTextviewHelpWindow("locationTest", "fBasics")
     }
   }
 }
@@ -546,8 +537,7 @@ on_help_test_f_activate <- function(action, window)
   {
     if (packageIsAvailable("fBasics", viewDocMsg("varianceTest")))
     {
-      require(fBasics, quietly=TRUE)
-      popupTextviewHelpWindow("varianceTest")
+      popupTextviewHelpWindow("varianceTest", "fBasics")
     }
   }
 }
@@ -563,8 +553,7 @@ on_help_test_correlation_activate <- function(action, window)
   {
     if (packageIsAvailable("fBasics", viewDocMsg("correlationTest")))
     {
-      require(fBasics, quietly=TRUE)
-      popupTextviewHelpWindow("correlationTest")
+      popupTextviewHelpWindow("correlationTest", "fBasics")
     }
   }
 }
@@ -580,8 +569,7 @@ on_help_test_wilcoxon_signed_rank_activate <- function(action, window)
   {
     if (packageIsAvailable("fBasics", viewDocMsg("wilcox.test")))
     {
-      require(fBasics, quietly=TRUE)
-      popupTextviewHelpWindow("wilcox.test")
+      popupTextviewHelpWindow("wilcox.test", "fBasics")
     }
   }
 }
@@ -605,8 +593,7 @@ on_help_normalise_activate <- function(action, window)
   {
     if (packageIsAvailable("reshape", viewDocMsg("rescaler")))
     {
-      require(reshape, quietly=TRUE)
-      popupTextviewHelpWindow("rescaler")
+      popupTextviewHelpWindow("rescaler", "reshape")
     }
   }
 }
@@ -813,8 +800,7 @@ on_help_kmeans_activate <- function(action, window)
     popupTextviewHelpWindow("kmeans")
     if (packageIsAvailable("fpc", viewDocMsg("plotcluster")))
     {
-      require(fpc, quietly=TRUE)
-      popupTextviewHelpWindow("plotcluster")
+      popupTextviewHelpWindow("plotcluster", "fpc")
     }
   }
 }
@@ -867,8 +853,7 @@ on_help_associate_menuitem_activate <- function(action, window)
 
     if (packageIsAvailable("arules", viewDocMsg("apriori")))
     {
-      require(arules, quietly=TRUE)
-      popupTextviewHelpWindow("apriori")
+      popupTextviewHelpWindow("apriori", "arules")
     }
 }
 
@@ -902,13 +887,11 @@ on_help_support_vector_machine_activate <- function(action, window)
   {
     #if (packageIsAvailable("e1071", viewDocmsg("e1071"))
     #{
-    #  require(e1071, quietly=TRUE)
-    #  popupTextviewHelpWindow("svm")
+    #  popupTextviewHelpWindow("svm", "e1071")
     #}
     if (packageIsAvailable("kernlab", viewDocMsg("ksvm")))
     {
-      require(kernlab, quietly=TRUE)
-      popupTextviewHelpWindow("ksvm")
+      popupTextviewHelpWindow("ksvm", "kernlab")
     }
   }
 }
@@ -924,8 +907,7 @@ on_help_model_nnet_activate <- function(action, window)
   {
     if (packageIsAvailable("nnet", viewDocMsg("nnet")))
     {
-      require(nnet, quietly=TRUE)
-      popupTextviewHelpWindow("nnet")
+      popupTextviewHelpWindow("nnet", "nnet")
     }
   }
 }
@@ -945,8 +927,7 @@ on_help_model_survival_activate <- function(action, window)
   {
     if (packageIsAvailable("survival", viewDocMsg("coxph")))
     {
-      require(survival, quietly=TRUE)
-      popupTextviewHelpWindow("coxph")
+      popupTextviewHelpWindow("coxph", "survival")
     }
   }
 }
@@ -1020,8 +1001,7 @@ on_help_sensitivity_activate <- function(action, window)
                    "is simply the count of false positives divided by the number of negatives",
                    "(1-fnr).")))
   {
-    require(ROCR, quietly=TRUE)
-    popupTextviewHelpWindow("performance")
+    popupTextviewHelpWindow("performance", "ROCR")
   }
 }
 

@@ -14,13 +14,13 @@
 }
 \usage{
 riskchart(pr, ac, ri=NULL,
-          title=NULL,
+          title=NULL, title.size=10,
     show.legend = TRUE,
     optimal = NULL, optimal.label = "", chosen = NULL, chosen.label = "",
     include.baseline = TRUE, dev = "", filename = "", show.knots = NULL,
     show.lift=TRUE, show.precision=TRUE, show.maximal = TRUE,
     risk.name = "Risk", recall.name = "Recall",
-    precision.name = "Precision", thresholds=NULL)
+    precision.name = "Precision", thresholds=NULL, legend.horiz=TRUE)
 }
 \arguments{
   
@@ -31,6 +31,8 @@ riskchart(pr, ac, ri=NULL,
   \item{ri}{The risk class for each observation.}
 
   \item{title}{the main title to place at the top of the plot.}
+  
+  \item{title.size}{font size for the main title.}
   
   \item{show.legend}{whether to display the legend in the plot.}
   
@@ -89,6 +91,8 @@ riskchart(pr, ac, ri=NULL,
   Rate}, which is the default here.}
   
 \item{thresholds}{whether to display scores along the top axis.}
+
+\item{legend.horiz}{whether to display a horizontal legend.}
 }
 \details{
 
@@ -109,6 +113,8 @@ riskchart(pr, ac, ri=NULL,
 \author{\email{Graham.Williams@togaware.com}}
 \seealso{\code{\link{evaluateRisk}}, \code{\link{genPlotTitleCmd}}.}
 \examples{
+\dontrun{
+
 ## Use rpart to build a decision tree.
 
 library(rpart)
@@ -139,6 +145,6 @@ predicted <- predict(model, ds[test, vars], type="prob")[,2]
 ## Plot the Risk Chart.
 
 riskchart(predicted, actual, risks)
-
+}
 }
 \keyword{hplot}

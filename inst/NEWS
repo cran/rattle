@@ -1,6 +1,30 @@
 rattle 3.5.0 Graham.Williams@togaware.com
 
-       * Revert to using only exported functions from pkgDepTools.
+       * Replace xlsx::read.xlsx() with readxl::read_excel() to remove
+         reliance on Java which has always been problematic in terms
+         of Windows users having trouble installing Java. Thanks to Ed
+         Stoker for testing. (3.4.3)
+
+       * When iterating over kmeans clusters now plot from 1 cluster
+         rather than 3. Thanks to Eugene Dubossarsky. (3.4.4)
+
+       * Updates to normVarNames() due to Hadley's changes to
+         stringr. Also capture other characters to map.
+
+       * Add title.size argument to riskchart(). Also support
+         horizontal legend. Fix the text glob for the Lift label.
+
+       * Revert to using only exported functions from
+         pkgDepTools. (3.4.1)
+
+       * Fix some tooltip and textview typos suggested by Kees
+         Schippers. (3.4.2)
+
+       * move from weightedKmeans to wskm.
+
+       * Numerous updates to support new CRAN checks, particularly
+         related to use of name spaces and requiring to make rattle
+         depend on RGtk2.
 
 rattle 3.4.0 Graham.Williams@togaware.com 2014-12-29 19:11:59 +11:00
 

@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-09-06 09:29:01 gjw>
+# Time-stamp: <2015-07-12 16:32:36 gjw>
 #
 # RANDOM FOREST TAB
 #
@@ -84,8 +84,7 @@ on_help_randomForest_activate <- function(action, window)
                         "<<>>",
                         "The R package for building Random Forests is called randomForest.")))
     {
-      require(randomForest, quietly=TRUE)
-      popupTextviewHelpWindow("randomForest")
+      popupTextviewHelpWindow("randomForest", "randomForest")
     }
 }
 
@@ -99,7 +98,7 @@ executeModelRF <- function(traditional=TRUE, conditional=!traditional)
 
   # Decide which random forest to build: randomForest or cforest
   
-  FUN <- ifelse(traditional, "randomForest", "cforest")
+  FUN <- ifelse(traditional, "randomForest::randomForest", "party::cforest")
 
   # Make sure the appropriate package is available.
   
@@ -277,8 +276,8 @@ executeModelRF <- function(traditional=TRUE, conditional=!traditional)
   # Load the required package into the library.
 
   lib.cmd <- ifelse(traditional,
-                    "require(randomForest, quietly=TRUE)",
-                    "require(party, quietly=TRUE)")
+                    "library(randomForest, quietly=TRUE)",
+                    "library(party, quietly=TRUE)")
 
   if (traditional)
     appendLog(packageProvides("randomForest", "randomForest"), lib.cmd)
@@ -307,7 +306,7 @@ executeModelRF <- function(traditional=TRUE, conditional=!traditional)
                          sprintf("controls=cforest_unbiased(%s)", parms)),
                   ifelse(traditional,
                          sprintf(",\n      na.action=%s",
-                                 ifelse(naimpute, "na.roughfix", "na.omit")),
+                                 ifelse(naimpute, "randomForest::na.roughfix", "na.omit")),
                          ""),
                   # 100521 Turn subsampling with replacement off since
                   # it is more likely to produce biased imprtance
@@ -399,12 +398,10 @@ executeModelRF <- function(traditional=TRUE, conditional=!traditional)
   if (traditional && binomialTarget() &&
       packageIsAvailable("pROC", Rtxt("calculate AUC confidence interval")))
   {
-    lib.cmd <- "require(pROC, quietly=TRUE)"
-    roc.cmd <- "roc(crs$rf$y, as.numeric(crs$rf$predicted))"
-    ci.cmd <- "ci.auc(crs$rf$y, as.numeric(crs$rf$predicted))"
+    roc.cmd <- "pROC::roc(crs$rf$y, as.numeric(crs$rf$predicted))"
+    ci.cmd <- "pROC::ci.auc(crs$rf$y, as.numeric(crs$rf$predicted))"
 
-    appendLog(Rtxt("The `pROC' package implements various AUC functions."), lib.cmd)
-    eval(parse(text=lib.cmd))
+    appendLog(Rtxt("The `pROC' package implements various AUC functions."))
 
     appendLog("Calculate the Area Under the Curve (AUC).", roc.cmd)
     appendLog("Calculate the AUC Confidence Interval.", ci.cmd)
@@ -425,11 +422,11 @@ executeModelRF <- function(traditional=TRUE, conditional=!traditional)
   if (traditional)
   {
     if (numericTarget())
-      varimp.cmd <- paste("rn <- round(importance(crs$rf), 2)",
+      varimp.cmd <- paste("rn <- round(randomForest::importance(crs$rf), 2)",
                               "rn[order(rn[,1], decreasing=TRUE),]",
                               sep="\n")
     else
-      varimp.cmd <- paste("rn <- round(importance(crs$rf), 2)",
+      varimp.cmd <- paste("rn <- round(randomForest::importance(crs$rf), 2)",
                           # 100521 Sort on the accuracy measure rather
                           # than the Gini measure, since the Gini is
                           # biased in favour of categoric variables
@@ -448,7 +445,7 @@ executeModelRF <- function(traditional=TRUE, conditional=!traditional)
   result <- try(collectOutput(varimp.cmd), silent=TRUE)
   if (inherits(result, "try-error"))
   {
-    msg <- errorMessageFun(ifelse(traditional, "importance", "varimp"), result)
+    msg <- errorMessageFun(ifelse(traditional, "randomForest::importance", "party::varimp"), result)
     errorDialog(msg)
     return(FALSE)
   }
@@ -516,32 +513,32 @@ plotRandomForestImportance <- function()
     return()
   }
 
-  if (class(crs$rf) %in% "RandomForest")
+  if ( "RandomForest" %in% class(crs$rf))
     if (!packageIsAvailable("ggplot2", Rtxt("display the conditional forest var importance")))
       return()
   
   newPlot()
-  if (class(crs$rf) %in% "RandomForest")
-    plot.cmd <- paste('require(ggplot2)',
-                      '',
+  if ("RandomForest" %in% class(crs$rf))
+    plot.cmd <- paste(#'library(ggplot2)',
+                      #'',
                       '# Note that values vary slightly on each call to varimp().',
                       '',
-                      'v    <- varimp(crs$rf)',
+                      'v    <- party::varimp(crs$rf)',
                       'vimp <- data.frame(Variable=as.character(names(v)),',
                       '                   Importance=v,',
                       '                   row.names=NULL, stringsAsFactors=FALSE)',
                       '',
-                      'p <- ggplot(vimp, aes(Variable, Importance))',
-                      'p <- p + geom_bar(stat="identity", position="identity")',
-                      'p <- p + scale_x_discrete(limits=with(vimp, Variable[order(Importance)]))',
-                      'p <- p + theme(legend.position="none",',
-                      '               axis.title.x = element_blank(),',
-                      '               axis.title.y = element_blank())',
-                      'p <- p + coord_flip()',
+                      'p <- ggplot2::ggplot(vimp, ggplot2::aes(Variable, Importance)) +',
+                      '  ggplot2::geom_bar(stat="identity", position="identity") +',
+                      '  ggplot2::scale_x_discrete(limits=with(vimp, Variable[order(Importance)])) +',
+                      '  ggplot2::theme(legend.position="none",',
+                      '                 axis.title.x = ggplot2::element_blank(),',
+                      '                 axis.title.y = ggplot2::element_blank()) +',
+                      '  ggplot2::coord_flip()',
                       'print(p)',
                       sep="\n")
   else
-    plot.cmd <- paste('varImpPlot(crs$rf, main="")\n',
+    plot.cmd <- paste('randomForest::varImpPlot(crs$rf, main="")\n',
                       genPlotTitleCmd(Rtxt("Variable Importance"),
                                       commonName(crv$RF), crs$dataname),
                       sep="")
@@ -610,18 +607,18 @@ plotRandomForestOOBROC <- function()
   # Need to add na.omit around the dataset conditional on naimpute.
   
   naimpute <- theWidget("model_rf_impute_checkbutton")$getActive()
-  plot.cmd <- paste('require(verification)',
+  plot.cmd <- paste('library(verification)',
                     # 111116 the as.integer as.factor to ensure
                     # 0/1. Need to fix to ensure button is only
                     # avilable for binary classification.
-                    '\naucc <- roc.area(as.integer(as.factor(',
+                    '\naucc <- verification::roc.area(as.integer(as.factor(',
                     if (!naimpute) 'na.omit(',
                     'crs$dataset[',
                     if (not.null(crs$sample)) 'crs$sample',
                     if (!naimpute) ',])[',
                     ', crs$target]))-1,',
                     '\n                 crs$rf$votes[,2])$A',
-                    '\nroc.plot(as.integer(as.factor(',
+                    '\nverification::roc.plot(as.integer(as.factor(',
                     if (!naimpute) 'na.omit(',
                     'crs$dataset[',
                     if (not.null(crs$sample)) 'crs$sample',
@@ -686,8 +683,6 @@ printRandomForests <- function(model, models=NULL, include.class=NULL,
   
   if (! packageIsAvailable("randomForest", Rtxt("print the rule sets")))
     return()
-
-  require(randomForest, quietly=TRUE)
 
   if (is.null(models) || models == 0) models <- 1:model$ntree
 
@@ -798,8 +793,6 @@ ruleset.randomForest <- function(model, n=1, include.class=NULL)
   if (! packageIsAvailable("randomForest", Rtxt("generate a rule set")))
     stop(Rtxt("the 'randomForest' package is required to generate rule sets"))
 
-  require(randomForest, quietly=TRUE)
-
   if (!inherits(model, "randomForest"))
     stop(Rtxt("the model is not of the 'randomForest' class"))
 
@@ -883,8 +876,6 @@ printRandomForest <- function(model, n=1, include.class=NULL,
   
   if (! packageIsAvailable("randomForest", Rtxt("generate the rule sets")))
     return()
-
-  require(randomForest, quietly=TRUE)
 
   if (!inherits(model, "randomForest"))
     stop(Rtxt("the model is not of the 'randomForest' class"))
@@ -986,8 +977,6 @@ randomForest2Rules <- function(model, models=NULL)
   if (! packageIsAvailable("randomForest", Rtxt("generate the rule sets")))
     return()
 
-  require(randomForest, quietly=TRUE)
-
   if (is.null(models)) models <- 1:model$ntree
 
   ## Obtain information we need about the data
@@ -1010,8 +999,6 @@ getRFRuleSet <- function(model, n)
 {
   if (! packageIsAvailable("randomForest", Rtxt("generate the rule sets")))
     return()
-
-  require(randomForest, quietly=TRUE)
 
   tr <- randomForest::getTree(model, n)
   tr.paths <- getRFPathNodes(tr)

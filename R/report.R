@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-09-07 11:54:55 gjw>
+# Time-stamp: <2015-05-17 08:58:38 gjw>
 #
 # Reporting support
 #
@@ -56,7 +56,7 @@ dispatchReportButton <- function()
   startLog("GENERATE A REPORT")
   
   if (! packageIsAvailable("odfWeave", "generate a report")) return(FALSE)
-  lib.cmd <- "require(odfWeave, quietly=TRUE)"
+  lib.cmd <- "library(odfWeave, quietly=TRUE)"
   appendLog("The odfWeave package processes ODT document templates.", lib.cmd)
   eval(parse(text=lib.cmd))
   
