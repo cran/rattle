@@ -2,7 +2,7 @@
 #
 # AUDIT DATASET
 #
-# Time-stamp: <2015-07-13 20:16:26 gjw>
+# Time-stamp: <2014-09-05 21:28:19 gjw>
 #
 # Copyright (c) 2009-2014 Togaware Pty Ltd
 #
@@ -33,8 +33,8 @@ acquireAuditData <- function(write.to.file=FALSE)
     UCI <- "ftp://ftp.ics.uci.edu/pub"
     REPOS <- "machine-learning-databases"
     survey.url <- sprintf("%s/%s/adult/adult.data", UCI, REPOS)
-    utils::download.file(survey.url, "survey.data")
-    survey <- utils::read.csv("survey.data", header=F, strip.white=TRUE,
+    download.file(survey.url, "survey.data")
+    survey <- read.csv("survey.data", header=F, strip.white=TRUE,
                        na.strings="?",
                        col.names=c("Age", "Workclass", "fnlwgt", 
                          "Education", "Education.Num", "Marital.Status", 
@@ -42,7 +42,7 @@ acquireAuditData <- function(write.to.file=FALSE)
                          "Capital.Gain", "Capital.Loss", 
                          "Hours.Per.Week", "Native.Country", 
                          "Salary.Group"))
-    utils::write.table(survey, "survey.csv", sep=",", row.names=F)
+    write.table(survey, "survey.csv", sep=",", row.names=F)
   }
 
   survey <- read.csv("survey.csv")
@@ -69,7 +69,7 @@ acquireAuditData <- function(write.to.file=FALSE)
 
   set.seed(12345)
   audit[audit$Adjusted==1 & audit$Adjustment==0, 'Adjustment'][sample(m, r)] <-
-    as.integer(adj*(stats::rnorm(r) + 2))
+    as.integer(adj*(rnorm(r) + 2))
 
   # Make sure no nonproductive case has an adjustment
 
@@ -153,7 +153,7 @@ acquireAuditData <- function(write.to.file=FALSE)
   set.seed(12345)
   cases <- sample(nrow(audit), 2000)
   set.seed(12345)
-  idents <- as.integer(sort(stats::runif(2000, 1000000, 9999999)))
+  idents <- as.integer(sort(runif(2000, 1000000, 9999999)))
   audit <- cbind(ID=idents, audit[cases,])
   
   # Use standard prefixes

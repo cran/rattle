@@ -56,3 +56,8 @@ import(stats)
 import(utils)
 import(grDevices)
 import(graphics)
+import(methods)	  # For possibleExtends() formal classes
+
+importFrom(magrittr, "%>%")
+importFrom(magrittr, "%<>%")
+importFrom(stringi, "%s+%")

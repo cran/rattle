@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-06-30 20:17:47 gjw>
+# Time-stamp: <2015-08-21 19:01:23 gjw>
 #
 # Implement kmeans functionality.
 #
@@ -677,13 +677,6 @@ discriminantPlotKMeans <- function()
     return()
   }
 
-  # The fpc package provides the plotcluster command execute.
-  
-  if (!packageIsAvailable("fpc", "plot a cluster")) return()
-  lib.cmd <- "library(fpc, quietly=TRUE)"
-  appendLog(packageProvides("fpc", "plotcluster"), lib.cmd)
-  eval(parse(text=lib.cmd))
-
   # Some background information.  Assume we have already built the
   # cluster, and so we don't need to check so many conditions.
 
@@ -710,13 +703,15 @@ discriminantPlotKMeans <- function()
   }
 
   # PLOT: Log the R command and execute. 080521 Add the na.omit since
-  # kmeans is usually built with this.
+  # kmeans is usually built with this. 150821 Move to using
+  # cluster::clusplot.
 
-  plot.cmd <- paste(sprintf("plotcluster(na.omit(crs$dataset[%s, %s]), ",
+ plot.cmd <- paste(sprintf("cluster::clusplot(na.omit(crs$dataset[%s, %s]), ",
                             ifelse(sampling, "crs$sample", ""), include),
-                    "crs$kmeans$cluster)\n",
-                    genPlotTitleCmd("Discriminant Coordinates",
-                                    crs$dataname), sep="")
+                   "crs$kmeans$cluster, color=TRUE, shade=TRUE, ",
+                   "main='Discriminant Coordinates ",
+                   crs$dataname, "')\n",
+                   sep="")
   appendLog(Rtxt("Generate a discriminant coordinates plot."), plot.cmd)
   newPlot()
   eval(parse(text=plot.cmd))

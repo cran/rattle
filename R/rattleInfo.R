@@ -23,16 +23,19 @@ rattleInfo <- function(all.dependencies=FALSE,
   
   iv <- utils::installed.packages()
   av <- available.packages(contriburl=contrib.url(cran.repos))
+  have.av <- nrow(av) != 0
   # not a cran repos bv <- available.packages(contriburl=contrib.url(cran.repos))
 
   riv <- iv["rattle", "Version"]
-  rav <- av["rattle", "Version"]
+  if (have.av) rav <- av["rattle", "Version"]
   
-  cat(sprintf("Rattle: version %s CRAN %s\n", riv, rav))
+  cat(sprintf("Rattle: version %s", riv))
+  if (have.av) cat(sprintf(" CRAN %s", rav))
+  cat("\n")
 
   # Record the packages that can be upgraded
 
-  up <- if (compareVersion(rav, riv) == 1) "rattle" else NULL
+  up <- if (have.av && compareVersion(rav, riv) == 1) "rattle" else NULL
     
   cat(sprintf("%s\n", sub(" version", ": version", version$version.string)))
 
@@ -86,14 +89,17 @@ rattleInfo <- function(all.dependencies=FALSE,
       return(union(pkg, pkgs))
     }
     
-    deps <- pkg.deps("rattle", NULL, av)
+    if (have.av)
+      deps <- pkg.deps("rattle", NULL, av)
+    else
+      deps <- pkg.deps("rattle", NULL, iv)
   }    
   else
     deps <- union(deps2vec(iv["rattle", "Depends"]), deps2vec(iv["rattle", "Suggests"]))
 
   for (p in sort(setdiff(deps, 'rattle')))
   {
-    if (! p %in% rownames(av))
+    if (have.av && ! p %in% rownames(av))
     {
       if (include.not.available) cat(sprintf("%s: not available\n", p))
     }
@@ -103,7 +109,7 @@ rattleInfo <- function(all.dependencies=FALSE,
     }
     else
       cat(sprintf("%s: version %s%s%s%s", p, iv[p,"Version"],
-                  ifelse(compareVersion(av[p,"Version"], iv[p,"Version"]) == 1,
+                  ifelse(have.av && compareVersion(av[p,"Version"], iv[p,"Version"]) == 1,
                          {
                            up <- c(up, p);
                            sprintf(" upgrade available %s", av[p,"Version"])
@@ -118,7 +124,7 @@ rattleInfo <- function(all.dependencies=FALSE,
         length(deps)
       else
         sum(sapply(deps, function(p) p %in%
-                     if (include.not.installed) rownames(av) else rownames(iv))),
+                     if (have.av && include.not.installed) rownames(av) else rownames(iv))),
       "packages.\n")
   
   if (! is.null(up))

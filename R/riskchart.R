@@ -16,6 +16,12 @@ riskchart <- function(pr, ac, ri=NULL,
                       thresholds=NULL,
                       legend.horiz=TRUE)
 {
+
+  # Riskcharts are only implemented for binary classificaton.
+  
+  if (length(unique(ac)) > 2)
+    stop("Risk charts are for binary classification models only.")
+  
   # 121209 Initialise variables otherwise appearing to be unintialised
   # to R CMD check.
 

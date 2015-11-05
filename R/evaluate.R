@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-05-17 08:55:12 gjw>
+# Time-stamp: <2015-09-17 06:24:29 gjw>
 #
 # Implement evaluate functionality.
 #
@@ -1002,7 +1002,7 @@ executeEvaluateTab <- function()
 
     testset[[crv$KSVM]] <- sprintf("na.omit(%s)", testset0)
 
-    predcmd[[crv$KSVM]] <- sprintf("crs$pr <- predict(crs$ksvm, newdata=%s)",
+    predcmd[[crv$KSVM]] <- sprintf("crs$pr <- kernlab::predict(crs$ksvm, newdata=%s)",
                                testset[[crv$KSVM]])
 
     ## The default for KSVM is to predict the class, so no
@@ -1231,31 +1231,27 @@ executeEvaluateConfusion <- function(respcmd, testset, testname)
     percentage.cmd <- paste('pcme <- function(actual, cl)',
                             '{',
                             '  x <- table(actual, cl)',
-                            '  tbl <- cbind(round(x/length(actual), 2),',
-                            '               Error=round(c(x[1,2]/sum(x[1,]),',
-                            '                             x[2,1]/sum(x[2,])), 2))',
+                            '  nc <- nrow(x)',
+                            '  tbl <- cbind(x/length(actual),',
+                            '               Error=sapply(1:nc,',
+                            '                 function(r) round(sum(x[r,-r])/sum(x[r,]), 2)))',
                             '  names(attr(tbl, "dimnames")) <- c("Actual", "Predicted")',
                             '  return(tbl)',
-                            '};',
-                            sprintf('pcme(%s$%s, crs$pr)', ts, crs$target),
+                            '}',
+                            sprintf('per <- pcme(%s$%s, crs$pr)', ts, crs$target),
+                            'round(per, 2)',
                             sep="\n")
 
-    if (binomialTarget())
+    if (categoricTarget())
     {
       # 080528 TODO generalise to categoricTarget. 091023 Handle the
       # case where there is only one value predicted from the two
-      # possible values.
-      error.cmd <- paste("overall <- function(x)\n{\n  if (nrow(x) == 2)",
-                         "\n    cat((x[1,2] + x[2,1]) / sum(x))",
-                         "\n  else\n    cat(1 - (x[1,rownames(x)]) / sum(x))\n}",
-                         "\noverall(table(crs$pr,",
-                         sprintf("%s$%s, ", ts, crs$target),
-                         '\n        dnn=c("Predicted", "Actual")))')
-      avgerr.cmd <- paste("avgerr <- function(x)",
-                          "\n\tcat(mean(c(x[1,2], x[2,1]) / apply(x, 1, sum)))",
-                          "\navgerr(table(crs$pr,",
-                          sprintf("%s$%s, ", ts, crs$target),
-                         '\n        dnn=c("Predicted", "Actual")))')
+      # possible values. 150715 TODO Need to update the formulation
+      # to account for a single row in the percentage table.
+
+      error.cmd <- 'cat(round(sum(per[,"Error"], na.rm=TRUE), 2))'
+      avgerr.cmd <- 'cat(round(mean(per[,"Error"], na.rm=TRUE), 2))'
+      
     }
 
     # Log the R commands and execute them.
@@ -1308,12 +1304,12 @@ executeEvaluateConfusion <- function(respcmd, testset, testname)
     appendLog(Rtxt("Generate the confusion matrix showing proportions."), percentage.cmd)
     percentage.output <- collectOutput(percentage.cmd)
 
-    if (binomialTarget())
+    if (categoricTarget())
     {
       appendLog(Rtxt("Calculate the overall error percentage."), error.cmd)
-      error.output <- collectOutput(error.cmd)
+      error.output <- collectOutput(paste(percentage.cmd, ";", error.cmd))
       appendLog(Rtxt("Calculate the averaged class error percentage."), avgerr.cmd)
-      avgerr.output <- collectOutput(avgerr.cmd)
+      avgerr.output <- collectOutput(paste(percentage.cmd, ";", avgerr.cmd))
     }
 
     appendTextview(TV,
@@ -1328,7 +1324,7 @@ executeEvaluateConfusion <- function(respcmd, testset, testname)
                            commonName(mtype), testname),
                    "\n\n",
                    percentage.output,
-                   if (binomialTarget())
+                   if (categoricTarget())
                    {
                      paste("\n\n", sprintf(Rtxt("Overall error: %s"),
                                            format(error.output)),
@@ -1787,7 +1783,7 @@ openMyDevice <- function(dev, filename)
   }
 
   if (dev == "wmf")
-    win.metafile(filename)
+    eval(parse(text=sprintf("win.metafile(%s)", filename)))
   else if (dev == "png")
     png(filename)
   else if (dev == "pdf")
@@ -2127,7 +2123,7 @@ executeEvaluateLift <- function(probcmd, testset, testname)
                       'per <- performance(pred, "lift", "rpp")',
                       "per@x.values[[1]] <- per@x.values[[1]]*100\n",
                       Rtxt("# Plot the lift chart."),
-                      paste("plot(per,",
+                      paste("ROCR::plot(per,",
                             sprintf('col="%s", lty=%d,', mcolors[mcount], mcount),
                             sprintf('xlab="%s",', xlab),
                             sprintf("add=%s)", addplot)),
@@ -2295,7 +2291,7 @@ executeEvaluateROC <- function(probcmd, testset, testname)
       plot.cmd <-
         paste(plot.cmd,
               '\n',
-              'plot(performance(pred, "tpr", "fpr"), ',
+              'ROCR::plot(performance(pred, "tpr", "fpr"), ',
               sprintf('col="%s", lty=%d, ', mcolors[mcount], mcount),
               sprintf("add=%s)", addplot),
               sep="")
@@ -2435,7 +2431,7 @@ executeEvaluatePrecision <- function(probcmd, testset, testname)
     mcount <- mcount + 1
 
     plot.cmd <- paste(handleMissingValues(testset, mtype),
-                      '\nplot(performance(pred, "prec", "rec"), ',
+                      '\nROCR::plot(performance(pred, "prec", "rec"), ',
                       sprintf('col="%s", lty=%d, ', mcolors[mcount], mcount),
                       sprintf("add=%s)\n", addplot),
                       sep="")
@@ -2552,7 +2548,7 @@ executeEvaluateSensitivity <- function(probcmd, testset, testname)
 
     mcount <- mcount + 1
     plot.cmd <- paste(handleMissingValues(testset, mtype),
-                      '\nplot(performance(pred, "sens", "spec"), ',
+                      '\nROCR::plot(performance(pred, "sens", "spec"), ',
                       sprintf('col="%s", lty=%d, ', mcolors[mcount], mcount),
                       sprintf("add=%s)\n", addplot),
                       sep="")
@@ -3005,7 +3001,7 @@ executeEvaluateScore <- function(probcmd, respcmd, testset, testname, dfedit.don
     scoreset <- ts
   else if (sinclude == "idents")
     scoreset <- sprintf('subset(%s, select=c(%s))', ts,
-                        ifelse(is.null(idents), "",
+                        ifelse(!length(idents), "",
                                sprintf('"%s"',
                                        paste(idents, collapse='", "'))))
   else

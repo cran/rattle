@@ -1,3 +1,86 @@
+rattle 4.0.0 Graham.Williams@togaware.com 2015-09-21 06:00:49
+       
+       * Migrate hosting of the package to Bitbucket:
+         https://bitbucket.org/kayontoga/rattle.
+
+       * Use Connect-R logo as the icon for the button.
+
+rattle 3.5.11 Graham.Williams@togaware.com 2015-09-16 19:22:02
+
+       * Add button to toolbar to open a Connect-R page for feature
+         requests.
+
+       * Bug fix confusion matrix Error calculation and average error
+         calculation. Reported by Eugene Dubossarsky.
+
+       * Only default to TIME* variable as target if Survival model is
+         chosen.
+
+rattle 3.5.10 Graham.Williams@togaware.com 2015-09-16 19:22:02
+
+	* Explore tab's Distribution option now allows the user to
+          choose how to group the data for plotting, with the Target
+          as the default but a choice of any Categoric vairable
+          available, or none.
+
+	* Bug fix when scoring a clustering with no identifier nor
+          target. Reported by Abhishek Sharma.
+
+rattle 3.5.9 Graham.Williams@togaware.com 2015-09-16 05:53:00
+
+        * Incorporate pairs plots into Distributions option of the
+          Explore tab. Contributed by Jose A Magaña.
+
+rattle 3.5.8 Graham.Williams@togaware.com 2015-08-28 10:21:59
+
+	* Migrate histogram plots to using pipes and generally clean up
+          the code.
+
+	* Introduce appendLibLog to handle namespaces in the Log
+          tab. Namespace prefix is removed and replaced by a library()
+          call as a user would normally do.
+
+	* Migrate Box Plots to using pipes and place multiple box
+          plots or histograms onto a single grid.
+
+rattle 3.5.7 Graham.Williams@togaware.com 2015-08-21 19:17:56
+
+      * Move to using clusplot from cluster rather than plotcluster
+        from fpc to obtain ellipses to show the clusters.
+
+rattle 3.5.6 Graham.Williams@togaware.com 2015-08-20 21:30:29
+
+      * Gracefully handle no network connection in rattleInfo().
+
+rattle 3.5.5 Graham.Williams@togaware.com 2015-08-17 19:29:41
+
+       * Bug fix for traditional graphics and ROCR suite of plots
+         under evaluate tab - need to use namespace to get correct
+         version of plot().
+
+rattle 3.5.4 Graham.Williams@togaware.com 2015-07-26 12:07:02
+
+       * Add palettes= to allow limited changing of colours in
+         fancyRpartPlot().
+
+       * Bug fix for fancyRpartPlot() where rule conditions were being
+         replaced with coloured blocks.
+
+rattle 3.5.3 Graham.Williams@togaware.com
+
+       * Add a test to riskchart() to if there are more than two
+         classes.
+
+rattle 3.5.2 Graham.Williams@togaware.com
+
+       * Extend Error Matrix calculations in Evaluate to support
+         multinomial targets as well as binomial targets.
+
+rattle 3.5.1 Graham.Williams@togaware.com
+
+       * Bug fix in calculation of overall and average class
+         errors. Thanks to Eugene Dubossarsky.
+
 rattle 3.5.0 Graham.Williams@togaware.com
 
        * Replace xlsx::read.xlsx() with readxl::read_excel() to remove
@@ -25,6 +108,11 @@ rattle 3.5.0 Graham.Williams@togaware.com
        * Numerous updates to support new CRAN checks, particularly
          related to use of name spaces and requiring to make rattle
          depend on RGtk2.
+
+	* weatherAUS dataset is updated.
+
+        * Update rattleInfo() to be more efficient by doing dependency
+          graph myself.
 
 rattle 3.4.0 Graham.Williams@togaware.com 2014-12-29 19:11:59 +11:00
 

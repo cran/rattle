@@ -77,20 +77,14 @@ This quick start guide is under development. See
 \Rattle depends on over 40 other R packages and a couple of other
 software applications/libraries that are independent of R. The first
 thing to ensure is that you have installed the GTK+ libraries and the
-GGobi application. This is operating system independent. Details are
-available for each of the major operating systems:
-
-\begin{itemize}
-\item GNU/Linux: \url{http://datamining.togaware.com/survivor/Install_GNU_Linux.html}
-\item MS/Windows: \url{http://datamining.togaware.com/survivor/Install_MS_Windows.html}
-\item Mac OS/X: \url{http://datamining.togaware.com/survivor/Install_Macintosh.html}
-\end{itemize}
+GGobi application. This is operating system dependent and full
+installation instructions are available from \url{http://rattle.togaware.com/}.
 
 Only a couple of R packages are dependencies for \Rattle. Most are
 suggestions, but without them functionality is quite limited. At a
-minimum, be sure to have the
+minimum it is useful to ensure you have the
 \href{http://cran.r-project.org/package=RGtk2}{\pkg{RGtk2}} package
-installed. Others that you might like to install include: 
+installed. Others that you might like to install include:
 \href{http://cran.r-project.org/package=ada}{\pkg{ada}},
 \href{http://cran.r-project.org/package=arules}{\pkg{arules}},
 \href{http://cran.r-project.org/package=doBy}{\pkg{doBy}},
@@ -112,10 +106,17 @@ installed. Others that you might like to install include:
 \href{http://cran.r-project.org/package=RODBC}{\pkg{RODBC}}, and
 \href{http://cran.r-project.org/package=rpart}{\pkg{rpart}}.
 
-The packages can usually be installed with:
+The packages will usually be installed with the following command:
 
 <<install, eval=FALSE>>=
 install.packages(rattle, dependencies=c("Depends", "Suggests"))
+@ 
+
+The latest beta version of rattle is available from
+\url{http://rattle.togaware.com/}:
+
+<<install_togaware, eval=FALSE>>=
+install.packages("rattle", repos="http://rattle.togaware.com", type="source")
 @ 
 
 \section{First Steps}

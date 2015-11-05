@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-07-13 20:19:14 gjw>
+# Time-stamp: <2015-09-30 06:27:32 gjw>
 #
 # Implement hclust functionality.
 #
@@ -120,13 +120,6 @@ on_hclust_discriminant_plot_button_clicked <- function(button)
     return()
   }
 
-  # The fpc package provides the plotcluster command.
-  
-  if (!packageIsAvailable("fpc", Rtxt("plot the cluster"))) return()
-  lib.cmd <- "library(fpc, quietly=TRUE)"
-  appendLog(packageProvides("fpc", "plotcluster"), lib.cmd)
-  eval(parse(text=lib.cmd))
-
   # Some background information.  Assume we have already built the
   # cluster, and so we don't need to check so many conditions.
 
@@ -159,12 +152,12 @@ on_hclust_discriminant_plot_button_clicked <- function(button)
 
   # PLOT: Log the R command and execute.
 
-  plot.cmd <- paste(sprintf(paste("plotcluster(na.omit(crs$dataset[%s, %s]), ",
-                                  "cutree(crs$hclust, %d))\n"),
-                            ifelse(sampling, "crs$sample", ""), include,
-                            num.clusters),
-                    genPlotTitleCmd(Rtxt("Discriminant Coordinates"),
-                                    crs$dataname), sep="")
+ plot.cmd <- paste(sprintf(paste("cluster::clusplot(na.omit(crs$dataset[%s, %s]), ",
+                                 "cutree(crs$hclust, %d), ",
+                                 "color=TRUE, shade=TRUE, ",
+                                 "main='Discriminant Coordinates ",
+                                 crs$dataname, "')\n", sep=""),
+                           ifelse(sampling, "crs$sample", ""), include, num.clusters))
   appendLog(Rtxt("Generate a discriminant coordinates plot."), plot.cmd)
   newPlot()
   eval(parse(text=plot.cmd))
@@ -188,6 +181,8 @@ executeClusterHClust <- function(include)
   # continue?
   
   sampling  <- not.null(crs$sample)
+
+  startLog(Rtxt("Hierarchical Cluster"))
 
   # The amap library needs to be loaded for hcluster. Also note that
   # hcluster takes about 0.33 seconds, compared to hclust taking 11
@@ -268,7 +263,6 @@ executeClusterHClust <- function(include)
 
   # Log the R command.
 
-  startLog(Rtxt("Hierarchical Cluster"))
   appendLog(Rtxt("Generate a hierarchical cluster of the data."),
           hclust.cmd)
   
@@ -311,8 +305,8 @@ centers.hclust <- function(x, h, nclust=10, use.median=FALSE)
     
   if (class(x) != "matrix") x <- as.matrix(x)
   if (use.median)
-    centres <- round(tapply(x, list(rep(stats::cutree(h, nclust), ncol(x)),
-                                    col(x)), stats::median))
+    centres <- round(tapply(x, list(rep(cutree(h, nclust), ncol(x)),
+                                    col(x)), median))
   else
     centres <- tapply(x, list(rep(cutree(h, nclust), ncol(x)),
                               col(x)), mean)

@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-07-12 12:38:26 gjw>
+# Time-stamp: <2015-08-28 17:18:52 gjw>
 #
 # Implement LOG functionality.
 #
@@ -44,22 +44,26 @@ initiateLog <- function()
 #LOG_LICENSE
                  #sprintf("# Started %s by %s\n\n", Sys.time(), Sys.info()["user"]),
                  "\n\n",
-                 Rtxt("# Export this log textview to a file using the Export",
+                 Rtxt("# This log file captures all Rattle interactions as R commands.",
+                      "\n\nExport this log to a file using the Export",
                       "button or the Tools",
-                      "\n# menu to save a log of all activity. This facilitates",
-                      "repeatability. Exporting",
-                      "\n# to file 'myrf01.R', for example, allows us to the",
+                      "\n# menu to save a log of all your activity. This facilitates",
+                      "repeatability. For example, exporting",
+                      "\n# to a file called 'myrf01.R' will allow you to",
                       "type in the R Console",
-                      "\n# the command source('myrf01.R') to repeat the",
-                      "process automatically.",
-                      "\n# Generally, we may want to edit the file to",
-                      "suit our needs. We can also directly",
-                      "\n# edit this current log textview to record",
+                      "\n# the command source('myrf01.R') and so repeat all",
+                      "actions automatically.",
+                      "\n# Generally, you will want to edit the file to",
+                      "suit your needs. You can also directly",
+                      "\n# edit this current log in place to record",
                       "additional information before exporting.",
                       "\n",
                       "\n# Saving and loading projects also retains this log."),
                  "\n\n",
+                 '# We begin by loading the required libraries.\n\n',
                  crv$library.command,
+                 '   # To access the weather dataset and utility commands.',
+                 '\nlibrary(magrittr) # For the %>% and %<>% operators.',
                  "\n\n",
                  Rtxt("# This log generally records the process of building a model.",
                       "However, with very",

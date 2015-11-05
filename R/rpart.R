@@ -2,7 +2,7 @@
 #
 # RPART TAB
 #
-# Time-stamp: <2015-07-12 15:59:03 gjw>
+# Time-stamp: <2015-07-26 11:55:23 gjw>
 #
 # Copyright (c) 2009-2014 Togaware Pty Ltd except as noted:
 #
@@ -120,7 +120,12 @@ on_rpart_plot_button_clicked <- function(button)
   ##                                              crs$dataname, "$", crs$target))
 
   appendLog(sprintf(Rtxt("We use the %s."), log.txt), plot.cmd)
-  newPlot()
+
+  # 150726 Do I need newPlot() here as when it is used the text in the
+  # plot is obliterated wit a coloured box??? Perhaps I need to
+  # eliminate all usage of newPlot() eventually.
+
+  # newPlot()
   eval(parse(text=plot.cmd))
 
   ## newPlot()

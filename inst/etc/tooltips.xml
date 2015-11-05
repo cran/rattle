@@ -29,6 +29,9 @@
     process.</tooltip>
   <tooltip widget="quit_button">Quit the application, closing all
     graphics displays and the R console.</tooltip>
+  <tooltip widget="connectr_toolbutton">Request a new feature by
+  creating a new project for it on the Connect-R crowd sourcing
+  service.</tooltip>
   <tooltip widget="data_csv_radiobutton">Load data from a comma
     separated value (CSV) file, as might be exported from a
     spreadsheet or database.</tooltip>

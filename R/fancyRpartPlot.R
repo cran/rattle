@@ -1,10 +1,20 @@
 # Rattle: A GUI for Data Mining in R
 #
-# Fancy Plot Of An Rpart Decision Tree
-#
-# Time-stamp: <2014-12-09 05:47:13 gjw>
+# Time-stamp: <2015-07-26 11:46:14 gjw>
 #
 # Copyright (c) 2009-2014 Togaware Pty Ltd
+#
+#' Plot rpart decision trees nicely.
+#'
+#' @param model an rpart object
+#' @param main title for the plot
+#' @param sub sub title for the plot (default is a Rattle string with
+#' date, time and username)
+#' @param palettes a list of sequential palettes names as supported by
+#' RColorBrewer::brewer.pal including Blues BuGn BuPu
+#' GnBu Greens Greys Oranges OrRd PuBu PuBuGn PuRd Purples RdPu Reds
+#' YlGn YlGnBu YlOrBr YlOrRd.
+#' @param ... additional arguments passed on to rpart.plot::prp
 #
 # This files is part of Rattle.
 #
@@ -24,6 +34,7 @@
 fancyRpartPlot <- function(model,
                            main="",
                            sub,
+                           palettes,
                            ...)
 {
   if (missing(sub))
@@ -33,20 +44,26 @@ fancyRpartPlot <- function(model,
   
   num.classes <- length(attr(model, "ylevels"))
 
-  # Generate a colour pallete, with a range of 5 (palsize) colours for
-  # each of the 6 (numpals) palettes. The pallete is collapsed into
+  # Generate a colour palette, with a range of 5 (palsize) colours for
+  # each of the 6 (numpals) palettes. The palette is collapsed into
   # one list. We index it according to the class. Keep to the lighter
-  # end of the pallete to ensure printing is okay otherwise the black
+  # end of the palette to ensure printing is okay otherwise the black
   # text is hard to read.
+
+  default.palettes <- c("Greens", "Blues", "Oranges", "Purples", "Reds", "Greys")
+  if (missing(palettes))
+    palettes <- default.palettes
+  missed <- setdiff(1:6, seq(length(palettes)))
+  palettes <- c(palettes, default.palettes[missed])
 
   numpals <- 6
   palsize <- 5
-  pals <- c(RColorBrewer::brewer.pal(9, "Greens")[1:5],
-            RColorBrewer::brewer.pal(9, "Blues")[1:5],
-            RColorBrewer::brewer.pal(9, "Oranges")[1:5],
-            RColorBrewer::brewer.pal(9, "Purples")[1:5],
-            RColorBrewer::brewer.pal(9, "Reds")[1:5],
-            RColorBrewer::brewer.pal(9, "Greys")[1:5])
+  pals <- c(RColorBrewer::brewer.pal(9, palettes[1])[1:5],
+            RColorBrewer::brewer.pal(9, palettes[2])[1:5],
+            RColorBrewer::brewer.pal(9, palettes[3])[1:5],
+            RColorBrewer::brewer.pal(9, palettes[4])[1:5],
+            RColorBrewer::brewer.pal(9, palettes[5])[1:5],
+            RColorBrewer::brewer.pal(9, palettes[6])[1:5])
   
   # Extract the scores/percentages for each of the nodes for the
   # majority decision.  The decisions are in column 1 of yval2 and the

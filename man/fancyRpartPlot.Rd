@@ -9,7 +9,7 @@
   
 }
 \usage{
-fancyRpartPlot(model, main="", sub, ...)
+fancyRpartPlot(model, main="", sub, palettes, ...)
 }
 \arguments{
   
@@ -19,6 +19,11 @@ fancyRpartPlot(model, main="", sub, ...)
 
   \item{sub}{sub title for the plot. The default is a Rattle string with
   date, time and username.}
+
+\item{palettes}{a list of sequential palettes names. As supported by
+  RColorBrewer::brewer.pal the available names are Blues BuGn BuPu GnBu
+  Greens Greys Oranges OrRd PuBu PuBuGn PuRd Purples RdPu Reds YlGn
+  YlGnBu YlOrBr YlOrRd.}
 
   \item{...}{additional arguments passed on to prp.}
 
@@ -53,5 +58,9 @@ model <- rpart(form, data=ds[train, vars])
 ## Plot the model.
 
 fancyRpartPlot(model)
+
+## Choose different colours
+
+fancyRpartPlot(model, palettes=c("Greys", "Oranges"))
 }
 \keyword{hplot}

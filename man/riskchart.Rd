@@ -5,11 +5,11 @@
 }
 \description{
   
-  Plots a Rattle Risk Chart using ggplot2. Such a chart has been
-  developed in a practical context to present the performance of data
-  mining models to clients, plotting a caseload against performance,
-  allowing a client to see the tradeoff between coverage and
-  performance.
+  Plots a Rattle Risk Chart for binary classification models using
+  ggplot2. Such a chart has been developed in a practical context to
+  present the performance of data mining models to clients, plotting a
+  caseload against performance, allowing a client to see the tradeoff
+  between coverage and performance.
   
 }
 \usage{

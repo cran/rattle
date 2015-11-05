@@ -2,7 +2,7 @@
 #
 # BASE FUNCTIONS
 #
-# Time-stamp: <2015-07-13 20:20:29 gjw>
+# Time-stamp: <2015-09-21 22:21:48 gjw>
 #
 # Copyright (c) 2009-2015 Togaware Pty Ltd
 #
@@ -72,8 +72,8 @@ Rtxt <- function(...)
 
 RtxtNT <- Rtxt
 
-VERSION <- "3.5.0"
-DATE <- "2015-07-13"
+VERSION <- "4.0.0"
+DATE <- "2015-11-05"
 
 # 091223 Rtxt does not work until the rattle GUI has started, perhaps?
 COPYRIGHT <- paste(Rtxt("Copyright"), "(C) 2006-2015 Togaware Pty Ltd.")
@@ -567,10 +567,10 @@ rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=NULL)
   crv$IMPUTE <- c(number=0, variable=1, comment=2)
 
   crv$CATEGORICAL <- c(number = 0, variable = 1, barplot = 2,
-                       dotplot = 3, mosplot = 4, comment = 5)
+                       dotplot = 3, mosplot = 4, paiplot=5, comment = 6)
 
   crv$CONTINUOUS <-  c(number = 0, variable = 1, boxplot = 2,
-                       hisplot = 3, cumplot = 4, benplot = 5, comment = 6)
+                       hisplot = 3, cumplot = 4, benplot = 5, paiplot=6, comment = 7)
 
   # Create constants naming DESCRIBE (i.e., the descriptive model
   # builders) and PREDICT (i.e., the predictive model builders). Note
@@ -1004,6 +1004,14 @@ configureGUI <- function()
   else
     crv$icon <- RGtk2::gdkPixbufNewFromFile(crv$icon)$retval
 
+  # 150921 Change the Connect-R button to be the Connect-R logo.
+
+  connectr.logo <- system.file("etc/ConnectRlogo.png", package="rattle")
+  connectr.pixbuf <- RGtk2::gdkPixbufNewFromFile(connectr.logo)$retval
+  connectr.icon <- RGtk2::gtkImageNewFromPixbuf(connectr.pixbuf)
+  connectr.button <- theWidget("connectr_toolbutton")
+  RGtk2::gtkToolButtonSetIconWidget(connectr.button, connectr.icon)
+  
   # 101202 Remove the By Group button and instead if a rescale has a
   # categoric selected then do by group. TODO.
   
@@ -1659,6 +1667,7 @@ resetRattle <- function(new.dataset=TRUE)
     theWidget("benford_abs_radiobutton")$setActive(TRUE)
     theWidget("benford_digits_spinbutton")$setValue(1)
     theWidget("explore_correlation_method_combobox")$setActive(0)
+    theWidget("pairs_color_combobox")$getModel()$clear()
 
     theWidget("glm_target_label")$setText(Rtxt("No Target"))
     theWidget("rpart_target_label")$setText(Rtxt("No Target"))
@@ -1761,7 +1770,7 @@ uri2file <- function(u)
 
 listVersions <- function(file="", ...)
 {
-  result <- utils::installed.packages()[,c("Package", "Version")]
+  result <- installed.packages()[,c("Package", "Version")]
   row.names(result) <- NULL
   write.csv(result, file=file, ...)
   invisible(result)
@@ -2072,7 +2081,7 @@ collectOutput <- function(command, use.print=FALSE, use.cat=FALSE,
   }
   else
   {
-    result <- try(commandsink <- utils::capture.output(eval(parse(text=command))))#121212, envir=envir)))
+    result <- try(commandsink <- capture.output(eval(parse(text=command))))#121212, envir=envir)))
   }
 
   if (inherits(result, "try-error"))
@@ -2392,11 +2401,11 @@ newPlot <- function(pcnt=1)
       if (crv$useGtkBuilder)
         plotGUI$getObject("plot_window")$setTitle(paste(crv$appname, ": ",
                                                         Rtxt("Plot"), " ",
-                                                        grDevices::dev.cur(), sep=""))
+                                                        dev.cur(), sep=""))
       else
         plotGUI$getWidget("plot_window")$setTitle(paste(crv$appname, ": ",
                                                         Rtxt("Plot"), " ",
-                                                        grDevices::dev.cur(), sep=""))
+                                                        dev.cur(), sep=""))
     }
   }
 
@@ -2557,7 +2566,7 @@ savePlotToFile <- function(file.name, dev.num=dev.cur())
   else if (ext == "jpg")
     dev.copy(jpeg, file=file.name, width=1000, height=1000)
   else if (ext == "wmf")
-    dev.copy(win.metafile, file=file.name, width=10, height=10)
+    eval(parse(text=sprintf("dev.copy(win.metafile, file='%s', width=10, height=10)", file.name)))
   else
   {
     infoDialog(sprintf(Rtxt("The supplied filename extension '%s'",
@@ -2574,7 +2583,7 @@ printPlot <- function(dev.num=dev.cur())
   cur <- dev.cur()
   dev.set(dev.num)
   if (isWindows())
-    dev.print(win.print)
+    eval(parse(text="dev.print(win.print)"))
   else
     dev.print()
   dev.set(cur)
@@ -2822,6 +2831,11 @@ on_rattle_menu_activate <- function(action, window)
 }
 
 on_delete_menu_activate <- notImplemented
+
+on_connectr_toolbutton_clicked <- function(action, window)
+{
+  browseURL("http://connect-r.com/posting.php?mode=post&f=2")
+}
 
 ## Map the unchanged glade defaults
 

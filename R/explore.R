@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-07-04 07:30:20 gjw>
+# Time-stamp: <2015-09-16 09:54:31 Graham Williams>
 #
 # Implement EXPLORE functionality.
 #
@@ -20,6 +20,26 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+
+resetExploreTab <- function(new.dataset=TRUE)
+{
+  cbox1 <- theWidget("pairs_color_combobox")
+  cbox1$setSensitive(TRUE)
+  
+  if (new.dataset)
+  {
+    vl <- getCategoricVariables(type="names",include.target=T)
+    
+    if (length(vl))
+    {
+      cbox1$getModel()$clear()
+      cbox1$appendText(" ") # no color
+      lapply(vl, cbox1$appendText)
+      if ( length(crs$target))
+        cbox1$setActive(length(vl)) # by construction we know is the last one
+    }
+  }
+}  
 
 ########################################################################
 # EXECUTION
@@ -668,6 +688,7 @@ executeExplorePlot <- function(dataset,
                                barplots = getSelectedVariables("barplot"),
                                dotplots = getSelectedVariables("dotplot"),
                                mosplots = getSelectedVariables("mosplot"),
+                               paiplots = getSelectedVariables("paiplot"),
                                stratify=TRUE, sampling=NULL,
                                target=crs$target, newplot=TRUE)
 {
@@ -682,6 +703,12 @@ executeExplorePlot <- function(dataset,
   # remains an internal Rattle function though - only for those who
   # know!
 
+  # 150916 Move to allowing the stratification to be specified here
+  # rather than relying on going back to the data tab to change.
+    
+  target <- theWidget("pairs_color_combobox")$getActiveText()
+  if (target == " ") target <- NULL
+    
   # Has the advanced graphics (ggplot2) option be enabled?
 
   advanced.graphics <- theWidget("use_ggplot2")$getActive()
@@ -694,9 +721,16 @@ executeExplorePlot <- function(dataset,
   nbarplots <- length(barplots)
   ndotplots <- length(dotplots)
   nmosplots <- length(mosplots)
+  npaiplots <- as.integer(length(paiplots) >= 2) # only one plot is generated, 2 variables minimum are needed
 
+  if (npaiplots == 0 && length(paiplots)>0)
+  {
+    errorDialog(Rtxt("The pairs plot requires at least two variables."))
+    return()
+  }
+  
   total.plots <- nboxplots + nhisplots + length(cumplots) +
-    nbenplots + nbarplots + ndotplots + nmosplots
+    nbenplots + nbarplots + ndotplots + nmosplots + npaiplots
   
   pmax <- theWidget("plots_per_page_spinbutton")$getValue()
   pcnt <- 0
@@ -706,7 +740,7 @@ executeExplorePlot <- function(dataset,
   # distributions per target value.
 
   # 091011 Move to using the value of crs$target instead of getting it
-  # from the interface. Evenetually, pass target in as an argument so
+  # from the interface. Eventually, pass target in as an argument so
   # we can be independent of the GUI?
 
   # target <- getSelectedVariables("target")
@@ -861,11 +895,12 @@ executeExplorePlot <- function(dataset,
     }
     else
     {
-        
-    
-    # 080918 Use the colorspace package to get a better colour map. See
-    # http://epub.wu-wien.ac.at/dyn/virlib/wp/eng/showentry?ID=epub-wu-01_c87 and
-    # http://statmath.wu.ac.at/~zeileis/papers/Zeileis+Hornik+Murrell-2009.pdf
+
+      # 080918 Use the colorspace package to get a better colour
+      # map. See
+      # http://epub.wu-wien.ac.at/dyn/virlib/wp/eng/showentry?ID=epub-wu-01_c87
+      # and
+      # http://statmath.wu.ac.at/~zeileis/papers/Zeileis+Hornik+Murrell-2009.pdf
     
     if (packageIsAvailable("colorspace"))
       cols <- "col=colorspace::rainbow_hcl(%d)," # 090524, start = 270, end = 150),"
@@ -1744,191 +1779,20 @@ executeExplorePlot <- function(dataset,
       }
     }
   }
+  
+########################################################################
+#
+#   Pairs plot
+#
+########################################################################
 
-### REMOVE 080925 - Until work out multiple plots on one device issue.
-###   if (nbarplots > 0)
-###   {
-###     # Plot a frequency plot for a categoric variable.
-
-###     # 080817 Use barchart from lattice instead of barplot2 from
-###     # ggplots.
-
-###     lib.cmd <- "library(lattice, quietly=TRUE)"
-    
-###     # Construct a generic data command built using the genericDataSet
-###     # values. To generate a barplot we use the output of the summary
-###     # command on each element in the genericDataSet, and bring them
-###     # together into a single structure. The resulting generic.data.cmd
-###     # will have a number of "%s"s (one for the whole dataset, then one
-###     # for each level) from the original genericDataSet string that
-###     # will be replaced with the name of each variable as it is being
-###     # plotted.
-
-###     generic.data.cmd <- paste(lapply(genericDataSet,
-###                                      function(x) sprintf("summary(%s)", x)),
-###                               collapse=",\n    ")
-###     generic.data.cmd <- sprintf("cbind(%s)", generic.data.cmd)
-
-###     # If the lattice package is available then generate a plot for
-###     # each chosen vairable.
-    
-###     if (packageIsAvailable("lattice", "display a bar chart"))
-###     {
-###       startLog()
-###       appendLog("Load lattice for the barchart function.", lib.cmd)
-###       eval(parse(text=lib.cmd))
-
-###       for (s in 1:nbarplots)
-###       {
-###         startLog()
-
-###         # Construct and evaluate a command string to generate the
-###         # data for the plot.
-
-###         ds.cmd <- paste(sprintf("sprintf('%s',", generic.data.cmd),
-###                        paste(paste('"', rep(barplots[s], length(targets)+1),
-###                                  '"', sep=""), collapse=","), ")")
-###         ds.cmd <- eval(parse(text=ds.cmd))
-###         appendLog(sprintf("Generate the summary data for plotting %s.", barplots[s]),
-###                  paste("ds <-", ds.cmd))
-###         ds <- eval(parse(text=ds.cmd))
-
-###         names.cmd <- sprintf('colnames(ds) <- c(%s)',
-###                              ifelse(length(targets)==0, '"Frequency"',
-###                                     paste('"Frequency"',
-###                                           paste(sprintf('"%s"', targets),
-###                                                 collapse=", "),
-###                                           sep=", ")))
-###         appendLog("Set the appropriate column names.", names.cmd)
-###         eval(parse(text=names.cmd))
-
-###         # We don't have multiple plots on the one plot implemented yet
-###         # - should we? I would guess there is a simple way to do this
-###         # with lattice.
-        
-###         #if (pcnt %% pmax == 0) newPlot(pmax)
-###         #pcnt <- pcnt + 1
-###         newPlot(pmax)
-
-###         # Construct and evaluate the command to determine the order in
-###         # which to print the catgories, from smallest (at the bottom)
-###         # to largest.
-
-###         ord.cmd <- 'order(ds[,1])'
-###         appendLog("Sort the entries.", paste("ord <-", ord.cmd))
-###         ord <- eval(parse(text=ord.cmd))
-
-###         plot.cmd <- sprintf(paste('print(barchart(ds[ord,%s]',
-###                                   'xlab="Frequency"',
-###                                   ifelse(length(targets)==0,
-###                                          'groups=NULL', # Just to have something!
-###                                          sprintf(paste('auto.key=list(title="%s",',
-###                                                        'cex=0.75,', 'columns=%d)'),
-###                                                  target, 2)),
-###                                   sprintf('sub="%s"', genPlotTitleCmd(vector=TRUE)),
-###                                   'main="Distribution of %s%s"))', sep=", "),
-###                             ifelse(length(targets)==0, "", "-1"),
-###                             barplots[s],
-###                             ifelse(sampling," (sample)",""))
-                            
-###         appendLog("Plot the data.", plot.cmd)
-###         eval(parse(text=plot.cmd))
-
-###       }
-###     }
-###   }
-
-  ##---------------------------------------------------------------------
-
-### REMOVE 080925 - Until work out multiple plots on one device issue.
-###   if (ndotplots > 0)
-###   {
-    
-###     # 080817 Use dotplot(lattice) instead of dotchart. 080925 But not
-###     # yet since it uses a different mechanism to get multiple plots on
-###     # one device and I've not set that up yet.
-
-###     # lib.cmd <- "library(lattice, quietly=TRUE)"
-
-###     # Construct a generic data command built using the genericDataSet
-###     # values. To generate a barplot we use the output of the summary
-###     # command on each element in the genericDataSet, and bring them
-###     # together into a single structure. The resulting generic.data.cmd
-###     # will have a number of "%s"s (one for the whole dataset, then
-###     # one for each level) from the original genericDataSet string
-###     # that will be replaced with the name of each variable as it is
-###     # being plotted.
-
-###     generic.data.cmd <- paste(lapply(genericDataSet,
-###                                    function(x) sprintf("summary(%s)", x)),
-###                             collapse=",\n    ")
-###     generic.data.cmd <- sprintf("cbind(%s)", generic.data.cmd)
-
-###     # If the lattice package is available then generate a plot for
-###     # each chosen vairable.
-    
-###     if (packageIsAvailable("lattice", "display a dot plot"))
-###     {
-###       startLog()
-###       appendLog("Load lattice for the dotplot function.", lib.cmd)
-###       eval(parse(text=lib.cmd))
-
-###       for (s in 1:ndotplots)
-###       {
-###         startLog()
-
-###         # Construct and evaluate a command string to generate the data
-###         # for the plot.
-
-###         ds.cmd <- paste(sprintf("sprintf('%s',", generic.data.cmd),
-###                         paste(paste('"', rep(dotplots[s], length(targets)+1),
-###                                     '"', sep=""), collapse=","), ")")
-###         ds.cmd <- eval(parse(text=ds.cmd))
-###         appendLog(sprintf("Generate the summary data for plotting %s.", dotplots[s]),
-###                   paste("ds <-", ds.cmd))
-###         ds <- eval(parse(text=ds.cmd))
-
-###         names.cmd <- sprintf('colnames(ds) <- c(%s)',
-###                              ifelse(length(targets)==0, '"Frequency"',
-###                                     paste('"Frequency"',
-###                                           paste(sprintf('"%s"', targets),
-###                                                 collapse=", "),
-###                                           sep=", ")))
-###         appendLog("Set the appropriate column names.", names.cmd)
-###         eval(parse(text=names.cmd))
-
-###         # Construct and evaluate the command to determine the order in
-###         # which to print the catgories, from smallest (at the bottom)
-###         # to largest.
-
-###         ord.cmd <- 'order(ds[,1])'
-###         appendLog("Sort the entries.", paste("ord <-", ord.cmd))
-###         ord <- eval(parse(text=ord.cmd))
-
-###         # Construct and evaluate the command to plot the distribution.
-    
-###         #if (pcnt %% pmax == 0) newPlot(pmax)
-###         #pcnt <- pcnt + 1
-###         newPlot(pmax)
-      
-###         plot.cmd <- sprintf(paste('print(dotplot(ds[ord,%s]',
-###                                   'xlab="Frequency"',
-###                                   'type=c("p", "h", "a")',
-###                                   ifelse(length(targets)==0,
-###                                          'groups=NULL', # Just to have something!
-###                                          sprintf(paste('auto.key=list(title="%s",',
-###                                                        'cex=0.75,', 'columns=%d)'),
-###                                                  target, 2)),
-###                                   sprintf('sub="%s"', genPlotTitleCmd(vector=TRUE)),
-###                                   'main="Distribution of %s%s"))', sep=", "),
-###                             ifelse(length(targets)==0, "", "-1"),
-###                             dotplots[s],
-###                             ifelse(sampling," (sample)",""))
-###         appendLog("Plot the data.", plot.cmd)
-###         eval(parse(text=plot.cmd))
-###       }
-###     }
-###   }
+  if (npaiplots > 0 )
+  {
+    if (packageIsAvailable("GGally","Display a Pairs plot with ggpairs"))
+    {
+      executePairsPlotSelect2(dataset, paiplots, target, targets, stratify, sample, pmax)
+    }
+  }
 
   if (ndotplots > 0)
   {
@@ -2102,49 +1966,6 @@ executeExplorePlot <- function(dataset,
     setStatusBar(Rtxt("A pairs plot has been generated."))
 }
 
-executeBoxPlot2 <- function(dataset, vars, target, targets, stratify, sampling, pmax)
-{
-  # 120209 Use ggplot2 for the box plot.
-  
-  # Note that for each type of plot (box plot or bar chart etc) we
-  # always start a new plot. So we do not need to know how many plots
-  # have already been displayed (the old pcnt). We work out from the
-  # length of vars and the value of pmax the number of new plots, and
-  # the grid layout.
-  
-  startLog(Rtxt("Box Plot"))
-
-  libs <- loadLibs(c("ggplot2", "ggplot"))
-
-  for (s in seq_along(vars))
-  {
-    newPlot()
-
-    title.txt <- genPlotTitleCmd(generateTitleText(vars[s], target, sampling,
-                                                   stratify && length(targets)),
-                                 vector=TRUE)
-
-    plot.cmd <- paste(sprintf("p <- ggplot(with(crs, %s), aes(y=%s))", dataset, vars[s]),
-                      'p <- p + geom_boxplot(aes(x="All"), notch=TRUE, fill="grey")',
-                      paste('p <- p + stat_summary(aes(x="All"),',
-                            'fun.y=mean, geom="point", shape=8)'),
-                      sprintf('p <- p + geom_boxplot(aes(x=%s, fill=%s), notch=TRUE)',
-                              target, target),
-                      sprintf(paste('p <- p + stat_summary(aes(x=%s),',
-                                    'fun.y=mean, geom="point", shape=8)'),
-                              target),
-                      sprintf('p <- p + xlab("%s\\n\\n%s")', target, title.txt[2]),
-                      sprintf('p <- p + ggtitle("%s")',  title.txt[1]),
-                      'p <- p + theme(legend.position="none")',
-                      'print(p)',
-                      sep="\n")
-  
-    appendLog(paste(Rtxt("Box Plot for"), vars[s]), plot.cmd)
-    eval(parse(text=plot.cmd))
-  }
-  unloadLibs(libs)
-}
-
 # 120205 The following is migrating into the original
 # executeExplorePlot, and splitting out the different plots into
 # separate functions.
@@ -2157,6 +1978,7 @@ executeExplorePlot2 <- function(dataset,
                                barplots = getSelectedVariables("barplot"),
                                dotplots = getSelectedVariables("dotplot"),
                                mosplots = getSelectedVariables("mosplot"),
+                               paiplots = getSelectedVariables("paiplot"),
                                stratify=TRUE, sampling=NULL,
                                target=crs$target)
 {
@@ -2185,9 +2007,15 @@ executeExplorePlot2 <- function(dataset,
   nbarplots <- length(barplots)
   ndotplots <- length(dotplots)
   nmosplots <- length(mosplots)
+  npaiplots <- as.integer(length(paiplots) >= 2) # only one plot is generated, 2 variables minimum are needed
 
+  if (npaiplots == 0 && length(paiplots)>0)
+  {
+    infoDialog(Rtxt("The Pairs plot requires at least two variables."))
+  }
+  
   total.plots <- nboxplots + nhisplots + length(cumplots) +
-    nbenplots + nbarplots + ndotplots + nmosplots
+    nbenplots + nbarplots + ndotplots + nmosplots + npaiplots
   
   pmax <- theWidget("plots_per_page_spinbutton")$getValue()
   pcnt <- 0
