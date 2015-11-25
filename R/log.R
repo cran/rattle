@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-08-28 17:18:52 gjw>
+# Time-stamp: <2015-11-15 09:22:40 gjw>
 #
 # Implement LOG functionality.
 #
@@ -130,7 +130,7 @@ appendLog <- function(start, cont=NULL, ..., sep=" ", no.start=FALSE)
 
   # 150712 Remove and Rtxt(...), leaving just ...
 
-  
+  msg <- stringr::str_replace(msg, 'Rtxt\\(([^\\)]*)\\)', '\\1')
   
   # Always place text at the end, irrespective of where the cursor is.
 

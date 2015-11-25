@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-09-17 17:08:30 Graham Williams>
+# Time-stamp: <2015-11-15 09:02:15 gjw>
 #
 # DATA TAB
 #
@@ -1242,7 +1242,7 @@ openODBCSetTables <- function()
 
   startLog(Rtxt("Open an ODBC connection."))
 
-  appendLog(Rtxt("Require the RODBC library."), lib.cmd)
+  appendLog(Rtxt("Require the RODBC package."), lib.cmd)
   # 140906 Move to using namespaces within the code, though still
   # expose the interactive commands.
   #set.cursor("watch")
@@ -1730,12 +1730,25 @@ viewData <- function()
 
   if (packageIsAvailable("RGtk2Extras", Rtxt("view data in a spreadsheet")))
   {
+    # 151115 We currently get the issue:
+    #
+    # Error in MakeDFEditWindow(.local, .local$theFrame, size.request, col.width) (from <text>#1) : 
+    #  could not find function "gtkTreePathNewFromString"
+    #
+    # This is a NAMESPACE issue and a workaround is to
+    # require(RGkt2Extras). Eventually need to work out the correct
+    # solution.
+
+    lib.cmd <- sprintf("library(RGtk2Extras)")
+    appendLog(packageProvides("RGtk2Extras", "dfedit"), lib.cmd)
+    eval(parse(text=lib.cmd))
+
     view.cmd <- paste('RGtk2Extras::dfedit(crs$dataset,\n',
                       '                  ',
                       'dataset.name=Rtxt("Rattle Dataset"),\n',
                       '                  ',
                       'size=c(800, 400))')
-    appendLog(Rtxt("Note that edits are ignored."), view.cmd)
+    appendLog(Rtxt("Please note that any edits will be ignored."), view.cmd)
     eval(parse(text=view.cmd))
   }
   else

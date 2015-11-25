@@ -1,6 +1,6 @@
 #' Perform the required operations for displaying a pairs plot.
 #' 
-#' Time-stamp: <2015-09-17 21:08:50 gjw>
+#' Time-stamp: <2015-11-15 10:06:37 gjw>
 #' 
 executePairsPlotSelect2 <- function(dataset, vars, target, targets, stratify, sampling, pmax)
 {
@@ -30,7 +30,12 @@ executePairsPlotSelect2 <- function(dataset, vars, target, targets, stratify, sa
                      '                   discrete="ratio"),\n',
                      '        lower=list(continuous="points",\n',
                      '                   combo="denstrip",\n',
-                     '                   discrete="facetbar"))')
+                     '                   discrete="facetbar"))',
+                     ' +\n  ggplot2::theme(panel.grid.major=ggplot2::element_blank())')
+  # When this next blank theme is included we get bad plots???? Some
+  # problem with colour.
+  #
+  #                         '         panel.grid.minor=ggplot2::element_blank())')
       
   appendLibLog(Rtxt("Use GGally's ggpairs() to do the hard work."), plot.cmd)
   newPlot()

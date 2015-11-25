@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-09-17 06:24:29 gjw>
+# Time-stamp: <2015-11-17 16:36:34 gjw>
 #
 # Implement evaluate functionality.
 #
@@ -1249,8 +1249,8 @@ executeEvaluateConfusion <- function(respcmd, testset, testname)
       # possible values. 150715 TODO Need to update the formulation
       # to account for a single row in the percentage table.
 
-      error.cmd <- 'cat(round(sum(per[,"Error"], na.rm=TRUE), 2))'
-      avgerr.cmd <- 'cat(round(mean(per[,"Error"], na.rm=TRUE), 2))'
+      error.cmd <- 'cat(100*round(1-sum(diag(per), na.rm=TRUE), 2))'
+      avgerr.cmd <- 'cat(100*round(mean(per[,"Error"], na.rm=TRUE), 2))'
       
     }
 
@@ -1326,9 +1326,9 @@ executeEvaluateConfusion <- function(respcmd, testset, testname)
                    percentage.output,
                    if (categoricTarget())
                    {
-                     paste("\n\n", sprintf(Rtxt("Overall error: %s"),
+                     paste("\n\n", sprintf(Rtxt("Overall error: %s%%"),
                                            format(error.output)),
-                           ", ",   sprintf(Rtxt("Averaged class error: %s"),
+                           ", ",   sprintf(Rtxt("Averaged class error: %s%%"),
                                            format(avgerr.output)), sep="")
                    })
 

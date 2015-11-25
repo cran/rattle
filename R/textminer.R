@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-05-17 08:59:10 gjw>
+# Time-stamp: <2015-11-15 06:59:39 gjw>
 #
 # 080921 TEXT MINING DATA
 #
@@ -131,7 +131,7 @@ executeDataCorpus <- function()
   if (strip)
     map.cmd <- sprintf("%s\nmy.corpus <- tm_map(my.corpus, stripWhitespace)", map.cmd)
   if (lcase) 
-    map.cmd <- sprintf("%s\nmy.corpus <- tm_map(my.corpus, tolower)", map.cmd)
+    map.cmd <- sprintf("%s\nmy.corpus <- tm_map(my.corpus, content_transformer(tolower))", map.cmd)
   if (stopw) 
     map.cmd <- sprintf(paste("%s\nmy.corpus <- tm_map(my.corpus,",
                              'removeWords, stopwords("english"))'), map.cmd)

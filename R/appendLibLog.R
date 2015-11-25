@@ -1,6 +1,6 @@
 #' Append a command to the Log tab dealing with namespaces
 #'
-#' Time-stamp: <2015-09-17 06:18:29 gjw>
+#' Time-stamp: <2015-11-15 10:03:29 gjw>
 #'
 #' @param comment      A message to include as a comment.
 #' @param ...          The command(s) to report in the log.
@@ -41,7 +41,7 @@ appendLibLog <- function(comment, ..., include.libs=TRUE)
     stringr::str_split('::') %>%
     unlist()
 
-  #150917 Kepp make check quiet....
+  # 150917 Keep make check quiet....
   pkg <- fun <- funs <- "." <- NULL
   
   if (is.null(libs))
@@ -54,7 +54,7 @@ appendLibLog <- function(comment, ..., include.libs=TRUE)
       dplyr::group_by(pkg) %>%
       dplyr::summarise(funs=paste(fun, collapse="(), ")) %>%
       dplyr::group_by(pkg) %>%
-      dplyr::summarise(cmd=sprintf("library(%s) # Provides %s()", pkg, funs)) %>%
+      dplyr::summarise(cmd=sprintf("library(%s) # Provides %s().", pkg, funs)) %>%
       magrittr::extract2(2) %>%
       stringr::str_c(collapse="\n")
 
