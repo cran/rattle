@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-07-12 12:41:22 gjw>
+# Time-stamp: <2015-12-12 11:12:49 gjw>
 #
 # Copyright (c) 2009-2015 Togaware Pty Ltd
 
@@ -119,7 +119,8 @@ on_aboutdialog_response <- function(object, ...)
 
   crv$log.intro <- paste("#", sprintf(Rtxt("%s is Copyright (c) 2006-2015 %s."),
                                       "Rattle", "Togaware Pty Ltd"))
-  crv$support.msg <- sprintf(Rtxt("Contact %s.\n\n%s"), "support@togaware.com",
+  crv$support.msg <- sprintf(Rtxt("If this is a bug please contact %s.\n\n%s"),
+                             "support@togaware.com",
                              Rtxt("Please supply the output of rattleInfo()",
                                   "and the steps required to replicate the problem."))
   crv$library.command <- "library(rattle)"

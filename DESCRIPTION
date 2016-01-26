@@ -1,8 +1,8 @@
 Package: rattle
 Type: Package
 Title: Graphical User Interface for Data Mining in R
-Version: 4.0.5
-Date: 2015-11-25
+Version: 4.1.0
+Date: 2016-01-26
 Authors@R: c(person("Graham", "Williams", 
 	   	    role=c("aut", "cph", "cre"),
 	            email="Graham.Williams@togaware.com"),
@@ -47,7 +47,7 @@ LazyLoad: yes
 LazyData: yes
 URL: http://rattle.togaware.com/
 NeedsCompilation: no
-Packaged: 2015-11-24 21:41:47 UTC; gjw
+Packaged: 2016-01-26 02:35:02 UTC; gjw
 Author: Graham Williams [aut, cph, cre],
   Mark Vere Culp [cph],
   Ed Cox [ctb],
@@ -59,4 +59,4 @@ Author: Graham Williams [aut, cph, cre],
   Jose Magana [ctb] (Contributed the ggpairs plots.)
 Maintainer: Graham Williams <Graham.Williams@togaware.com>
 Repository: CRAN
-Date/Publication: 2015-11-25 00:13:45
+Date/Publication: 2016-01-26 07:44:22

@@ -1,3 +1,24 @@
+rattle 4.0.6 Graham.Williams@togaware.com 2016-01-26 11:12:01
+
+       * Bug fix calculation of confusion matricies when either actual
+         or predictive values have missing values. Reported by Roger
+         Bohm.
+
+       * Make the rescale.by.group transform more robust by ensuring
+         the by argument is a factor, converting as needed. Reported
+         by Tony Nolan.
+
+       * Bug fix for plots when there is no target in the
+         dataset. Reported by Albert Lee.
+
+       * Bug fix in calculation of the overall error rate in the
+         confusion matrix. Show overall error as percentage not
+         proportion. reported by Eugene Dubossarsky.
+
+       * Remove grid from ggpairs plot and fine tune for presentation.
+
+       * 
+
 rattle 4.0.0 Graham.Williams@togaware.com 2015-09-21 06:00:49
        
        * Migrate hosting of the package to Bitbucket:

@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-11-17 16:36:34 gjw>
+# Time-stamp: <2016-01-26 10:16:11 gjw>
 #
 # Implement evaluate functionality.
 #
@@ -1224,6 +1224,7 @@ executeEvaluateConfusion <- function(respcmd, testset, testname)
 
     confuse.cmd <- paste(sprintf("table(%s$%s, crs$pr,",
                                  ts, crs$target),
+                         '\n        useNA="ifany",',
                          '\n        dnn=c("',
                          Rtxt("Actual"), '", "',
                          Rtxt("Predicted"), '"))', sep="")
@@ -1231,8 +1232,9 @@ executeEvaluateConfusion <- function(respcmd, testset, testname)
     percentage.cmd <- paste('pcme <- function(actual, cl)',
                             '{',
                             '  x <- table(actual, cl)',
-                            '  nc <- nrow(x)',
-                            '  tbl <- cbind(x/length(actual),',
+                            '  nc <- nrow(x) # Number of classes.',
+                            '  nv <- length(actual) - sum(is.na(actual) | is.na(cl)) # Number of values.',
+                            '  tbl <- cbind(x/nv,',
                             '               Error=sapply(1:nc,',
                             '                 function(r) round(sum(x[r,-r])/sum(x[r,]), 2)))',
                             '  names(attr(tbl, "dimnames")) <- c("Actual", "Predicted")',

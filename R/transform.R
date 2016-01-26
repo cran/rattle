@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-07-12 15:58:16 gjw>
+# Time-stamp: <2016-01-07 08:12:50 gjw>
 #
 # TRANSFORM TAB
 #
@@ -173,9 +173,10 @@ modalvalue <- function(x, na.rm=FALSE)
 
 rescale.by.group <- function(x, by=NULL, type="irank", itop=100)
 {
-  # 110529 TODO Check that by is a factor.
+  # 110529 TODO Check that by is a factor. 160107 Make sure it is a
+  # factor... Any consequences?
 
-  bylevels <- levels(by)
+  bylevels <- levels(as.factor(by))
 
   # Initialise the result.
 
