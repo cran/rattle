@@ -1,6 +1,6 @@
 #' Append a command to the Log tab dealing with namespaces
 #'
-#' Time-stamp: <2015-11-15 10:03:29 gjw>
+#' Time-stamp: <2016-09-19 11:30:05 Graham Williams>
 #'
 #' @param comment      A message to include as a comment.
 #' @param ...          The command(s) to report in the log.
@@ -15,9 +15,18 @@
 #' 
 appendLibLog <- function(comment, ..., include.libs=TRUE)
 {
-  # 150828 This started as the old appendLog but with a simplified
-  # parameter list and added in the extraction of namespaces and then
-  # rewrite the commands to not include the namespace.
+  ## 160722 PLEASE NOTE
+  #
+  # I decided to revert to using appendLog() and exposing the ::
+  # operator since I do so in my book and users can get familiar with
+  # it and choose, but it is also more succint.
+  #
+  appendLog(comment, ...)
+  return()
+  ## 150828
+  # This started as the old appendLog but with a simplified parameter
+  # list and added in the extraction of namespaces and then rewrite
+  # the commands to not include the namespace.
 
   # Only continue if this is called from inside Rattle.
   

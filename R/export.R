@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-05-17 08:56:28 gjw>
+# Time-stamp: <2016-03-13 06:22:38 Graham Williams>
 #
 # Implement functionality associated with the Export button and Menu.
 #
@@ -245,8 +245,21 @@ getExportSaveName <- function(mtype)
   }
 
   if (! crv$export.to.c.available)
-    getWidgetOrObject(dialogGUI, "export_filechooser_options_table")$hide()
-
+  {
+    # 160305 export_filechooser_options_table is no longer defined in
+    # rattle.ui. Conditionally remove it here until figure out if it
+    # can be removed completely or we need to add the to_c
+    # functionality in. This looks like a deeper problem though. The
+    # filechooserdialog is incomplete. So I had to recover it from the
+    # rattle.glade file, insert into rattle.ui, change widget to
+    # object, remove the embedded response_id in button4 and add a new
+    # repsonse action widget for button4 instead. Seems to have
+    # migrated just fine.
+    
+    dialog <- getWidgetOrObject(dialogGUI, "export_filechooser_options_table")
+    if (! is.null(dialog)) dialog$hide()
+  }
+  
   dialog <- getWidgetOrObject(dialogGUI, "export_filechooserdialog")
 
   if (crv$export.to.c.available) dialog$setTitle(Rtxt("Export C or PMML"))

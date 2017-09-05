@@ -12,7 +12,7 @@
 
 }
 \usage{
-rattle(csvname=NULL, dataset=NULL, useGtkBuilder=NULL)
+rattle(csvname=NULL, dataset=NULL, useGtkBuilder=TRUE)
 }
 \arguments{
   

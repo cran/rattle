@@ -1,45 +1,32 @@
 \name{weather}
 \docType{data}
 \alias{weather}
-\alias{weatherAUS}
-\alias{locationsAUS}
-\title{Sample and full dataset for illustrating Rattle functionality.}
+\title{Sample dataset of daily weather observations from Canberra
+  airport in Australia.}
 \description{
 
-  Weather observations from a number of locations around Australia,
-  obtained from the Australian Commonwealth Bureau of Meteorology and
-  processed to create a sample dataset for illustrating data mining
-  using R and Rattle.
+  One year of daily weather observations collected from the Canberra
+  airport in Australia was obtained from the Australian Commonwealth
+  Bureau of Meteorology and processed to create this sample dataset for
+  illustrating data mining using R and Rattle.
   
   The data has been processed to provide a target variable
   \code{RainTomorrow} (whether there is rain on the following day -
-  No/Yes) and a risk variable \code{RISK_MM} (how much rain). Various
-  transformations are performed on the data.
-  
-  The \code{weather} dataset is a fixed subset of the full
-  \code{weatherAUS} dataset, for the purpose of repeatable
-  demonstration. It includes only one year of data for a single weather
-  station.
+  No/Yes) and a risk variable \code{RISK_MM} (how much rain recorded in
+  millimetres). Various transformations were performed on the source
+  data. The dataset is quite small and is useful only for repeatable
+  demonstration of various data science operations. 
 
-  The \code{weatherAUS} dataset is ever changing, with each release of
-  Rattle. It is updated from the Bureau of Meteorology web site
-  regularly.
-
-  The \code{locationsAUS} dataset records the location of each weather
-  station.
-  
   The source dataset is Copyright by the Australian Commonwealth Bureau
-  of Meteorology and used with permission.
+  of Meteorology and is provided as part of the rattle package with
+  permission.
 
 }
-\usage{weather
-weatherAUS}
+\usage{weather}
 \format{
 
   The \code{weather} dataset is a data frame containing one year of
-  daily observations from a single weather station (Canberra). The
-  \code{weatherAUS} dataset is a data frame containing over 35,000 daily
-  observations from over 45 Australian weather stations.
+  daily observations from a single weather station (Canberra).
 
   \describe{
 
@@ -48,9 +35,9 @@ weatherAUS}
     \item{\code{Location}}{The common name of the location of the
     weather station.}
 
-    \item{\code{MinTemp}}{The minimum temperature in degrees celcius. }
+    \item{\code{MinTemp}}{The minimum temperature in degrees celsius. }
 
-    \item{\code{MaxTemp}}{The maximum temperature in degrees celcius. }
+    \item{\code{MaxTemp}}{The maximum temperature in degrees celsius. }
 
     \item{\code{Rainfall}}{The amount of rainfall recorded for the day in mm. }
     
@@ -70,10 +57,10 @@ weatherAUS}
     \item{\code{RelHumid9am}}{ Relative humidity (percent) at 9am. }
 
     \item{\code{Cloud9am}}{ Fraction of sky obscured by cloud at
-      9am. This is measrured in "oktas", which are a unit of eighths. It
+      9am. This is measured in "oktas", which are a unit of eigths. It
       records how many eigths of the sky are obscured by cloud. A 0
       measure indicates completely clear sky whilst an 8 indicates that
-      it is copmletely overcast.  }
+      it is completely overcast.  }
 
     \item{\code{WindSpeed9am}}{
       Wind speed (km/hr) averaged over 10 minutes prior to 9am.
@@ -150,8 +137,7 @@ weatherAUS}
 }
 \source{
 
-  Observations were drawn from numerous weather stations.  The daily
-  observations are available from
+  The daily observations are available from
   \url{http://www.bom.gov.au/climate/data}.  Copyright Commonwealth of
   Australia 2010, Bureau of Meteorology.
 
@@ -172,7 +158,7 @@ weatherAUS}
 
 \seealso{
 
-  \code{\link{audit}}.
+  \code{rattle.data::weatherAUS}, \code{\link{audit}}.
 
 }
 

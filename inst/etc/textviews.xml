@@ -144,11 +144,20 @@ If the target has just two possible outcomes it is transformed using a
 logistic or probit function.  A probit regression gives similar
 results to the logistic regression, but often with smaller
 coefficients.</textview>
-  <textview widget="ada_textview">Adaptive Boosting Model
+  <textview widget="ada_textview">Boosting Model
 
 The basic idea of boosting is to associate a weight with each observation
 in the dataset. A series of models are built and the weights are
-increased (boosted) if a model incorrectly classifies the observation.</textview>
+increased (boosted) if a model incorrectly classifies the observation.
+The resulting series of decision trees form an ensemble model.
+
+The Adaptive option deploys the traditional adaptive boosting
+algorithm as implemented in the adaboost package.
+
+The Extreme option deploys the extreme gradient boosting algorithm to
+build a gradient boosting model which is an optimal approach to
+boosting. The implementation of the xgboost package is
+used.</textview>
   <textview widget="rf_textview">Random Forest Model
 
 A random forest is an ensemble (i.e., a collection) of un-pruned

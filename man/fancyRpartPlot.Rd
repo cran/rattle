@@ -9,7 +9,7 @@
   
 }
 \usage{
-fancyRpartPlot(model, main="", sub, palettes, ...)
+fancyRpartPlot(model, main="", sub, caption, palettes, type=2, ...)
 }
 \arguments{
   
@@ -20,10 +20,14 @@ fancyRpartPlot(model, main="", sub, palettes, ...)
   \item{sub}{sub title for the plot. The default is a Rattle string with
   date, time and username.}
 
-\item{palettes}{a list of sequential palettes names. As supported by
+  \item{caption}{caption for bottom right of plot.}
+
+  \item{palettes}{a list of sequential palettes names. As supported by
   RColorBrewer::brewer.pal the available names are Blues BuGn BuPu GnBu
   Greens Greys Oranges OrRd PuBu PuBuGn PuRd Purples RdPu Reds YlGn
   YlGnBu YlOrBr YlOrRd.}
+
+  \item{type}{the type of plot to generate (2).}
 
   \item{...}{additional arguments passed on to prp.}
 
@@ -34,7 +38,7 @@ fancyRpartPlot(model, main="", sub, palettes, ...)
 \examples{
 ## Use rpart to build a decision tree.
 
-library(rpart)
+\dontrun{library(rpart)
 
 ## Set up the data for modelling.
 
@@ -61,6 +65,6 @@ fancyRpartPlot(model)
 
 ## Choose different colours
 
-fancyRpartPlot(model, palettes=c("Greys", "Oranges"))
+fancyRpartPlot(model, palettes=c("Greys", "Oranges"))}
 }
 \keyword{hplot}

@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-11-15 09:22:40 gjw>
+# Time-stamp: <2017-07-04 07:33:34 Graham Williams>
 #
 # Implement LOG functionality.
 #
@@ -37,59 +37,61 @@ initiateLog <- function()
     theWidget("log_textview")$modifyFont(RGtk2::pangoFontDescriptionFromString(crv$textview.font))
   
   if (! is.null(crv$log.intro))
-    appendTextview("log_textview", crv$log.intro, tvsep=FALSE)
+    appendTextview("log_textview",
+                   paste0("#============================================================\n\n",
+                          crv$log.intro),
+                   tvsep=FALSE)
 
   startLog(paste(sprintf(Rtxt("%s version %s user '%s'"),
                          crv$appname, crv$version, Sys.info()["user"]),
 #LOG_LICENSE
                  #sprintf("# Started %s by %s\n\n", Sys.time(), Sys.info()["user"]),
-                 "\n\n",
-                 Rtxt("# This log file captures all Rattle interactions as R commands.",
-                      "\n\nExport this log to a file using the Export",
-                      "button or the Tools",
-                      "\n# menu to save a log of all your activity. This facilitates",
-                      "repeatability. For example, exporting",
-                      "\n# to a file called 'myrf01.R' will allow you to",
-                      "type in the R Console",
-                      "\n# the command source('myrf01.R') and so repeat all",
-                      "actions automatically.",
-                      "\n# Generally, you will want to edit the file to",
-                      "suit your needs. You can also directly",
-                      "\n# edit this current log in place to record",
-                      "additional information before exporting.",
-                      "\n",
-                      "\n# Saving and loading projects also retains this log."),
-                 "\n\n",
-                 '# We begin by loading the required libraries.\n\n',
-                 crv$library.command,
-                 '   # To access the weather dataset and utility commands.',
-                 '\nlibrary(magrittr) # For the %>% and %<>% operators.',
-                 "\n\n",
-                 Rtxt("# This log generally records the process of building a model.",
-                      "However, with very",
-                      "\n# little effort the log can be used to score a new dataset.",
-                      "The logical variable",
-                      "\n# 'building' is used to toggle between generating",
-                      "transformations, as when building",
-                      "\n# a model, and simply using the transformations,",
-                      "as when scoring a dataset."),
-                 "\n\nbuilding <- TRUE",
-                 "\nscoring  <- ! building\n",
-                 # Removed to avoid loading librarys or suggesting such
-                 # Moving to using namespace :: in the script.
-                 #ifelse(packageIsAvailable("colorspace"),
-                 #       paste("\n",
-                 #             Rtxt("# The colorspace package is used to generate",
-                 #                  "the colours used in plots,",
-                 #                  "if available."),
-                 #             "\n\n",
-                 #             "library(colorspace)", sep=""), ""),
-                 "\n\n",
-                 Rtxt("# A pre-defined value is used to reset the random seed",
-                      "so that results are repeatable."),
-                 "\n\ncrv$seed <- ", crv$seed,
-                 sep=""))
-
+    "\n\n",
+    Rtxt("# This log captures Rattle interactions as an R script.",
+         "\n\n# For repeatability export this log of all activity to a",
+         "\n# file using the Export button or the Tools menu. This",
+         "\n# script can serve as a starting point for developing your",
+         "\n# own scripts. Exporting to a file called 'model.R' will",
+         "\n# allow you to type into a new R Console the command",
+         "\n#\"source('model.R')\" and so repeat all actions. Generally,",
+         "\n# you will want to edit the file to suit your own needs.",
+         "\n# You can also edit this log in place to record additional",
+         "\n# information before exporting the script.",
+         "\n",
+         "\n# Note that saving/loading projects retains this log."),
+    "\n",
+    '\n# We begin most scripts by loading the required packages.',
+    '\n# Here are some initial packages to load and others will be',
+    '\n# identified as we proceed through the script. When writing',
+    '\n# our own scripts we often collect together the library',
+    '\n# commands at the beginning of the script here.\n\n',
+    crv$library.command,
+    '   # Access weather dataset and utilities.',
+    '\nlibrary(magrittr) # For the %>% and %<>% pipeline operators.',
+    "\n\n",
+    Rtxt("# This log generally records the process of building a model.",
+         "\n# However, with very little effort the log can also be used",
+         "\n# to score a new dataset. The logical variable 'building'",
+         "\n# is used to toggle between generating transformations,",
+         "\n# when building a model and using the transformations,",
+         "\n# when scoring a dataset."),
+    "\n\nbuilding <- TRUE",
+    "\nscoring  <- ! building",
+    # Removed to avoid loading librarys or suggesting such
+    # Moving to using namespace :: in the script.
+    #ifelse(packageIsAvailable("colorspace"),
+    #       paste("\n",
+    #             Rtxt("# The colorspace package is used to generate",
+    #                  "the colours used in plots,",
+    #                  "if available."),
+    #             "\n\n",
+    #             "library(colorspace)", sep=""), ""),
+    "\n\n",
+    Rtxt("# A pre-defined value is used to reset the random seed",
+         "\n# so that results are repeatable."),
+    "\n\ncrv$seed <- ", crv$seed,
+    sep=""))
+  
 }
 
 startLog <- function(msg=NULL)

@@ -1,10 +1,10 @@
-# Gnome R Data Miner: GNOME interface to R for Data Mining
+# R Data Scientist: GNOME interface to R for Data Science
 #
-# Time-stamp: <2015-11-15 06:59:39 gjw>
+# Time-stamp: <2017-06-25 15:12:40 Graham Williams>
 #
 # 080921 TEXT MINING DATA
 #
-# Copyright (c) 2009 Togaware Pty Ltd
+# Copyright (c) 2009-2017 Togaware Pty Ltd
 #
 # This file is part of Rattle.
 #
@@ -207,7 +207,7 @@ executeDataCorpus <- function()
   if (file.exists(target.fname))
   {
     read.cmd <- sprintf('target <- read.csv("%s", encoding="%s")',
-                        target.fname, crv$csv.encoding)
+                        target.fname, crv$csv_encoding)
     appendLog("Read in the targets.", read.cmd)
     eval(parse(text=read.cmd))
 

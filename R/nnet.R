@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-07-13 20:25:20 gjw>
+# Time-stamp: <2017-08-18 12:15:18 Graham Williams>
 #
 # NNET OPTION 061230
 #
@@ -129,7 +129,26 @@ executeModelNNet <- function()
   # "yes" for the weather dataset! Not a good foundation for setting
   # the seed, but fix it later.
 
-  model.cmd <- paste(sprintf("set.seed(%d)\n", 199), # crv$seed),
+  if(not.null(crs$xdf))
+  {
+    # Construct the formula for the model build.
+
+    crs$target %>%
+      paste("~", paste(crs$input, collapse=" + ")) %>%
+      strwrap(crv$log_width, 0, 4) %>%
+      paste(collapse="\n") ->
+    frml
+
+    model.cmd <- sprintf(paste0('crs$nnet <- rxNeuralNet(\n\n  ', frml, ",\n\n",
+                                '  data           = %s,\n',
+                                '  numHiddenNodes = %i',
+                                ')'),
+                         "crs$xdf.split[[1]]", size)
+    appendLog("Build the Microsoft ML Neural Net model.", model.cmd)
+  }
+  else
+  {
+    model.cmd <- paste(sprintf("set.seed(%d)\n", 199), # crv$seed),
                      "crs$nnet <- ",
                      ifelse(numericTarget() || binomialTarget(),
                             "nnet", "multinom"),
@@ -158,7 +177,8 @@ executeModelNNet <- function()
                      ", trace=FALSE, maxit=100",
                      ")", sep="")
 
-  appendLog("Build the NNet model.", model.cmd)
+    appendLog("Build the NNet model.", model.cmd)
+  }
   result <- try(eval(parse(text=model.cmd)), silent=TRUE)
   time.taken <- Sys.time() - start.time
   if (inherits(result, "try-error"))

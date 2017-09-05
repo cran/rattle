@@ -13,14 +13,30 @@
   
 }
 \usage{
-riskchart(pr, ac, ri=NULL,
-          title=NULL, title.size=10,
-    show.legend = TRUE,
-    optimal = NULL, optimal.label = "", chosen = NULL, chosen.label = "",
-    include.baseline = TRUE, dev = "", filename = "", show.knots = NULL,
-    show.lift=TRUE, show.precision=TRUE, show.maximal = TRUE,
-    risk.name = "Risk", recall.name = "Recall",
-    precision.name = "Precision", thresholds=NULL, legend.horiz=TRUE)
+riskchart(pr,
+          ac,
+          ri               = NULL,
+          title            = "Risk Chart",
+          title.size       = 10,
+          subtitle         = NULL,
+          caption          = TRUE,
+          show.legend      = TRUE,
+          optimal          = NULL,
+          optimal.label    = "",
+          chosen           = NULL,
+          chosen.label     = "",
+          include.baseline = TRUE,
+          dev              = "",
+          filename         = "",
+          show.knots       = NULL,
+          show.lift        = TRUE,
+          show.precision   = TRUE,
+          show.maximal     = TRUE,
+          risk.name        = "Risk",
+          recall.name      = "Recall",
+          precision.name   = "Precision",
+          thresholds       = NULL,
+          legend.horiz     = TRUE)
 }
 \arguments{
   
@@ -33,6 +49,10 @@ riskchart(pr, ac, ri=NULL,
   \item{title}{the main title to place at the top of the plot.}
   
   \item{title.size}{font size for the main title.}
+
+  \item{subtitle}{subtitle under the main title.}
+
+  \item{caption}{caption for the bottom right of plot.}
   
   \item{show.legend}{whether to display the legend in the plot.}
   

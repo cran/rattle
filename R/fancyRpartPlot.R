@@ -1,6 +1,6 @@
 # Rattle: A GUI for Data Mining in R
 #
-# Time-stamp: <2015-07-26 11:46:14 gjw>
+# Time-stamp: <2017-01-30 14:05:32 Graham Williams>
 #
 # Copyright (c) 2009-2014 Togaware Pty Ltd
 #
@@ -34,13 +34,22 @@
 fancyRpartPlot <- function(model,
                            main="",
                            sub,
+                           caption,
                            palettes,
+                           type=2,
                            ...)
 {
-  if (missing(sub))
+  # Migrate to replacing sub wiht caption in line wiht ggplot.
+  
+  if (missing(sub) & missing(caption))
+  {
     sub <- paste("Rattle",
                  format(Sys.time(), "%Y-%b-%d %H:%M:%S"), 
                  Sys.info()["user"])
+  } else
+  {
+    if (missing(sub)) sub <- caption
+  } 
   
   num.classes <- length(attr(model, "ylevels"))
 
@@ -125,7 +134,7 @@ fancyRpartPlot <- function(model,
   
   # Generate the plot and title.
  
-  rpart.plot::prp(model, type=2, extra=extra,
+  rpart.plot::prp(model, type=type, extra=extra,
                   box.col=pals[col.index],
                   nn=TRUE,
                   varlen=0, faclen=0,

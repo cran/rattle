@@ -149,8 +149,15 @@ executeClusterKMeans <- function(include)
   
   # KMEANS: Log the R command and execute.
 
+
   if (! useIterate)
   {
+    if(not.null(crs$xdf))
+    {
+      frml <- paste( "~", paste(crs$input, collapse=" + "))
+      kmeans.cmd <- sprintf('crs$kmeans <- rxKmeans(formula = %s, data = %s, numClusters = %i, numStarts = %i, outFile = %s, overwrite = TRUE )', frml, "crs$xdf.split[[1]]", centers, nruns, "'clusters.xdf'")
+    }
+    else {
     if (nruns > 1)
     {
       lib.cmd <- "library(fpc, quietly=TRUE)"
@@ -165,7 +172,7 @@ executeClusterKMeans <- function(include)
     {
       kmeans.cmd <- sprintf('crs$kmeans <- kmeans(%s, %s)', ds, centers)
     }
-    
+    }
     appendLog(sprintf(Rtxt("Generate a kmeans cluster of size %s%s%s."), nclust,
                       ifelse(nruns>1, Rtxt(" choosing the best from "), ""),
                       ifelse(nruns>1, nruns, "")),
@@ -385,11 +392,10 @@ genPredictKmeans <- function(dataset)
   
   # 081227 Generate a command to obtain the prediction results when
   # applying the model to new data.
-  print(not.null(crs$xdf))
-  print(crs$xdf)
+  
   if(not.null(crs$xdf)){
     class(crs$kmeans) <- c("rxKmeans","kmeans")
-    return(sprintf("crs$pr <- predict(crs$kmeans, %s)", rxDataStep(inData = eval(parse(text = dataset)))))
+    return(sprintf("crs$pr <- predict(crs$kmeans, rxDataStep(inData = %s))", dataset))
   }
   else 
     return(sprintf("crs$pr <- predict(crs$kmeans, %s)", dataset))

@@ -296,6 +296,12 @@
 \alias{plotDigitFreq}
 \alias{psfchart}
 \alias{print.summary.nnet}
+\alias{importance}
+\alias{on_model_boost_ada_radiobutton_toggled}
+\alias{on_model_boost_xgb_radiobutton_toggled}
+\alias{rocChart}
+\alias{sample_n.RxXdfData}
+\alias{xgboost}
 \title{Interal Rattle user interface callbacks.}
 \description{These are exported from the package so that the GUI can
   access the callbacks. They should otherwise be ignored.}

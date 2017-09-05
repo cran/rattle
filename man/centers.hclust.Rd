@@ -9,13 +9,13 @@
   
 }
 \usage{
-centers.hclust(x, h, nclust=10, use.median=FALSE)
+centers.hclust(x, object, nclust=10, use.median=FALSE)
 }
 \arguments{
   
   \item{x}{The data used to build the cluster.}
 
-  \item{h}{A hclust object.}
+  \item{object}{A hclust object.}
 
   \item{nclust}{Number of clusters.}
 

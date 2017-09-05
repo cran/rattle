@@ -1,10 +1,10 @@
-# Gnome R Data Miner: GNOME interface to R for Data Mining
+# Gnome R Data Science: GNOME interface to R for Data Science
 #
-# Time-stamp: <2015-09-30 06:27:32 gjw>
+# Time-stamp: <2017-07-25 16:09:22 Graham Williams>
 #
 # Implement hclust functionality.
 #
-# Copyright (c) 2009-2013 Togaware Pty Ltd
+# Copyright (c) 2009-2017 Togaware Pty Ltd
 #
 # This files is part of Rattle.
 #
@@ -64,7 +64,7 @@ on_hclust_data_plot_button_clicked <- function(button)
   # Some background information.  Assume we have already built the
   # cluster, and so we don't need to check so many conditions.
 
-  sampling  <- not.null(crs$sample)
+  sampling  <- not.null(crs$train)
   num.clusters <- theWidget("hclust_clusters_spinbutton")$getValue()
   nums <- seq(1,ncol(crs$dataset))[as.logical(sapply(crs$dataset, is.numeric))]
   if (length(nums) > 0)
@@ -97,7 +97,7 @@ on_hclust_data_plot_button_clicked <- function(button)
   plot.cmd <- paste(sprintf(paste("plot(crs$dataset[%s, %s], ",
                                   "col=cutree(crs$hclust, %d))\n",
                                   sep=""),
-                            ifelse (sampling, "crs$sample", ""), include,
+                            ifelse (sampling, "crs$train", ""), include,
                             num.clusters),
                     genPlotTitleCmd(""))
   appendLog(Rtxt("Generate a data plot."), plot.cmd)
@@ -123,7 +123,7 @@ on_hclust_discriminant_plot_button_clicked <- function(button)
   # Some background information.  Assume we have already built the
   # cluster, and so we don't need to check so many conditions.
 
-  sampling  <- not.null(crs$sample)
+  sampling  <- not.null(crs$train)
   num.clusters <- theWidget("hclust_clusters_spinbutton")$getValue()
   nums <- seq(1,ncol(crs$dataset))[as.logical(sapply(crs$dataset, is.numeric))]
   if (length(nums) > 0)
@@ -157,7 +157,7 @@ on_hclust_discriminant_plot_button_clicked <- function(button)
                                  "color=TRUE, shade=TRUE, ",
                                  "main='Discriminant Coordinates ",
                                  crs$dataname, "')\n", sep=""),
-                           ifelse(sampling, "crs$sample", ""), include, num.clusters))
+                           ifelse(sampling, "crs$train", ""), include, num.clusters))
   appendLog(Rtxt("Generate a discriminant coordinates plot."), plot.cmd)
   newPlot()
   eval(parse(text=plot.cmd))
@@ -180,7 +180,7 @@ executeClusterHClust <- function(include)
   # TODO : If data is large put up a question about wanting to
   # continue?
   
-  sampling  <- not.null(crs$sample)
+  sampling  <- not.null(crs$train)
 
   startLog(Rtxt("Hierarchical Cluster"))
 
@@ -188,12 +188,12 @@ executeClusterHClust <- function(include)
   # hcluster takes about 0.33 seconds, compared to hclust taking 11
   # seconds!
 
-  lib.cmd <- "library(amap, quietly=TRUE)"
+  #lib.cmd <- "library(amap, quietly=TRUE)"
   if (packageIsAvailable("amap", Rtxt("perform an efficient hierarchical clustering")))
   {
     amap.available <- TRUE
-    appendLog(packageProvides("amap", "hclusterpar"), lib.cmd)
-    eval(parse(text=lib.cmd))
+    #appendLog(packageProvides("amap", "hclusterpar"), lib.cmd)
+    #eval(parse(text=lib.cmd))
   }
   else
     amap.available <- FALSE
@@ -231,40 +231,53 @@ executeClusterHClust <- function(include)
                      "and parallel hcluster is not available.",
                      "Please set the number of processors to 1 to proceed",
                      "with using the single processor hclust instead.",
-                     "Be aware that the amap version is over 10 times faster.",
-                     "You may ant to install the 'amap' package."))
+                     "Be aware that the 'amap' version is over 10 times faster.",
+                     "You may want to install the 'amap' package."))
     return(FALSE)
   }
   
   # Determine which hclust to use for clustering.
 
   if (amap.available)
-
+  {
     # Use the more efficient hcluster for clustering.
   
-    hclust.cmd <- paste("crs$hclust <- ",
-                        sprintf(paste('hclusterpar(na.omit(crs$dataset[%s, %s]),',
-                                      '\n    method="%s", link="%s",',
-                                      'nbproc=%d)'),
-                                ifelse(sampling, "crs$sample", ""),
-                                include, dist, link, nbproc),
-                        sep="")
-  else
+    hclust.cmd <- paste0('crs$dataset[',
+                         ifelse(sampling, 'crs$train', ''),
+                         ', ',
+                         include,
+                         '] %>%\n',
 
+                         # 20170725 Why na.omit()? This silently
+                         # removes rows from the dataset being
+                         # clustered and then returns fewer labels
+                         # than expected. Is that a concern? The
+                         # centers calculation then fails if there are
+                         # fewer rows in cutree().
+                         
+                         # '  na.omit() %>%\n',
+                         
+                         '  amap::hclusterpar(method="', dist,
+                         '", link="', link,
+                         '", nbproc=', nbproc, ') ->\n',
+                         'crs$hclust')
+  }
+  else
+  {
     # Use the standard hclust for clustering.
     
     hclust.cmd <- paste("crs$hclust <- ",
                         sprintf(paste('hclust(dist(crs$dataset[%s, %s],',
                                       'method="%s"),',
                                       'method="%s")'),
-                                ifelse(sampling, "crs$sample", ""),
+                                ifelse(sampling, "crs$train", ""),
                                 include, dist, link),
                         sep="")
-
+  }
+  
   # Log the R command.
 
-  appendLog(Rtxt("Generate a hierarchical cluster of the data."),
-          hclust.cmd)
+  appendLog(Rtxt("Generate a hierarchical cluster from the numeric data."), hclust.cmd)
   
   # Perform the commands.
 
@@ -299,18 +312,24 @@ executeClusterHClust <- function(include)
   return(TRUE)
 }
 
-centers.hclust <- function(x, h, nclust=10, use.median=FALSE)
+centers.hclust <- function(x, object, nclust=10, use.median=FALSE)
 {
-  if (!inherits(h, "hclust")) stop(Rtxt("Not a legitimate hclust object"))
+  # TODO 20170725 Does this actually work? Clearly needs work.
+  
+  if (!inherits(object, "hclust")) { stop(Rtxt("Not a legitimate hclust object")) }
     
-  if (class(x) != "matrix") x <- as.matrix(x)
+  if (class(x) != "matrix") { x <- as.matrix(x) }
+  
   if (use.median)
-    centres <- round(tapply(x, list(rep(cutree(h, nclust), ncol(x)),
-                                    col(x)), median))
+  {
+    centres <- round(tapply(x, list(rep(cutree(object, nclust), ncol(x)), col(x)), median))
+  }
   else
-    centres <- tapply(x, list(rep(cutree(h, nclust), ncol(x)),
-                              col(x)), mean)
+  {
+    centres <- tapply(x, list(rep(cutree(object, nclust), ncol(x)), col(x)), mean)
+  }
   dimnames(centres) <- list(NULL, dimnames(x)[[2]])
+
   return(centres)
 }
 
@@ -444,15 +463,15 @@ displayHClustStats <- function()
     return()
   }
 
-  # The fpc package provides is available for cluster.stats function.
+  # The fpc package is available for cluster.stats().
   
   if (!packageIsAvailable("fpc", Rtxt("calculate cluster statistics"))) return()
   lib.cmd <- "library(fpc, quietly=TRUE)"
   appendLog(packageProvides("fpc", "cluster.stats"), lib.cmd)
   eval(parse(text=lib.cmd))
 
-  # 090323 Don't reset the textview since we want to reatin the build
-  # information.
+  # 20090323 Don't reset the textview since we want to retain the
+  # build information.
 
   # 090323 REMOVE resetTextview(TV)
 
@@ -460,7 +479,7 @@ displayHClustStats <- function()
   # cluster, and so we don't need to check so many conditions.
 
   nclust <- theWidget("hclust_clusters_spinbutton")$getValue()
-  sampling  <- not.null(crs$sample)
+  sampling  <- not.null(crs$train)
 #  nums <- seq(1,ncol(crs$dataset))[as.logical(sapply(crs$dataset, is.numeric))]
 #  if (length(nums) > 0)
 #  {
@@ -481,16 +500,20 @@ displayHClustStats <- function()
   # Cluster centers.
 
   centers.cmd <- sprintf("centers.hclust(na.omit(crs$dataset[%s, %s]), crs$hclust, %d)",
-                       ifelse(sampling, "crs$sample", ""), include, nclust)
+                       ifelse(sampling, "crs$train", ""), include, nclust)
   appendLog(Rtxt("List the suggested cluster centers for each cluster"), centers.cmd)
   appendTextview(TV, Rtxt("Cluster means:"), "\n\n",
                  collectOutput(centers.cmd, use.print=TRUE))
   
-  # STATS: Log the R command and execute.
+  # STATS: Log the R command and execute. 20170430 add
+  # silhouette=FALSE since it is failing today with the error:
+  #
+  # Error in silhouette.default(clustering, dmatrix = dmat) : 
+  # object 'sildist' not found
 
   stats.cmd <- sprintf(paste("cluster.stats(dist(na.omit(crs$dataset[%s, %s])),",
-                             "cutree(crs$hclust, %d))\n"),
-                       ifelse(sampling, "crs$sample", ""), include,
+                             "cutree(crs$hclust, %d), silhouette=FALSE)\n"),
+                       ifelse(sampling, "crs$train", ""), include,
                        nclust)
   appendLog(Rtxt("Generate cluster statistics using the fpc package."), stats.cmd)
   appendTextview(TV, Rtxt("General cluster statistics:"), "\n\n",
@@ -522,7 +545,7 @@ displayHClustStats <- function()
   
 ##   ## Some background information.
 
-##   sampling  <- not.null(crs$sample)
+##   sampling  <- not.null(crs$train)
 ##   nums <- seq(1,ncol(crs$dataset))[as.logical(sapply(crs$dataset, is.numeric))]
 ##   if (length(nums) > 0)
 ##   {
@@ -532,7 +555,7 @@ displayHClustStats <- function()
 
 ##   plot.cmd <- paste("d <- dist(as.matrix(crs$dataset",
 ##                     sprintf("[%s, %s]",
-##                             ifelse(sampling, "crs$sample", ""),
+##                             ifelse(sampling, "crs$train", ""),
 ##                             include),
 ##                     "))\n",
 ##                     "l <- pam(d, 10, cluster.only = TRUE)\n",
@@ -575,7 +598,7 @@ exportHClustTab <- function()
 
   # Get some required information
 
-  sampling  <- not.null(crs$sample)
+  sampling  <- not.null(crs$train)
   nclust <- theWidget("hclust_clusters_spinbutton")$getValue()
   include <- "crs$numeric" # 20110102 getNumericVariables()
   
@@ -588,9 +611,9 @@ exportHClustTab <- function()
   # Construct the command to produce PMML.
 
   pmml.cmd <- sprintf(paste("pmml(crs$hclust, centers=centers.hclust(",
-                           "na.omit(crs$dataset[%s, %s]), crs$hclust, %d)%s)",
+                            "na.omit(crs$dataset[%s, %s]), crs$hclust, %d)%s)",
                             sep=""),
-                      ifelse(sampling, "crs$sample", ""), include, nclust,
+                      ifelse(sampling, "crs$train", ""), include, nclust,
                       ifelse(length(crs$transforms) > 0,
                              ", transforms=crs$transforms", ""))
 
@@ -627,19 +650,40 @@ exportHClustTab <- function()
 ########################################################################
 # SCORE
 
-predict.hclust <- function(object, data, x, nclust=10, ...)
+predict.hclust <- function(object, nclust=10, newdata, x, ...)
 {
-  # 090126 Initial work on a predict.hclust function, to allow using a
-  # hclust model to allocate new DATA to pre-existing clusters that
+  # TODO 20170725 Need to actually get this function working!!! This
+  # must take a newdata (the new dataset to be scored) and x as the
+  # dataset the model was built on. Don't default x to newdata as it
+  # is then misleading that x is required.
+  #
+  # 20170429 Shouldn't this use cutree? As Hamed Mamani noted the
+  # resulting distribution of observations across the clusters is
+  # different between what is reported by Stats button in the Cluster
+  # tab and the Score file produced from the Evaluate
+  # tab. Inconsistency is not good so use cutree() by default and if
+  # the two datasets supplied then use predict.kmeans()
+  #
+  # 20090126 Initial work on a predict.hclust function, to allow using
+  # a hclust model to allocate new DATA to pre-existing clusters that
   # are built from another dataset X. This uses the common model
   # interface function, predict. This makes it easy to use the Rattle
-  # modelling code on kmeans. We use a kmeans encoding to generate the
-  # clusters. This is only an approximation. Gets pretty close for
-  # ward link and euclidean distance.
+  # modelling code for hclust. We obtain the cluster centres to
+  # identify clusters and add that as the hclust object's centers
+  # attribute and then calculates distance and identify cluster
+  # numbers using predict.kmeans(). This is only an
+  # approximation. Gets pretty close for ward link and euclidean
+  # distance.
 
+  # Add centers to the model object and then use the kmeans version of
+  # predict to calculate the nearest mean for each center/object.
+  
   object$centers <- centers.hclust(x, object, nclust=nclust, use.median=FALSE)
+  
   rownames(object$centers) <- seq_len(nclust)
-  return(predict.kmeans(object, data))
+  pr <- predict.kmeans(object, newdata) %>% as.integer
+
+  return(pr)
 }
 
 genPredictHclust <- function(dataset)
@@ -648,11 +692,24 @@ genPredictHclust <- function(dataset)
   # applying the model to new data.
 
   nclust <- theWidget("hclust_clusters_spinbutton")$getValue()
-  sampling  <- not.null(crs$sample)
+  sampling  <- not.null(crs$train)
   include <- "crs$numeric" # 20110102 getNumericVariables()
 
-  return(sprintf("crs$pr <- predict(crs$hclust, %s, na.omit(crs$dataset[%s, %s]), %s)",
-                 dataset, ifelse(sampling, "crs$sample", ""), include, nclust))
+  # 20170429 Use cutree version (now the default) of predict.hclust()
+  # by default so that the resulting distribution of cluster sizes is
+  # the same as that reported in the Textview of the Cluster tab when
+  # Stats button is invoked.
+
+  # 20170725 HACK FOR NOW!!! The dataset should be numeric only.
+
+  dataset %<>% sub('input', 'numeric', .)
+  
+  pr.cmd <- sprintf("crs$pr <- predict(crs$hclust, nclust=%s, newdata=%s, x=%s)",
+                    nclust,
+                    dataset,
+                    sub("validate", "train", dataset)) # 20170725 THIS IS HACK FOR NOW!
+  
+  return(pr.cmd)
 }
 
 genResponseHclust <- function(dataset)

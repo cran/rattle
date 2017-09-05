@@ -1,7 +1,7 @@
 \name{printRandomForests}
 \alias{printRandomForests}
 \title{
-  Print a representtaion of the Random Forest models to the console
+  Print a representation of the Random Forest models to the console
 }
 \description{
   

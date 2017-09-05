@@ -1,10 +1,10 @@
-# Gnome R Data Miner: GNOME interface to R for Data Mining
+# R Data Scientist: Gtk interface to R for Data Science
 #
-# Time-stamp: <2015-11-15 09:02:15 gjw>
+# Time-stamp: <2017-09-04 08:17:40 Graham Williams>
 #
 # DATA TAB
 #
-# Copyright (c) 2009 Togaware Pty Ltd
+# Copyright (c) 2009-2017 Togaware Pty Ltd
 #
 # This file is part of Rattle.
 #
@@ -108,18 +108,18 @@ urlModTime <- function(filename)
 
 dataNeedsLoading <- function()
 {
-  # 080520 Determine whether any of the data source aspects of the
+  # 20080520 Determine whether any of the data source aspects of the
   # Data tab have changed. This is probably limited to checking things
   # relevant to the currently selected data source radio button.
 
-  # 080712 If there is no dataname stored, then don't bother testing
+  # 20080712 If there is no dataname stored, then don't bother testing
   # any other conditions. The dataset should be loaded.  090315 Never
   # reload unless there is nothing loaded - that won't work when user
   # changes Filename we want to load.
 
   if (is.null(crs$dataname)) return(TRUE)
 
-  # 080712 Check what data source is active, and act
+  # 20080712 Check what data source is active, and act
   # appropriately. For those I have yet to work on, simply return TRUE
   # so that at least the data always gets loaded. But this does then
   # wipe out any changes the user makes to selections.
@@ -156,7 +156,7 @@ dataNeedsLoading <- function()
         return(TRUE)
     }
 
-    # 080606 TODO Test if file date has changed, and if so, return
+    # 20080606 TODO Test if file date has changed, and if so, return
     # TRUE.  Note that file.info does not handle URLs so have to
     # specially handle this. Note that under MS/Windows this returns
     # NA so we don't get a chance to notice updated files.
@@ -167,11 +167,29 @@ dataNeedsLoading <- function()
 
   }
 
+  # 20170414 Should we be using else here to slightly reduce
+  # testing. Leave as is for now in case there was a reason that else
+  # was not used.
+
   if (theWidget("data_rdataset_radiobutton")$getActive())
   {
     dataname <- theWidget("data_name_combobox")$getActiveText()
 
     if (is.null(dataname) || crs$dataname != dataname)
+      return(TRUE)
+
+    # 20170414 Add an extra check to determine if the R dataset itself
+    # has been changed as might happen if the user modifies the data
+    # frame themselves whilst it is also loaded into Rattle. We
+    # introduce a checksum to manage this using bitops::cksum(). This
+    # could take a few seconds so let's try it out and see if there is
+    # a significant new lag in loading a dataset!
+  
+    if (crs$cksum != (dataname %>%
+                        get() %>%
+                        paste(collapse="") %>%
+                        paste(paste(names(get(dataname)), collapse="")) %>%
+                        bitops::cksum()))
       return(TRUE)
   }
 
@@ -240,6 +258,17 @@ updateFilenameFilters <- function(button, fname)
       ff$setName(Rtxt("TXT Files"))
       ff$addPattern("*.txt")
       button$addFilter(ff)
+
+      # 20160816 XDF If RevoScaleR is available as a package then we
+      # can handle XDF datasets on disk.
+      
+      if (crv$mrs)
+      {
+        ff <- RGtk2::gtkFileFilterNew()
+        ff$setName(Rtxt("XDF Files"))
+        ff$addPattern("*.xdf")
+        button$addFilter(ff)
+      }
 
       ff <- RGtk2::gtkFileFilterNew()
       ff$setName(Rtxt("Excel Files"))
@@ -417,13 +446,23 @@ on_data_csv_radiobutton_toggled <- function(button)
 {
   if (button$getActive())
   {
-    dataTabShow("data_filename_label",
-                "data_filechooserbutton",
-                "data_separator_label",
-                "data_separator_entry",
-                "data_decimal_label",
-                "data_decimal_entry",
-                "data_header_checkbutton")
+    if (crv$mrs)
+      dataTabShow("data_filename_label",
+                  "data_filechooserbutton",
+                  "data_separator_label",
+                  "data_separator_entry",
+                  "data_decimal_label",
+                  "data_decimal_entry",
+                  "data_header_checkbutton",
+                  "data_xdf_checkbutton")
+    else
+      dataTabShow("data_filename_label",
+                  "data_filechooserbutton",
+                  "data_separator_label",
+                  "data_separator_entry",
+                  "data_decimal_label",
+                  "data_decimal_entry",
+                  "data_header_checkbutton")
     updateFilenameFilters("data_filechooserbutton", "CSV")
     if (not.null(crs$data.tab.csv.filename))
       theWidget("data_filechooserbutton")$setUri(crs$data.tab.csv.filename)
@@ -500,7 +539,7 @@ on_data_corpus_radiobutton_toggled <- function(button)
   }
 }
 
-# 080907 Trying to get an event that will auto update the combobox
+# 20080907 Trying to get an event that will auto update the combobox
 # without having to move to another radio button and then back again.
 
 on_data_name_combobox_button_press_event <- function(button)
@@ -625,7 +664,7 @@ on_data_target_survival_radiobutton_toggled <- function(button)
 executeDataTab <- function(csvname=NULL)
 {
   # Dispatch to the task indicated by the selected radio button within
-  # the Data tab. 090315 Previously I tested if there is was a change
+  # the Data tab. 20090315 Previously I tested if there was a change
   # to the data source (with dataNeedsLoading) but this continually
   # got complicated between different OS and different data sources,
   # etc. So now we never reload a dataset, unless no dataset is
@@ -633,8 +672,6 @@ executeDataTab <- function(csvname=NULL)
   # data type label is not sensitive (i.e., we have loaded a project),
   # simply update the variable roles without reloading the data.
 
-  
-  
 #  if (not.null(csvname))
 #  {
 #    if (! executeDataCSV(csvname)) return(FALSE)
@@ -769,9 +806,9 @@ executeDataTab <- function(csvname=NULL)
 #
 #  }
 
-  # TODO 080520 Change the name to updateSample.
+  # TODO 20080520 Change the name to updateSample.
 
-  ## 080603 NOT NEEDED AS DONE IN executeSelectTab
+  ## 20080603 NOT NEEDED AS DONE IN executeSelectTab
   ## executeSelectSample()
 
   # Execute the SELECT tab. Changes have bene made and we need to
@@ -782,7 +819,7 @@ executeDataTab <- function(csvname=NULL)
   if (theWidget("data_sample_checkbutton")$getActive() &&
       ! validateSampleEntry()) return(FALSE)
 
-  # TODO 080520 Change the name to updateRoles.
+  # TODO 20080520 Change the name to updateRoles.
 
   setGuiDefaultsSurvival() # 100505 Moved here from below
 
@@ -810,7 +847,10 @@ executeDataTab <- function(csvname=NULL)
 
 executeDataCSV <- function(filename=NULL)
 {
+  # Obtain the relevant user interface settings.
 
+  xdf_active <- theWidget("data_xdf_checkbutton")$getActive()
+  
   # Either a filename is supplied in the function call or a filename
   # is expected to be available in the data_filechooserbutton. This
   # could be either a CSV or TXT file. If no filename is supplied,
@@ -819,14 +859,14 @@ executeDataCSV <- function(filename=NULL)
 
   supplied <- filename
 
-  # Begin by collecting the relevant data from the interface. 080511
+  # Begin by collecting the relevant data from the interface. 20080511
   # The file chooser button has a getFilename to retrieve the
   # filename. The getUri also retrieves the file name, but as a
   # URL. So we use this, since R can handle the
   # "file:///home/kayon/audit.csv" just fine. Thus I have now allowed
   # the filechooser button to accept non-local files (i.e.,
   # URLs). Unfortunately I can't yet get the basename of the URL to be
-  # displayed in the button text. 080512 The URLdecode will replace
+  # displayed in the button text. 20080512 The URLdecode will replace
   # the %3F with "?" and %3D with "=", etc, as is required for using
   # this with the read.csv function.
 
@@ -836,7 +876,7 @@ executeDataCSV <- function(filename=NULL)
   # If no filename has been supplied give the user the option to use
   # the Rattle supplied sample dataset.
 
-  use.sample.dataset <- FALSE
+  use_sample_dataset <- FALSE
 
   if (not.null(supplied))
   {
@@ -867,25 +907,39 @@ executeDataCSV <- function(filename=NULL)
   }
   else if (is.null(filename))
   {
-    if (! questionDialog(sprintf(Rtxt("No CSV filename has been provided.",
+    # No filename was provided and so ask the user if they would like
+    # to load the sample dataset. If they choose not to load the
+    # sample dataset return immediately.
+
+    if (! questionDialog(sprintf(Rtxt("No filename has been provided.",
                                       "\n\nWe require a dataset to be loaded.",
                                       "\n\nWould you like to use the example",
                                       "%s dataset?"),
-                                 Rtxt(crv$sample.dataset))))
-
-
-      # If no filename is given and the user decides not to go with
-      # the sample dataset then return without doing anything.
-
+                                 if(crv$mrs && xdf_active)
+                                   Rtxt(crv$sample_xdf)
+                                 else
+                                   Rtxt(crv$sample_csv))))
+    {
       return(FALSE)
-
+    }
     else
     {
-      # 080515 Use the Rattle provided sample dataset.
+      # Use the sample dataset from the rattle package. For
+      # default CSV option we use the small weather.csv dataset and
+      # for the XDF option we use the same small weather.csv which is
+      # converted to XDF on execute.
 
-      use.sample.dataset <- TRUE
-      filename <- system.file("csv", paste(crv$sample.dataset, ".csv", sep=""),
-                              package="rattle")
+      use_sample_dataset <- TRUE
+      
+      if (crv$mrs && xdf_active)
+        filename <- system.file("csv",
+                                paste(crv$sample_xdf, ".csv", sep=""),
+                                package="rattle")
+      else
+        filename <- system.file("csv",
+                                paste(crv$sample_csv, ".csv", sep=""),
+                                package="rattle")
+      
       theWidget("data_filechooserbutton")$setFilename(filename)
 
       # 130825 This does not get reflected in the GUI? Can't work out
@@ -905,7 +959,7 @@ executeDataCSV <- function(filename=NULL)
       else
         filename <- paste("file:///", filename, sep="")
 
-      # 080713 We still need the events flush with tootiphack set
+      # 20080713 We still need the events flush with tootiphack set
       # since otherwise we have to lose focus before the screen gets
       # updated.
 
@@ -936,13 +990,13 @@ executeDataCSV <- function(filename=NULL)
 
   sep = theWidget("data_separator_entry")$getText()
   if (sep != ",")
-    sep <- sprintf(', sep="%s"', sep)
+    sep <- sprintf(',\n\t\t\tsep="%s"', sep)
   else
     sep <- ""
 
   dec = theWidget("data_decimal_entry")$getText()
   if (dec != ".")
-    dec <- sprintf(', dec="%s"', dec)
+    dec <- sprintf(',\n\t\t\tdec="%s"', dec)
   else
     dec <- ""
 
@@ -951,22 +1005,113 @@ executeDataCSV <- function(filename=NULL)
   if (theWidget("data_header_checkbutton")$getActive())
     hdr <- ""
   else
-    hdr <- ", header=FALSE"
+    hdr <- ",\n\t\t\theader=FALSE"
 
-  nastring <- ', na.strings=c(".", "NA", "", "?")'
+  nastring <- ',\n\t\t\tna.strings=c(".", "NA", "", "?")'
 
-  stripwhite <- ', strip.white=TRUE'
+  stripwhite <- ',\n\t\t\tstrip.white=TRUE'
 
-  # Generate commands to read the data. 091130 Add encoding to use the
-  # configured encoding.
+  # Generate commands to read the data. 20091130 Add encoding to use
+  # the configured encoding.
 
-  if (use.sample.dataset)
-    read.cmd <- sprintf(paste('crs$dataset <-',
-                              'read.csv(system.file("csv",',
-                              '"%s.csv", package="rattle"),',
+  if (use_sample_dataset &&
+        ! (crv$mrs && theWidget("data_xdf_checkbutton")$getActive()))
+    read.cmd <- sprintf(paste('fname <- system.file("csv",',
+                              '"%s.csv", package="rattle")',
+                              '\ncrs$dataset <- read.csv(fname,',
                               'encoding="%s")'),
-                        crv$sample.dataset, crv$csv.encoding)
+                        crv$sample_csv, crv$csv_encoding)
 
+  else if ((tolower(get.extension(filename)) %in% c("xdf")) ||
+             (tolower(get.extension(filename)) %in% c("csv") &&
+                crv$mrs &&
+                theWidget("data_xdf_checkbutton")$getActive()))
+  {
+    # 160816 For XDF we store into crs$dataset the first 10,000 rows,
+    # and then crs$xdf is the actual dataset pointer when we need to
+    # use all the data. We need to remember to think of an XDF dataset
+    # more like a relational table than a data frame. There is no
+    # concept of a sequential index of the data over the observations
+    # as an XDF which is why there is no '[' operator for XDF
+    # datasets.
+
+    # 160904 XDF TODO We can get here if a user specifies an XDF
+    # dataset even if RevoScaleR is not installed. Then a popup will
+    # offer to install it however in this case it can't be downloaded
+    # from CRAN. I need a message that says it needs to be obtained
+    # from Microsoft with a URL pointer as appropriate.
+    
+    if (! packageIsAvailable(
+      "RevoScaleR",
+      alt.msg=Rtxt("The RevoScaleR package is required for",
+                   "managing the PROPRIETARY xdf file supporting out of memory datasets.",
+                   "The CLOSED SOURCE package is available from Microsoft.",
+                   "Visit https://msdn.microsoft.com/en-us/microsoft-r/scaler-getting-started",
+                   "for instructions.")))
+      return(FALSE)
+
+    # For an XDF dataset it is useful to be able to use $ to return a
+    # vector in memory which was suggested to the dplyrXdf author and
+    # then implemented 20170201.
+    
+    if (! packageIsAvailable("dplyrXdf", Rtxt("manage XDF with dplyr")))
+      return(FALSE) # MUST INSTALL FROM GITHUB
+
+    lib.cmd <- "library(dplyrXdf) # Support dplyr with XDF datasets."
+    appendLog(Rtxt("Load an additional library."), lib.cmd)
+    eval(parse(text=lib.cmd))
+
+    # Convert the filename back to the system.path() function call if
+    # that is where the data is found. This is just a nicety for the
+    # Log tab where it is better to display the system.file() function
+    # call rather than the generated file path.
+    
+    display_filename <- sub("file:///", ifelse(isWindows(), "", "/"), filename)
+    if (system.file("csv", "weather.csv", package="rattle") ==
+          display_filename)
+      display_filename <- paste('system.file("csv", "weather.csv",',
+                                'package="rattle")')
+    
+    read.cmd <- sprintf(paste0(
+      'fname <- %s\n\n',
+      '# Identify the local XDF file for the working dataset.\n\n',
+      'oname <- "%s"\n\n',
+      '# Load the data as XDF and ensure all strings/character are factors.\n\n',
+      'fname %%>%%\n',
+      '  rxDataStep(\n',
+      '    outFile          = oname,\n',
+      '    stringsAsFactors = TRUE,\n',
+      '    overwrite        = TRUE) %%>%%\n',
+      '  factorise(all_character()) ->\n',
+      'crs$xdf\n\n',
+      '# Load a sample dataset into memory to allow Rattle to summarise it.\n\n',
+      # Sample an XDF dataset into memory if
+      # it is larger than the specified
+      # number of rows. Otherwise we load the
+      # whole dataset into memory! Might also
+      # need to check the number of columns
+      # or else the dataset's predicted size
+      # in memory if such a prediction
+      # exists.
+      'crs$dataset <-\n',
+      '{\n',
+      '  if (nrow(crs$xdf) < %s)\n',
+      '    rxDataStep(crs$xdf)\n',
+      '  else\n',
+      '   sample_n(crs$xdf, %s)\n',
+      '}'),
+      if (substr(display_filename, 1, 11) == "system.file")
+        display_filename
+      else
+        paste0('"', display_filename, '"'),
+      # Do I really need to fix this for XDF functions?
+      file.path(if (isWindows()) gsub("\\\\", "/", tempdir()) else tempdir(),
+                basename(sub("file:///", ifelse(isWindows(), "", "/"),
+                             sub("\\.(xdf|csv)", "_rattle.xdf", filename)))),
+      crv$xdf.preview,
+      crv$xdf.preview)
+  }
+  
   else if (tolower(get.extension(filename)) %in% c("xls", "xlsx"))
   {
     if (! packageIsAvailable("readxl", Rtxt("read .xls or .xlsx files"))) return(FALSE)
@@ -974,16 +1119,16 @@ executeDataCSV <- function(filename=NULL)
     # 100114 A quick hack to allow reading MS/Excel files. 150517
     # Notice the use of library() rather than require(). We really
     # need to attach the package not try to attach the package.
-    read.cmd <- sprintf(paste("library(readxl, quietly=TRUE)",
-                              'crs$dataset <- read_excel("%s")',
+    read.cmd <- sprintf(paste("library(readxl, quietly=TRUE)\n\n",
+                              'crs$dataset <- read_excel("%s", guess_max=1e4)\n\n',
                               # Make sure we return the actual dataset
                               # as the result as that is assumed.
-                              "crs$dataset",
-                              sep="\n"),
+                              "crs$dataset"),
                          sub("file:///", ifelse(isWindows(), "", "/"), filename))
 # 130612 Still needed for isWindows? sub("file:///", "", filename))
   }
   else
+  {
 
     # 100428 With read.csv("...", encoding="UTF-8") column names that
     # are purely UTF-8 see the trailing comma as part of the column
@@ -997,19 +1142,23 @@ executeDataCSV <- function(filename=NULL)
     # Linux?
 
     if (isJapanese())
-      read.cmd <- sprintf('crs$dataset <- read.csv(file("%s", encoding="%s")%s%s%s%s%s)',
-                          filename, crv$csv.encoding, hdr, sep, dec, nastring,
+      read.cmd <- sprintf(paste('crs$dataset <-',
+                                'read.csv(file("%s", encoding="%s")%s%s%s%s%s)'),
+                          filename, crv$csv_encoding, hdr, sep, dec, nastring,
                           stripwhite)
     else
-      read.cmd <- sprintf('crs$dataset <- read.csv("%s"%s%s%s%s%s, encoding="%s")',
+      read.cmd <- sprintf(paste('fname <- "%s"',
+                                '\ncrs$dataset <- read.csv(fname%s%s%s%s%s,',
+                                'encoding="%s")'),
                           filename, hdr, sep, dec, nastring, stripwhite,
-                          crv$csv.encoding)
-
+                          crv$csv_encoding)
+  }
+  
   # Start logging and executing the R code.
 
   startLog()
 
-  appendLog(Rtxt("Load the data."), read.cmd)
+  appendLog(Rtxt("Load the dataset from file."), read.cmd)
   resetRattle()
   result <- try(eval(parse(text=read.cmd)), silent=TRUE)
   if (inherits(result, "try-error"))
@@ -1079,7 +1228,7 @@ executeDataCSV <- function(filename=NULL)
 
 ##  showDataViewButtons()
 
-  setStatusBar(sprintf(Rtxt("The CSV file has been loaded: %s.",
+  setStatusBar(sprintf(Rtxt("The file has been loaded: %s.",
                             "Please wait whilst we extract its structure..."),
                        crs$dataname))
 
@@ -1593,14 +1742,14 @@ executeDataRdata <- function()
 executeDataRdataset <- function()
 {
 
-  # Collect relevant data
+  # Collect relevant data from the GUI.
 
   .dataset <- theWidget("data_name_combobox")$getActiveText()
 
-  # 080907 Can we do this here each time? I haven't work out a way to
-  # update the combobox when it is clicked - this is what would be
-  # best! But at least having it in here means we can update it when
-  # it is executed.
+  # 20080907 Can we do this here each time? I haven't worked out a way
+  # yet to update the combobox when it is clicked - this is what would
+  # be best! But at least having it in here means we can update it
+  # when it is executed.
 
   updateRDatasets(current=.dataset)
 
@@ -1608,16 +1757,17 @@ executeDataRdataset <- function()
   {
     errorDialog(Rtxt("No R dataset name has been specified.",
                      "Please identify the name of the R dataset.",
-                     "Any data frames that exist in the R Console",
+                     "Data frames that exist in the R Console",
                      "are available from the Data Name combo box."))
     return(FALSE)
   }
 
-  # If there is a model then warn about losing it.
+  # If there is a model then warn about losing it and ask if we are to
+  # proceed.
 
   if (! overwriteModel()) return(FALSE)
 
-  # Generate commands.
+  # Generate the commands that are to be run.
 
   assign.cmd <- sprintf('crs$dataset <- %s', .dataset)
   str.cmd <- "str(crs$dataset)"
@@ -1634,6 +1784,20 @@ executeDataRdataset <- function()
   crs$dataname <- .dataset
   setMainTitle(crs$dataname)
 
+  # 20170414 Record the new dataset's checksum so as to be able to
+  # identify a change to an R dataset.  This could take a few seconds
+  # so let's try it out and see if there is a significant new lag in
+  # loading a dataset!
+
+  setStatusBar(Rtxt("Calculate the R dataset's checksum..."))
+
+  crs$dataname %>%
+    get() %>%
+    paste(collapse="") %>%
+    paste(paste(names(get(crs$dataname)), collapse="")) %>%
+    bitops::cksum() ->
+  crs$cksum
+  
   # 080328 Fix up any non-supported characters in the variable names,
   # otherwise they cause problems, e.g. "a-b" when used as ds$a-b is
   # interpreted as (ds$a - b)!
@@ -2252,13 +2416,13 @@ executeSelectTab <- function(resample=TRUE)
 
   # Record appropriate information.
 
-  crs$input   <- input
-  crs$target  <- target
-  crs$risk    <- risk
-  crs$ident   <- ident
-  crs$ignore  <- ignore
-  crs$weights <- weights
-  crs$numeric <- colnames(crs$dataset)[getNumericVariables(type="indicies")]
+  crs$input     <- input
+  crs$target    <- target
+  crs$risk      <- risk
+  crs$ident     <- ident
+  crs$ignore    <- ignore
+  crs$weights   <- weights
+  crs$numeric   <- colnames(crs$dataset)[getNumericVariables(type="indicies")]
   crs$categoric <- getCategoricVariables(type="names")
 
   # 091206 Add the information to the Log tab
@@ -2266,18 +2430,32 @@ executeSelectTab <- function(resample=TRUE)
   convertOneMany <- function(x)
     switch(min(length(x)+1, 3), 'NULL', sprintf('"%s"', x),
            sprintf('c("%s")', paste(x, collapse='", "')))
+
+  # Note the use of xxxxx to force proper line wrap of first line which will
+  # not be indented at all.
+
   appendLog(Rtxt("The following variable selections have been noted."),
-            'crs$input <- ', gsub("(([^,]*,){4})", "\\1\n    ",
-                                     convertOneMany(input)),
-            '\n\ncrs$numeric <- ', gsub("(([^,]*,){4})", "\\1\n    ",
-                                       convertOneMany(crs$numeric)),
-            '\n\ncrs$categoric <- ', gsub("(([^,]*,){4})", "\\1\n    ",
-                                       convertOneMany(crs$categoric)),
-            '\n\ncrs$target  <- ', convertOneMany(target),
-            '\ncrs$risk    <- ', convertOneMany(risk),
-            '\ncrs$ident   <- ', convertOneMany(ident),
-            '\ncrs$ignore  <- ', convertOneMany(ignore),
-            '\ncrs$weights <- ', convertOneMany(weights))
+            'crs$input     <- ',   convertOneMany(input) %>%
+                                   paste("xxxxxxxxxxxxxxxxxxx", .) %>%
+                                   strwrap(crv$log_width, 0, 19, simplify=TRUE) %>%
+                                   paste(collapse="\n") %>%
+                                   sub('^x+ ', '', .),
+            '\n\ncrs$numeric   <- ', convertOneMany(crs$numeric) %>%
+                                   paste("xxxxxxxxxxxxxxxxxxx", .) %>%
+                                   strwrap(crv$log_width, 0, 19, simplify=TRUE) %>%
+                                   paste(collapse="\n") %>%
+                                   sub('^x+ ', '', .),
+            '\n\ncrs$categoric <- ', convertOneMany(crs$categoric) %>%
+                                   paste("xxxxxxxxxxxxxxxxxxx", .) %>%
+                                   strwrap(crv$log_width, 0, 19, simplify=TRUE) %>%
+                                   paste(collapse="\n") %>%
+                                   sub('^x+ ', '', .),
+            '\n',
+            '\ncrs$target    <- ', convertOneMany(target),
+            '\ncrs$risk      <- ', convertOneMany(risk),
+            '\ncrs$ident     <- ', convertOneMany(ident),
+            '\ncrs$ignore    <- ', convertOneMany(ignore),
+            '\ncrs$weights   <- ', convertOneMany(weights))
 
   # 090801 Update the transforms list, so that any transforms that are
   # not ignore/ident will be noted as active. The status is used when
@@ -2342,6 +2520,46 @@ executeSelectTab <- function(resample=TRUE)
   else
     theWidget("boost_radiobutton")$setSensitive(FALSE)
 
+  # Remove/restore tab functionality for XDF/CSV.
+    
+  theWidget("test_tab_widget")$setSensitive(!not.null(crs$xdf))
+  theWidget("test_tab_label")$setSensitive(!not.null(crs$xdf))
+  theWidget("transform_tab_widget")$setSensitive(!not.null(crs$xdf))
+  theWidget("transform_tab_label")$setSensitive(!not.null(crs$xdf))
+  theWidget("associate_tab_widget")$setSensitive(!not.null(crs$xdf))
+  theWidget("associate_tab_label")$setSensitive(!not.null(crs$xdf))
+
+  # Disable various options for XDF file load.
+  
+  if(not.null(crs$xdf))
+  {
+    # Explore
+
+    theWidget("explore_distr_radiobutton")$hide()
+    theWidget("prcomp_radiobutton")$hide()
+    theWidget("explore_interactive_radiobutton")$hide()
+
+    # Cluster
+
+    theWidget("ewkm_radiobutton")$hide()
+    theWidget("hclust_radiobutton")$hide()
+    theWidget("biclust_radiobutton")$hide()
+  }
+  else
+  {
+    # Explore
+    
+    theWidget("explore_distr_radiobutton")$show()
+    theWidget("prcomp_radiobutton")$show()
+    theWidget("explore_interactive_radiobutton")$show()
+
+    # Cluster
+    
+    theWidget("ewkm_radiobutton")$show()
+    theWidget("hclust_radiobutton")$show()
+    theWidget("biclust_radiobutton")$show()
+  }
+
   # Update various MODEL options
 
   if (survivalTarget())
@@ -2362,6 +2580,9 @@ executeSelectTab <- function(resample=TRUE)
 
     theWidget("rpart_radiobutton")$setSensitive(TRUE)
     theWidget("rf_radiobutton")$setSensitive(TRUE)
+    if(not.null(crs$xdf))
+      theWidget("svm_radiobutton")$setSensitive(FALSE)
+    else
     theWidget("svm_radiobutton")$setSensitive(TRUE)
 
     theWidget("model_linear_radiobutton")$setSensitive(TRUE)
@@ -2520,9 +2741,10 @@ executeSelectTab <- function(resample=TRUE)
 
   # Finished - update the status bar.
 
-  roles.msg <- sprintf(Rtxt("Roles noted. %d observations",
-                            "and %d input variables."),
-                       nrow(crs$dataset), length(crs$input))
+  roles.msg <- sprintf(Rtxt("Roles noted. %s%s observations and %s input variables."),
+                       ifelse(not.null(crs$xdf), paste("Subset", format(nrow(crs$dataset), big.mark=","), "of "), ""),
+                       format(ifelse(is.null(crs$xdf), nrow(crs$dataset), nrow(crs$xdf)), big.mark=","),
+                       format(length(crs$input), big.mark=","))
   if (length(crs$target) == 0)
     model.msg <-  Rtxt("No target thus no predictive",
                        "modelling nor sampling.")
@@ -2558,6 +2780,12 @@ executeSelectSample <- function()
   #print(target)
   #crs$nontargets <- which(is.na(crs$dataset[[target]]))
 
+  # 160902 Record the number of rows in the full dataset, differently
+  # calculated for XDF dataset.
+
+  nr <- ifelse(is.null(crs$xdf), nrow(crs$dataset), nrow(crs$xdf))
+  ds <- ifelse(is.null(crs$xdf), "dataset", "xdf")
+  
   # Record that a random sample of the dataset is desired and the
   # random sample itself is loaded into crs$sample. 080425 Whilst we
   # are at it we also set the variable crs$targeted to be those row
@@ -2567,13 +2795,13 @@ executeSelectSample <- function()
   {
     if (newSampling())
     {
-      ssizes <- parseSampleEntry()
-      ssize <- floor(nrow(crs$dataset) * ssizes[1] / 100)
-      vsize <- floor(nrow(crs$dataset) * ssizes[2] / 100)
+      ssizes <- parseSampleEntry()/100
+      ssize <- floor(nr * ssizes[1])
+      vsize <- floor(nr * ssizes[2])
       if (ssizes[3] == 0)
         tsize <- 0
       else
-        tsize <- nrow(crs$dataset) - ssize - vsize
+        tsize <- nr - ssize - vsize
     }
     else
       #ssize <- theWidget("sample_percentage_spinbutton")$getValue()
@@ -2585,42 +2813,83 @@ executeSelectSample <- function()
 
     if (newSampling())
     {
-      sample.cmd <- sprintf(paste("set.seed(%s)",
-                                  "\ncrs$nobs <- nrow(crs$dataset) # %d observations",
-                                  "\ncrs$sample <- crs$train <-",
-                                  "sample(nrow(crs$dataset),",
-                                  "%s*crs$nobs) # %d observations"),
-                            seed, nrow(crs$dataset),
-                            round(ssize/nrow(crs$dataset), 2), ssize)
+      sample.cmd <- sprintf("set.seed(%s)\n", seed)
+
+      sample.intro <- paste0('# nobs=', nr, ' train=', ssize) 
+      
+      sample.cmd <- sprintf(paste0("%s\n",
+                                   "crs$nobs     <- nrow(crs$%s)\n",
+                                   "crs$train    <- crs$sample <- ",
+                                   "sample(crs$nobs, %s*crs$nobs)\n"),
+                            sample.cmd, ds, round(ssize/nr, 2))
+
       if (vsize > 0)
-        sample.cmd <- sprintf(paste("%s\ncrs$validate <-",
-                                    "sample(setdiff(seq_len(nrow(crs$dataset)),",
-                                    "crs$train),",
-                                    "%s*crs$nobs) # %d observations"),
-                              sample.cmd, round(vsize/nrow(crs$dataset), 2), vsize)
+      {
+        sample.intro %<>% paste0(' validate=', vsize)
+        
+        sample.cmd <- sprintf(paste0("%scrs$validate <- ",
+                                     "sample(setdiff(seq_len(crs$nobs), ",
+                                     "crs$train), ",
+                                     "%s*crs$nobs)\n"),
+                              sample.cmd, round(vsize/nr, 2))
+      }
       else
-        sample.cmd <- sprintf("%s\ncrs$validate <- NULL", sample.cmd)
+        sample.cmd <- sprintf("%scrs$validate <- NULL\n", sample.cmd)
+      
       if (tsize > 0)
-        sample.cmd <- sprintf(paste("%s\ncrs$test <-",
-                                    "setdiff(setdiff(seq_len(nrow(crs$dataset)),",
-                                    "crs$train), crs$validate)",
-                                    "# %d observations"), sample.cmd,
-                              nrow(crs$dataset)-ssize-vsize)
+      {
+        sample.intro %<>% paste0(' test=', nr-ssize-vsize)
+
+        sample.cmd <- sprintf(paste0("%scrs$test     <- ",
+                                     "setdiff(setdiff(seq_len(crs$nobs), ",
+                                     "crs$train), crs$validate)"),
+                              sample.cmd)
+      }
       else
-        sample.cmd <- sprintf("%s\ncrs$test <- NULL", sample.cmd)
+        sample.cmd <- sprintf("%scrs$test     <- NULL\n", sample.cmd)
+
+      sample.cmd <- paste0(sample.intro, "\n\n", sample.cmd)
     }
     else
     {
       # 100417 Even for RStat make sure we maintain crs$train as it is
       # now starting to be used.
 
-      sample.cmd <- paste(sprintf("set.seed(%s)\n", seed),
-                          "crs$sample <- crs$train <- sample(nrow(crs$dataset), ", ssize,
+      sample.cmd <- paste(sprintf("set.seed(%s)\n\n", seed),
+                          "crs$train <- crs$sample <- sample(crs$nobs, ",
+                          ssize,
                           ")", sep="")
     }
 
-    appendLog(Rtxt("Build the training/validate/test datasets."), sample.cmd)
+    appendLog(Rtxt("Build the train/validate/test datasets."), sample.cmd)
     eval(parse(text=sample.cmd))
+
+    # 20160902 Partition the XDF into the train/validate/test
+    # datasets.
+    
+    if (! is.null(crs$xdf))
+    {
+      # Identify a variable so that rxSplit() can split the dataset.
+
+      part.cmd <- sprintf(paste0(
+        "crs$xdf %%<>%%\n",
+        "  mutate(.train=factor(sample(1:3,\n",
+        "                              size    = .rxNumRows,\n",
+        "                              replace = TRUE,\n",
+        "                              prob    = c(%0.2f, %0.2f, %0.2f)),\n",
+        "                       levels=1:3))"),
+        ssizes[1], ssizes[2], ssizes[3])
+      appendLog(Rtxt("Add train/validate/test flag to each observation."),
+                part.cmd)
+      eval(parse(text=part.cmd))
+
+      # Split into appropriate datasets.
+      
+      split.cmd <- 'crs$xdf.split <- rxSplit(crs$xdf, splitByFactor=".train")'
+      appendLog(Rtxt("Split dataset into train/validate/test."), split.cmd)
+      eval(parse(text=split.cmd))
+
+    }
   }
   else
   {
@@ -3114,7 +3383,7 @@ createVariablesModel <- function(variables, input=NULL, target=NULL,
   # Rattle, including the Data tab's variable model, the Explore tab's
   # categorical and continuous models, and the Modelling tab defaults
   # where they depend on the dataset sizes.
-  #
+
   # Any values supplied for input, target, risk, ident, ignore,
   # boxplot, hisplot, cumplot, benplot, barplot, dotplot, and
   # mosplot, arguments should be lists of variable names (list of
@@ -3122,7 +3391,7 @@ createVariablesModel <- function(variables, input=NULL, target=NULL,
 
   set.cursor("watch", Rtxt("Summarising the variables..."))
   
-  # Retrieve the models.
+  # Retrieve the GUI models for the relevant GUI components.
 
   model <- theWidget("select_treeview")$getModel()
   impute <- theWidget("impute_treeview")$getModel()
@@ -3130,13 +3399,15 @@ createVariablesModel <- function(variables, input=NULL, target=NULL,
   continuous  <- theWidget("continuous_treeview")$getModel()
 
   # 080303 Automatically identify a default target if none are
-  # identified as a target (by beginning with TARGET or TIME for
+  # identified as a target (by beginning with TARGET, or TIME for
   # SURVIVAL data) in the variables. Heuristic is - the last or first
   # if it's a factor with few levels, or has only a few values. Then
   # the treeview model will record this choice, and we set the
   # appropriate labels with this, and record it in crs.
 
   survival.model <- theWidget("model_survival_radiobutton")$getActive()
+
+  # TODO: Should we allow lower case "target" also?
   
   given.target <- c(which(substr(variables, 1, 6) == "TARGET"),
                     if (survival.model) which(substr(variables, 1, 4) == "TIME"))
@@ -3151,32 +3422,34 @@ createVariablesModel <- function(variables, input=NULL, target=NULL,
     # IGNORE variables.
 
     last.var <- length(variables)
+    
     while (last.var > 1 && substr(variables[last.var], 1, 4) == "IMP_")
     {
       last.var <- last.var - 1
     }
 
     target <- -1
-    if ((is.factor(crs$dataset[,last.var]) &&
-         length(levels(crs$dataset[,last.var])) > 1 &&
-         length(levels(crs$dataset[,last.var])) < 11)
-        || (length(levels(as.factor(crs$dataset[,last.var]))) < 11
-            && length(levels(as.factor(crs$dataset[,last.var]))) > 1))
+    
+    if ((is.factor(crs$dataset[[last.var]])
+        && length(levels(crs$dataset[[last.var]])) > 1
+        && length(levels(crs$dataset[[last.var]])) < 11)
+        || (length(levels(as.factor(crs$dataset[[last.var]]))) < 11
+        && length(levels(as.factor(crs$dataset[[last.var]]))) > 1))
       target <- last.var
-    else if ((is.factor(crs$dataset[,1]) &&
-              length(levels(crs$dataset[,1])) > 1 &&
-              length(levels(crs$dataset[,1])) < 11)
-             || (length(levels(as.factor(crs$dataset[,1]))) < 11
-                 && length(levels(as.factor(crs$dataset[,1]))) > 1))
+    else if ((is.factor(crs$dataset[[1]]) &&
+              length(levels(crs$dataset[[1]])) > 1 &&
+              length(levels(crs$dataset[[1]])) < 11)
+             || (length(levels(as.factor(crs$dataset[[1]]))) < 11
+                 && length(levels(as.factor(crs$dataset[[1]]))) > 1))
       target <- 1
     else
       for (i in 2:(length(variables)-1))
       {
-        if ((is.factor(crs$dataset[,i]) &&
-             length(levels(crs$dataset[,i])) > 1 &&
-              length(levels(crs$dataset[,i])) < 11)
-            || (length(levels(as.factor(crs$dataset[,i]))) < 11
-                && length(levels(as.factor(crs$dataset[,i]))) > 1))
+        if ((is.factor(crs$dataset[[i]]) &&
+             length(levels(crs$dataset[[i]])) > 1 &&
+              length(levels(crs$dataset[[i]])) < 11)
+            || (length(levels(as.factor(crs$dataset[[i]]))) < 11
+                && length(levels(as.factor(crs$dataset[[i]]))) > 1))
         {
           target <- i
           break
@@ -3239,6 +3512,7 @@ createVariablesModel <- function(variables, input=NULL, target=NULL,
     if ("character" %in% cl)
     {
       crs$dataset[[variables[i]]] <- as.factor(crs$dataset[[variables[i]]])
+      # 160831 XDF TODO DO THIS AS WELL crs$xdf %<>% factorise(date)
       cl <- class(crs$dataset[[variables[i]]])
     }
     
@@ -3304,7 +3578,7 @@ createVariablesModel <- function(variables, input=NULL, target=NULL,
       }
       else
       {
-        lv <- length(levels(as.factor(crs$dataset[[variables[i]]])))
+        lv <- length(levels(as.factor(crs$dataset[[variables[i]]]))) # 160831 XDF TODO
         # 090704 Start supporting a Date format
         if (length(intersect(c("integer", "POSIXt"), cl)) &&
             nrow(crs$dataset) > crv$ident.min.rows &&
@@ -3317,7 +3591,7 @@ createVariablesModel <- function(variables, input=NULL, target=NULL,
         {
           cl <- "missing"
           ignore <- c(ignore, variables[i])
-        }
+        } # 160831 XDF TODO sd of a column in XDF? Actually it's testing for a constant
         else if (sd(crs$dataset[[variables[i]]], na.rm=TRUE) %in% c(NA, 0))
         {
           # sd is NA if all data items are NA.
@@ -3327,7 +3601,7 @@ createVariablesModel <- function(variables, input=NULL, target=NULL,
       }
     }
 
-    # Fix any doubling up
+    # Fix any doubling up.
 
     input <- setdiff(input, target)
     if (length(target) && length(ident) && target %in% ident)
@@ -3346,10 +3620,10 @@ createVariablesModel <- function(variables, input=NULL, target=NULL,
 
     input <- setdiff(setdiff(setdiff(input, ignore), ident), risk)
 
-    missing.count <- sum(is.na(crs$dataset[[variables[i]]]))
+    missing.count <- sum(is.na(crs$dataset[[variables[i]]])) # 160831 XDF TODO
 
-    unique.count <- length(unique(na.omit(crs$dataset[[variables[i]]])))
-    unique.value <- unique(crs$dataset[[variables[i]]])
+    unique.count <- length(unique(na.omit(crs$dataset[[variables[i]]]))) # 160831 XDF TODO
+    unique.value <- unique(crs$dataset[[variables[i]]])  # 160831 XDF TODO
 
     numeric.var <- is.numeric(crs$dataset[[variables[i]]])
     possible.categoric <- (unique.count <= crv$max.categories ||
@@ -3378,16 +3652,17 @@ createVariablesModel <- function(variables, input=NULL, target=NULL,
               crv$COLUMN["ident"], variables[i] %in% ident,
               crv$COLUMN["ignore"], variables[i] %in% ignore,
               crv$COLUMN["weight"], variables[i] %in% weight,
-              crv$COLUMN["comment"], paste(sprintf(Rtxt("Unique: %d "),
-                                                   unique.count),## ""),
-                                           ifelse(missing.count > 0,
-                                                  sprintf(Rtxt("Missing: %d "),
-                                                          missing.count), ""),
-                                           
-                                           ifelse(prcl == "constant",
-                                                  sprintf(Rtxt("Value: %s "),
-                                                          unique.value), ""),
-                                           sep=""))
+              crv$COLUMN["comment"],
+              paste(sprintf(Rtxt("Unique: %s "),
+                            format(unique.count, big.mark=",")), ## ""),
+                    ifelse(missing.count > 0,
+                           sprintf(Rtxt("Missing: %s "),
+                                   format(missing.count, big.mark=",")), ""),
+                    
+                    ifelse(prcl == "constant",
+                           sprintf(Rtxt("Value: %s "),
+                                   unique.value), ""),
+                    sep=""))
 
     # Selected variables go into the other treeviews.
 
@@ -3412,25 +3687,25 @@ createVariablesModel <- function(variables, input=NULL, target=NULL,
       dtype <- paste("A ", cl, " variable")
       if (cl == "integer")
         dtype <- sprintf(Rtxt("Numeric [%d to %d; unique=%d; mean=%d; median=%d%s%s]"),
-                         min(crs$dataset[[variables[i]]], na.rm=TRUE),
-                         max(crs$dataset[[variables[i]]], na.rm=TRUE),
+                         min(crs$dataset[[variables[i]]], na.rm=TRUE), # 160831 XDF TODO
+                         max(crs$dataset[[variables[i]]], na.rm=TRUE), # 160831 XDF TODO
                          unique.count,
-                         as.integer(mean(crs$dataset[[variables[i]]],
+                         as.integer(mean(crs$dataset[[variables[i]]], # 160831 XDF TODO
                                          na.rm=TRUE)),
-                         as.integer(median(crs$dataset[[variables[i]]],
+                         as.integer(median(crs$dataset[[variables[i]]], # 160831 XDF TODO
                                          na.rm=TRUE)),
-                         ifelse(sum(is.na(crs$dataset[[variables[i]]])),
+                         ifelse(sum(is.na(crs$dataset[[variables[i]]])), # 160831 XDF TODO
                                 sprintf(Rtxt("; miss=%d"),
-                                        sum(is.na(crs$dataset[[variables[i]]]))),
+                                        sum(is.na(crs$dataset[[variables[i]]]))), # 160831 XDF TODO
                                 ""),
                          ifelse(variables[i] %in% ignore, Rtxt("; ignored"), ""))
       else if (cl == "numeric")
         dtype <- sprintf(Rtxt("Numeric [%.2f to %.2f; unique=%d; mean=%.2f; median=%.2f%s%s]"),
-                         min(crs$dataset[[variables[i]]], na.rm=TRUE),
-                         max(crs$dataset[[variables[i]]], na.rm=TRUE),
+                         min(crs$dataset[[variables[i]]], na.rm=TRUE), # 160831 XDF TODO
+                         max(crs$dataset[[variables[i]]], na.rm=TRUE), # 160831 XDF TODO
                          unique.count,
-                         mean(crs$dataset[[variables[i]]], na.rm=TRUE),
-                         median(crs$dataset[[variables[i]]], na.rm=TRUE),
+                         mean(crs$dataset[[variables[i]]], na.rm=TRUE), # 160831 XDF TODO
+                         median(crs$dataset[[variables[i]]], na.rm=TRUE), # 160831 XDF TODO
                          ifelse(missing.count > 0,
                                 sprintf(Rtxt("; miss=%d"), missing.count), ""),
                          ifelse(variables[i] %in% ignore, Rtxt("; ignored"), ""))
@@ -3493,10 +3768,10 @@ createVariablesModel <- function(variables, input=NULL, target=NULL,
                      crv$CONTINUOUS["paiplot"], variables[i] %in% paiplot,
                      crv$CONTINUOUS["comment"],
                      sprintf("%.2f; %.2f/%.2f; %.2f",
-                             min(crs$dataset[,i], na.rm=TRUE),
-                             median(crs$dataset[,i], na.rm=TRUE),
-                             mean(crs$dataset[,i], na.rm=TRUE),
-                             max(crs$dataset[,i], na.rm=TRUE)))
+                             min(crs$dataset[[i]], na.rm=TRUE), # 160831 XDF TODO
+                             median(crs$dataset[[i]], na.rm=TRUE), # 160831 XDF TODO
+                             mean(crs$dataset[[i]], na.rm=TRUE), # 160831 XDF TODO
+                             max(crs$dataset[[i]], na.rm=TRUE))) # 160831 XDF TODO
     }
   }
 
@@ -3520,11 +3795,11 @@ createVariablesModel <- function(variables, input=NULL, target=NULL,
     theWidget("data_target_survival_radiobutton")$setActive(TRUE)
 #  else if (is.numeric(crs$dataset[[crs$target]]) &&
 #           # 080505 TODO we should put 10 as a global CONST
-#           length(levels(as.factor(crs$dataset[[crs$target]]))) > 10)
+#           length(levels(as.factor(crs$dataset[[crs$target]]))) > 10)  # 160831 XDF TODO
 #    theWidget("data_target_numeric_radiobutton")$setActive(TRUE)
 #  else if (is.factor(crs$dataset[[crs$target]]) ||
 #           (is.numeric(crs$dataset[[crs$target]]) &&
-#            length(levels(as.factor(crs$dataset[[crs$target]]))) <= 10))
+#            length(levels(as.factor(crs$dataset[[crs$target]]))) <= 10)) # 160831 XDF TODO
 #    theWidget("data_target_categoric_radiobutton")$setActive(TRUE)
   else
 
@@ -3654,10 +3929,26 @@ getCategoricVariables <- function(type="string", include.target=F )
   {
 
     indicies <- getVariableIndicies(crs$input)
-    if (include.target)
-      indicies<-c(indicies,getVariableIndicies(crs$target))
-    included <- intersect(cats, indicies)
+
+    # 160919 I tried the concept of adding the target even if it is
+    # numeric, but then pairs plot fails. The aim was to allow
+    # Benfords to group by the target by default, even if target is
+    # numeric. For pairs plot and box plot and histogram I now add a
+    # mutate prior to the ggplot to convert the target to a factor
+    # then all is good! So now it is okay to include a numeric target
+    # in the list of categoric variables if target is requested. If
+    # this has wider implications then add the target specifically to
+    # the Group By combo box rather than changing the semantics here.
     
+    included <- intersect(cats, indicies)
+
+    if (include.target)
+    {
+      target.levels <- length(levels(as.factor(crs$dataset[[crs$target]])))
+      if (target.levels <= crv$max.categories) 
+        included <- c(included, getVariableIndicies(crs$target))
+    }
+
     if (type=="names")
       include <- names(crs$dataset)[included]
     else

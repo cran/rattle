@@ -1,6 +1,6 @@
-# Gnome R Data Miner: GNOME interface to R for Data Mining
+# R Data Scientist: GNOME interface to R for Data Science
 #
-# Time-stamp: <2016-01-26 10:16:11 gjw>
+# Time-stamp: <2017-08-18 18:34:13 Graham Williams>
 #
 # Implement evaluate functionality.
 #
@@ -430,6 +430,14 @@ current.evaluate.tab <- function()
   return(crv$EVALUATE$getTabLabelText(crv$EVALUATE$getNthPage(cp)))
 }
 
+specificModelType <- function(mtype)
+{
+  smtype <- mtype
+  if (mtype == "ada" && "xgb.formula" %in% class(crs$ada))
+    smtype <- crv$XGB
+  return(smtype)
+}
+
 ########################################################################
 # EXECUTION
 
@@ -494,17 +502,24 @@ executeEvaluateTab <- function()
   #   and wanting to run predict.svm on new data).
 
   if (crv$ADA %in%  mtypes &&
+      "ada" %in% class(crs$ada) &&
       ! packageIsAvailable("ada", sprintf(Rtxt("evaluate a %s model"),
                                           commonName(crv$ADA))))
+    return()
+  if (crv$ADA %in%  mtypes &&
+      "xgb.Booster" %in% class(crs$ada) &&
+      ! packageIsAvailable("xgboost", sprintf(Rtxt("evaluate a %s model"),
+                                          commonName(crv$XGB))))
     return()
   if (crv$KSVM %in%  mtypes &&
       ! packageIsAvailable("kernlab", sprintf(Rtxt("evaluate a %s model"),
                                               commonName(crv$KSVM))))
     return()
   if (crv$RF %in%  mtypes &&
+      "randomForest" %in% class(crs$rf) &&
       ! packageIsAvailable("randomForest", sprintf(Rtxt("evaluate a %s model"),
                                                    commonName(crv$RF))))
-    return()
+        return()
   if (crv$GLM %in%  mtypes && "multinom" %in% class(crs$glm) &&
       ! packageIsAvailable("nnet", sprintf(Rtxt("evaluate a %s model"),
                                            paste(" Multinomial", commonName(crv$GLM)))))
@@ -518,15 +533,45 @@ executeEvaluateTab <- function()
                                                commonName(crv$SURVIVAL))))
     return()
 
-  if(theWidget("evaluate_score_radiobutton")$getActive())
-    startLog(Rtxt("Score a dataset."))
+  # Identify the data on which evaluation is to be performed. 160903
+  # With the introduction of the support for XDF we added the
+  # following variables and use them in the code string construction
+  # rather than literals all the time. This is a migration in progress
+  # and focussed currently on XDF proof of concept. Lots of potential
+  # to tidy up this code.
+
+  if (not.null(crs$xdf))
+  {
+    testset0 <- "crs$xdf.split"
+    training <- "[[1]]"
+    validate <- "[[2]]"
+    testing  <- "[[3]]"
+  }
   else
-    startLog(Rtxt("Evaluate model performance."))
-
-  # Identify the data on which evaluation is to be performed.
-
-  testset0 <- "crs$dataset"
+  {
+    testset0 <- "crs$dataset"
+    training <- "[crs$sample,]"
+    validate <- "[crs$validate,]"
+    testing  <- "[crs$test,]"
+  }
+    
   testname <- crs$dataname
+
+  ds.type <- ifelse(theWidget("evaluate_training_radiobutton")$getActive(),
+                    "the training",
+                    ifelse(theWidget("evaluate_validation_radiobutton")$getActive(),
+                           "the validation",
+                           ifelse(theWidget("evaluate_testing_radiobutton")$getActive(),
+                                  "the testing",
+                                  ifelse(theWidget("evaluate_csv_radiobutton")$getActive(),
+                                         "a CSV file",
+                                         ifelse(theWidget("evaluate_rdataset_radiobutton")$getActive(),
+                                         "an R", "the full")))))
+  
+  if(theWidget("evaluate_score_radiobutton")$getActive())
+    startLog(Rtxt("Score", ds.type, "dataset."))
+  else
+    startLog(Rtxt("Evaluate model performance on", ds.type, "dataset."))
 
   # 081028 For included we only need the input variables and perhaps
   # the risk variable. But after changing the definition of the
@@ -557,43 +602,65 @@ executeEvaluateTab <- function()
                       "load a separate test dataset from a CSV File or a",
                       "pre-existing R Dataset here."))
 
-    if (theWidget("data_sample_checkbutton")$getActive())
-      if (is.null(included))
-        testset0 <- "crs$dataset[crs$sample,]"
-      else
-        testset0 <- sprintf("crs$dataset[crs$sample, %s]", included)
+    if (not.null(crs$xdf))
+      testset0 <- paste0(testset0, training)
     else
-      if (is.null(included))
-        testset0 <- "crs$dataset"
+    {
+      if (theWidget("data_sample_checkbutton")$getActive())
+      {
+        if (is.null(included))
+          testset0 <- "crs$dataset[crs$sample,]"
+        else
+          testset0 <- sprintf("crs$dataset[crs$sample, %s]", included)
+      }
       else
-        testset0 <- sprintf("crs$dataset[,%s]", included)
-
+      {
+        if (is.null(included))
+          testset0 <- "crs$dataset"
+        else
+          testset0 <- sprintf("crs$dataset[,%s]", included)
+      }
+    }
     testname <- sprintf("%s [**%s**]", crs$dataname, Rtxt("train"))
   }
   else if (theWidget("evaluate_validation_radiobutton")$getActive())
   {
-    # Evaluate on validation data
+    # Evaluate on validation data.
 
-    if (is.null(included))
-      testset0 <- "crs$dataset[crs$validate,]"
+    if (not.null(crs$xdf))
+      testset0 <- paste0(testset0, validate)
     else
-      testset0 <- sprintf("crs$dataset[crs$validate, %s]", included)
+    {
+      if (is.null(included))
+        testset0 <- "crs$dataset[crs$validate,]"
+      else
+        testset0 <- sprintf("crs$dataset[crs$validate, %s]", included)
+    }
     testname <- sprintf("%s [%s]", crs$dataname, Rtxt("validate"))
   }
   else if (theWidget("evaluate_testing_radiobutton")$getActive())
   {
     # Evaluate on test data
 
-    if (is.null(included))
-      if (newSampling())
-        testset0 <- "crs$dataset[crs$test,]"
-      else
-        testset0 <- "crs$dataset[-crs$sample,]"
+    if (not.null(crs$xdf))
+      testset0 <- paste0(testset0, testing)
     else
-      if (newSampling())
-        testset0 <- sprintf("crs$dataset[crs$test, %s]", included)
+    {
+      if (is.null(included))
+      {
+        if (newSampling())
+          testset0 <- "crs$dataset[crs$test,]"
+        else
+          testset0 <- "crs$dataset[-crs$sample,]"
+      }
       else
-        testset0 <- sprintf("crs$dataset[-crs$sample, %s]", included)
+      {
+        if (newSampling())
+          testset0 <- sprintf("crs$dataset[crs$test, %s]", included)
+        else
+          testset0 <- sprintf("crs$dataset[-crs$sample, %s]", included)
+      }
+    }
     testname <- sprintf("%s [%s]", crs$dataname, Rtxt("test"))
   }
   else if (theWidget("evaluate_csv_radiobutton")$getActive())
@@ -641,7 +708,7 @@ executeEvaluateTab <- function()
                                 'sep="%s", encoding="%s", strip.white=TRUE)'),
                           filename, nastring,
                           ifelse(hdr, "TRUE", "FALSE"),
-                          sep, crv$csv.encoding)
+                          sep, crv$csv_encoding)
 
       appendLog(Rtxt("Read a dataset from file for testing the model."), read.cmd)
       eval(parse(text=read.cmd))
@@ -668,7 +735,7 @@ executeEvaluateTab <- function()
     if (is.null(included)) # || theWidget("score_radiobutton")$getActive())
       testset0 <- "crs$testset"
     else
-      testset0 <- sprintf("crs$testset[,%s]", included)
+      testset0 <- sprintf("crs$testset[,%s,drop=FALSE]", included)
   }
   else if (theWidget("evaluate_rdataset_radiobutton")$getActive())
   {
@@ -694,6 +761,18 @@ executeEvaluateTab <- function()
     appendLog(Rtxt("Assign the R dataset to be used as the test set."), assign.cmd)
     eval(parse(text=assign.cmd))
   }
+  else
+  {
+    # Drop through to the full dataset. Limit the dataset to the input
+    # and target variables for memory based dataset. For XDF testset0
+    # becomes the full XDF dataset.
+
+    if (is.null(crs$xdf))
+      testset0 <- paste0(testset0, "[c(crs$input, crs$target)]")
+    else
+      testset0 <- "crs$xdf"
+  }
+
 
   # Ensure the test dataset has the same levels for each variable of
   # the training dataset. This can arise when we externally split a
@@ -787,13 +866,72 @@ executeEvaluateTab <- function()
 
   if (crv$ADA %in%  mtypes)
   {
+    is_ada <- "ada" %in% class(crs$ada) # adaptive gradient boosting
+    if (! length(is_ada)) is_ada <- FALSE
+    
     testset[[crv$ADA]] <- testset0
+    
+    if (not.null(crs$xdf))
+    {
+      predcmd[[crv$ADA]] <- sprintf(
+        paste0("rxPredict(crs$ada,\n",
+               "  data         = %s,\n",
+               "  overwrite    = TRUE,\n",
+               "  predVarNames = c('Pred_Prob'))\n\n",
+               
+               "# BUG FIX MRS 9.1\n\n",
+               
+               "if (! 'Pred_Prob' %%in%% names(%s))\n",
+               "  names(%s)[length(%s)]",
+               " <- 'Pred_Prob'\n\n",
+               
+               "crs$pr <- rxDataStep(%s, varsToKeep = 'Pred_Prob')[[1]]"),
+        
+        testset[[crv$ADA]], testset[[crv$ADA]], testset[[crv$ADA]],
+        testset[[crv$ADA]], testset[[crv$ADA]])
 
-    predcmd[[crv$ADA]] <- genPredictAda(testset[[crv$ADA]])
-    respcmd[[crv$ADA]] <- genResponseAda(testset[[crv$ADA]])
-    probcmd[[crv$ADA]] <- genProbabilityAda(testset[[crv$ADA]])
+      threshold <- 0.5
+      
+      respcmd[[crv$ADA]] <- sprintf(
+        paste0("rxPredict(crs$ada,\n",
+               "  data         = %s,\n",
+               "  overwrite    = TRUE,\n",
+               "  predVarNames = c('Pred_Prob'))\n\n",
+               
+               "# BUG FIX MRS 9.1\n\n",
+               
+               "if (! 'Pred_Prob' %%in%% names(%s))\n",
+               "names(%s)[length(%s)]",
+               " <- 'Pred_Prob'\n\n",
+               
+               "crs$pr <- rxDataStep(%s,\n",
+               "  overwrite  = TRUE,\n",
+               "  transforms = list(\n",
+               "    'Pred_Classes' = ",
+               "ifelse(Pred_Prob > %g , '%s', '%s')))[['Pred_Classes']]"),
+        
+        testset[[crv$ADA]], testset[[crv$ADA]], testset[[crv$ADA]],
+        testset[[crv$ADA]], testset[[crv$ADA]],
+        threshold, levels(crs$xdf.split[[2]][[crs$target]])[2],
+        levels(crs$xdf.split[[2]][[crs$target]])[1])
+      probcmd[[crv$ADA]] <- predcmd[[crv$ADA]]
+    }	
+    else if (is_ada)
+    {
+      testset[[crv$ADA]] <- testset0
+      predcmd[[crv$ADA]] <- genPredictAda(testset[[crv$ADA]])
+      respcmd[[crv$ADA]] <- genResponseAda(testset[[crv$ADA]])
+      probcmd[[crv$ADA]] <- genProbabilityAda(testset[[crv$ADA]])
+    }
+    else
+    {
+      testset[[crv$ADA]] <- testset0
+      #predcmd[[crv$ADA]] <- genPredictXgb(testset[[crv$ADA]])
+      probcmd[[crv$ADA]] <- genProbabilityXgb(testset[[crv$ADA]]) 
+      respcmd[[crv$ADA]] <- genResponseXgb(testset[[crv$ADA]])
+    }
   }
-
+  
   if (crv$KMEANS %in% mtypes)
   {
     testset[[crv$KMEANS]] <- testset0
@@ -834,17 +972,30 @@ executeEvaluateTab <- function()
     # 0.5 threshold to predict it as 1 or 0. 090820 Move to doing a
     # logistic for nnet, so that we don't use linout in the model
     # building.
-
+    if(not.null(crs$xdf))
+    {
+      predcmd[[crv$NNET]] <- sprintf(
+        paste0("res <- rxPredict(\n",
+               "  modelObject      = crs$nnet,\n",
+               "  data             = %s,\n",
+               "  extraVarsToWrite = '%s',\n",
+               "  outData          = NULL)\n\n",
+               
+               "crs$pr <- rxDataStep(res)[[4]]"),
+        testset[[crv$NNET]], crs$target)
+      
+      respcmd[[crv$NNET]] <- sprintf(
+        paste0("res <- rxPredict(crs$nnet, data=%s, extraVarsToWrite = '%s',",
+               "outData = NULL)\n",
+               'crs$pr <- rxDataStep(res)[[1]]'),
+        testset[[crv$NNET]], crs$target)
+    }
+    else {
     predcmd[[crv$NNET]] <- sprintf("crs$pr <- predict(crs$nnet, newdata=%s)",
                                    testset[[crv$NNET]])
 
     if (binomialTarget())
       respcmd[[crv$NNET]] <- sub(")$", ', type="class")', predcmd[[crv$NNET]])
-
-#090820 REMOVE the old commented code from here once nnet is stable.
-#      predcmd[[crv$NNET]] <- sprintf("crs$pr <- as.integer(predict(crs$nnet, %s)>=0.5)",
-#                                     testset[[crv$NNET]])
-
     else
       respcmd[[crv$NNET]] <- predcmd[[crv$NNET]]
 
@@ -860,39 +1011,92 @@ executeEvaluateTab <- function()
       probcmd[[crv$NNET]] <- predcmd[[crv$NNET]]
     else
       probcmd[[crv$NNET]] <- gsub(")$", ', type="prob")', predcmd[[crv$NNET]])
+
+
+    }
   }
 
   if (crv$RPART %in%  mtypes)
   {
     cond.tree <- attr(class(crs$rpart), "package") %in% "party"
     if (! length(cond.tree)) cond.tree <- FALSE
-    
+
     testset[[crv$RPART]] <- testset0
-    predcmd[[crv$RPART]] <- sprintf("crs$pr <- predict(crs$rpart, newdata=%s)",
-                                testset[[crv$RPART]])
+
+    # 20160903 XDF For now just get this working for the very specific
+    # weather dataset. Then generalise it to any dataset. So we have
+    # Yes_prob.
+    
+    if (not.null(crs$xdf))
+      predcmd[[crv$RPART]] <- sprintf(paste0(
+        "rxPredict(\n",
+        "  modelObject  = crs$rpart,\n",
+        "  data         = %s,\n",
+        "  overwrite    = TRUE,\n",
+        "  predVarNames = levels(crs$xdf.split[[2]][[crs$target]]))\n\n",
+        "crs$pr <- rxDataStep(\n",
+        "  inData       = %s,\n",
+        "  varsToKeep   = levels(crs$xdf.split[[2]][[crs$target]])[[2]])[[1]]"),
+        testset[[crv$RPART]], testset[[crv$RPART]])
+    else
+      predcmd[[crv$RPART]] <- sprintf("crs$pr <- predict(crs$rpart, newdata=%s)",
+                                      testset[[crv$RPART]])
 
     # For crv$RPART, the default is to generate class probabilities for
     # each output class, so ensure we instead generate the response.
 
-    respcmd[[crv$RPART]] <- gsub(")$",
-                                 ifelse(cond.tree,
-                                        ', type="response")',
-                                        ', type="class")'),
-                                 predcmd[[crv$RPART]])
+    # 20160903 XDF TODO 20170215 CURRENTLY IN PROGRESS For now just
+    # get this working for the very specific weather dataset. Then
+    # generalise it to any dataset. So we have Yes and No classes. Can
+    # rxPredict return the class? Seems it can not. So we need to find
+    # all the _prob columns, which might be No_prob and Yes_prob in
+    # our binary case. Choose the maximum probability for each row,,
+    # identify the column name, strip the _prob, and for the final
+    # character vector turn into a factor with the same levels as the
+    # target variable.
+    
+    if (not.null(crs$xdf))
+      respcmd[[crv$RPART]] <- sprintf(
+        paste0("rxPredict(crs$rpart,\n",
+               "  data         = %s,\n",
+               "  overwrite    = TRUE,\n",
+               "  type         = 'class',\n",
+               "  predVarNames = c('Pred_Classes'))\n\n",
+
+               "# BUG FIX MRS 9.1\n\n",
+
+               "if (! 'Pred_Classes' %%in%% names(%s))\n",
+               "  names(%s)[length(%s)]",
+               " <- 'Pred_Classes'\n\n",
+
+               "crs$pr <- rxDataStep(%s, varsToKeep='Pred_Classes')[[1]]"),
+        testset[[crv$RPART]], testset[[crv$RPART]], testset[[crv$RPART]],
+        testset[[crv$RPART]], testset[[crv$RPART]])  
+    else
+      respcmd[[crv$RPART]] <- gsub(")$",
+                                   ifelse(cond.tree,
+                                          ',\n    type="response")',
+                                          ',\n    type="class")'),
+                                   predcmd[[crv$RPART]])
 
     # For RPART the default predict command generates the probabilities
     # for each class and we assume we are interested in the final class
     # (i.e., for binary classification we are interested in the 1's).
 
-    if (cond.tree)
+    # 160903 XDF TODO For now just get this working for the very
+    # specific weather dataset. Then generalise it to any dataset. So
+    # we have Yes_prob. Same as predcmd???? Check this is correct
+    
+    if (not.null(crs$xdf))
+      probcmd[[crv$RPART]] <- predcmd[[crv$RPART]]
+    else if (cond.tree)
       probcmd[[crv$RPART]] <- sub(')$', '), function(x) x[2])',
-                                  sub("predict", "sapply(treeresponse",
+                                  sub("predict", "sapply(party::treeresponse",
                                       predcmd[[crv$RPART]]))
+    else if (binomialTarget())
+      probcmd[[crv$RPART]] <- sprintf("%s[,2]", predcmd[[crv$RPART]])
     else
-      if (binomialTarget())
-        probcmd[[crv$RPART]] <- sprintf("%s[,2]", predcmd[[crv$RPART]])
-      else
-        probcmd[[crv$RPART]] <- sprintf("%s", predcmd[[crv$RPART]])
+      probcmd[[crv$RPART]] <- sprintf("%s", predcmd[[crv$RPART]])
 
     if (multinomialTarget())
     {
@@ -903,7 +1107,7 @@ executeEvaluateTab <- function()
       probcmd[[crv$RPART]] <- sub("<- ", "<- data.frame(",
                                sub(")$",
                                    sprintf(paste("), rpart=predict(crs$rpart,",
-                                                 "newdata=%s, type='class'))"),
+                                                 "newdata=%s,\n    type='class'))"),
                                            testset[[crv$RPART]]),
                                    probcmd[[crv$RPART]]))
     }
@@ -911,7 +1115,7 @@ executeEvaluateTab <- function()
 
   if (crv$RF %in%  mtypes)
   {
-    # 090301 Having added support for random forest regression seems
+    # 20090301 Having added support for random forest regression seems
     # like we need to take into acocunt missing for PvO and scoring
     # with numeric targets. In fact, we can probably add na.omit also
     # for categoric targets, since randomForest also does na.omit
@@ -919,34 +1123,67 @@ executeEvaluateTab <- function()
     # algorithms that actually need the na.omit to be done here.
 
     cond.rf <- "RandomForest" %in% class(crs$rf) # party conditional rf
-
-    # 090301 testset[[crv$RF]] <- testset0
-    if (cond.rf)
-      testset[[crv$RF]] <- testset0 # 130323 cforest handles NA in predict
+    if (! length(cond.rf)) cond.rf <- FALSE
+	
+    testset[[crv$RF]] <- testset0
+    # 20090301 testset[[crv$RF]] <- testset0
+    
+    if (not.null(crs$xdf))
+      predcmd[[crv$RF]] <- sprintf(
+        paste0("rxPredict(crs$rf, data=%s, overwrite=TRUE, type = 'prob')\n", 
+               "crs$pr <- rxDataStep(%s, varsToKeep='Yes_prob')[[1]]"),
+        testset[[crv$RF]], testset[[crv$RF]])       
+    else if (cond.rf)
+    {
+      testset[[crv$RF]] <- testset0 # 20130323 cforest handles NA in predict
+      predcmd[[crv$RF]] <- sprintf("crs$pr <- predict(crs$rf, newdata=%s)",
+                                   testset[[crv$RF]])
+    }
     else
+    {
       testset[[crv$RF]] <- sprintf("na.omit(%s)", testset0)
-
-    predcmd[[crv$RF]] <- sprintf("crs$pr <- predict(crs$rf, newdata=%s)",
-                             testset[[crv$RF]])
+      predcmd[[crv$RF]] <- sprintf("crs$pr <- predict(crs$rf, newdata=%s)",
+                                   testset[[crv$RF]])
+    }						 
 
     # The default for crv$RF is to predict the class, so no
     # modification of the predict command is required.
 
-    respcmd[[crv$RF]] <- predcmd[[crv$RF]]
+    if (not.null(crs$xdf))
+       respcmd[[crv$RF]] <- sprintf(
+        paste0("rxPredict(crs$rf,\n",
+               "  data         = %s,\n",
+               "  overwrite    = TRUE,\n",
+               "  type         = 'class',\n",
+               "  predVarNames = c('Pred_Classes'))\n\n",
+               
+               "# BUG FIX MRS 9.1\n\n",
+               
+               "if (! 'Pred_Classes' %%in%% names(%s))\n",
+               "  names(%s)[length(%s)]",
+               " <- 'Pred_Classes'\n\n",
+
+               "crs$pr <- rxDataStep(%s, varsToKeep='Pred_Classes')[[1]]"),
+        testset[[crv$RF]], testset[[crv$RF]], testset[[crv$RF]],
+        testset[[crv$RF]], testset[[crv$RF]])  
+    else
+      respcmd[[crv$RF]] <- predcmd[[crv$RF]]
 
     # For RF we request a probability with the type argument, and as
     # with RPART we extract the column of interest (the last column).
 
-    if (numericTarget())
+    if (not.null(crs$xdf))
+      probcmd[[crv$RF]] <- predcmd[[crv$RF]] 
+    else if (numericTarget())
       probcmd[[crv$RF]] <- predcmd[[crv$RF]]
     else
       if (cond.rf) 
         probcmd[[crv$RF]] <- sub(')$', '), function(x) x[2])',
-                                 sub("predict", "sapply(treeresponse",
+                                 sub("predict", "sapply(party::treeresponse",
                                      predcmd[[crv$RF]]))
       else
         probcmd[[crv$RF]] <- sprintf("%s[,2]",
-                                     gsub(")$", ', type="prob")', predcmd[[crv$RF]]))
+                                     gsub(")$", ',\n    type    = "prob")', predcmd[[crv$RF]]))
 
   }
 
@@ -1018,7 +1255,7 @@ executeEvaluateTab <- function()
 
     probcmd[[crv$KSVM]] <- sprintf("%s[,2]",
                                gsub(")$",
-                                    ', type="probabilities")',
+                                    ',\n    type    = "probabilities")',
                                     predcmd[[crv$KSVM]]))
     ## For SVM:
     ## probability.cmd <- sprintf("%s",
@@ -1032,90 +1269,117 @@ executeEvaluateTab <- function()
     # 080716 The multinom model has been moved to GLM, even though it
     # is using the nnet library. So we need to do the nnet predict
     # here.
-
-    if ("multinom" %in% class(crs$glm))
+    if (not.null(crs$xdf))
     {
       testset[[crv$GLM]] <- testset0
-      predcmd[[crv$GLM]] <- sprintf("crs$pr <- predict(crs$glm, newdata=%s)",
-                                     testset[[crv$GLM]])
-      respcmd[[crv$GLM]] <- predcmd[[crv$GLM]]
-      probcmd[[crv$GLM]] <- sub(")$", ', type="prob")', predcmd[[crv$GLM]])
-
-      # Add on the actual class also. This is useful for Score but may
-      # be a problem for other types of evaluations (of which there
-      # are currently none that use probcmd for multinom).
-
-      probcmd[[crv$GLM]] <- sub("<- ", "<- cbind(",
-                                sub(")$",
-                                    sprintf(paste("), crs$glm$lab[predict(crs$glm,",
-                                                  "newdata=%s)])"),
-                                            testset[[crv$GLM]]),
-                                    probcmd[[crv$GLM]]))
-
+      predcmd[[crv$GLM]] <- sprintf(
+        paste0("rxPredict(crs$glm,\n",
+               "  data         = %s,\n",
+               "  overwrite    = TRUE,\n",
+               "  predVarNames = c('Pred_Prob'))\n",                                            
+               #"names(%s)[length(%s)]",
+               #" <- 'Pred_Prob' # BUG FIX MRS 9.1\n",
+               sprintf(paste("crs$pr <- rxDataStep(inData = %s, overwrite = TRUE,",
+                             "varsToKeep = 'Pred_Prob')[[1]]"),
+                       testset[[crv$GLM]])),
+        testset[[crv$GLM]], testset[[crv$GLM]], testset[[crv$GLM]], testset[[crv$GLM]])
+									  
+      respcmd[[crv$GLM]] <- sprintf(
+        paste0("rxPredict(crs$glm, data=%s, overwrite=TRUE, predVarNames = c('Pred_Prob'))\n",
+               sprintf("crs$pr <- rxDataStep(inData = %s, overwrite = TRUE , transforms = list(pred_classes = ifelse(Pred_Prob > 0.5, '%s', '%s')))[['pred_classes']]",
+                       testset[[crv$GLM]],
+                       levels(crs$xdf.split[[2]][[crs$target]])[2], 
+                       levels(crs$xdf.split[[2]][[crs$target]])[1])),
+        testset[[crv$GLM]], testset[[crv$GLM]])	
+      
+      probcmd[[crv$GLM]] <- predcmd[[crv$GLM]]							  
     }
     else
     {
-
-      # GLM's predict removes rows with missing values, so we also need
-      # to ensure we remove rows with missing values here.
-
-      # 081029 Try without na.omit since if the target has missing
-      # values the record won't be scored, yet there is no reason not
-      # to score it. Example is w_reg_logistic.
-
-      ## testset[[crv$GLM]] <- sprintf("na.omit(%s)", testset0)
-
-      testset[[crv$GLM]] <- testset0
-
-      predcmd[[crv$GLM]] <- sprintf(paste("crs$pr <- predict(crs$glm,",
-                                          'type="response", newdata=%s)'),
-                                    testset[[crv$GLM]])
-
-      # For GLM, a response is a figure close to the class, either close
-      # to 1 or close to 0, so threshold it to be either 1 or 0. TODO
-      # Simplify this like?
-      #    response.cmd <- gsub("predict", "(predict",
-      #                         gsub(")$", ")>0.5)*1", response.cmd))
-
-      # 081025 Why do the as.factor? Try just the 0/1 instead. In fact
-      # we have now modified this to use the actual levels.
-
-##      respcmd[[crv$GLM]] <- gsub("predict", "as.factor(as.vector(ifelse(predict",
-##                                  gsub(")$", ', type="response") > 0.5, 1, 0)))',
-##                                       predcmd[[crv$GLM]]))
-
-      # 081029 No longer need response - already there?
-      # lvls <- sprintf(', type="response") > 0.5, "%s", "%s"))',
-      lvls <- sprintf(') > 0.5, "%s", "%s"))',
-                      levels(as.factor(crs$dataset[[crs$target]]))[2],
-                      levels(as.factor(crs$dataset[[crs$target]]))[1])
-      respcmd[[crv$GLM]] <- gsub("predict", "as.vector(ifelse(predict",
-                                 gsub(")$", lvls, predcmd[[crv$GLM]]))
-
-      # For GLM, the response is a probability of the class.
-
-      # 081029 No longer need response - already there?
-      # probcmd[[crv$GLM]] <- gsub(")$", ', type="response")', predcmd[[crv$GLM]])
-      probcmd[[crv$GLM]] <- predcmd[[crv$GLM]]
+      if ("multinom" %in% class(crs$glm))
+      {
+        testset[[crv$GLM]] <- testset0
+        predcmd[[crv$GLM]] <- sprintf("crs$pr <- predict(crs$glm, newdata=%s)",
+                                      testset[[crv$GLM]])
+        respcmd[[crv$GLM]] <- predcmd[[crv$GLM]]
+        probcmd[[crv$GLM]] <- sub(")$", ',\n    type    = "prob")', predcmd[[crv$GLM]])
+        
+        # Add on the actual class also. This is useful for Score but may
+        # be a problem for other types of evaluations (of which there
+        # are currently none that use probcmd for multinom).
+        
+        probcmd[[crv$GLM]] <- sub("<- ", "<- cbind(",
+                                  sub(")$",
+                                      sprintf(paste("), crs$glm$lab[predict(crs$glm,",
+                                                    "newdata=%s)])"),
+                                              testset[[crv$GLM]]),
+                                      probcmd[[crv$GLM]]))
+        
+      }
+      else
+      {
+        
+        # GLM's predict removes rows with missing values, so we also need
+        # to ensure we remove rows with missing values here.
+        
+        # 081029 Try without na.omit since if the target has missing
+        # values the record won't be scored, yet there is no reason not
+        # to score it. Example is w_reg_logistic.
+        
+        ## testset[[crv$GLM]] <- sprintf("na.omit(%s)", testset0)
+        
+        testset[[crv$GLM]] <- testset0
+        
+        predcmd[[crv$GLM]] <- sprintf(paste("crs$pr <- predict(crs$glm,",
+                                            '\n   type    = "response",\n   newdata = %s)'),
+                                      testset[[crv$GLM]])
+        
+        # For GLM, a response is a figure close to the class, either close
+        # to 1 or close to 0, so threshold it to be either 1 or 0. TODO
+        # Simplify this like?
+        #    response.cmd <- gsub("predict", "(predict",
+        #                         gsub(")$", ")>0.5)*1", response.cmd))
+        
+        # 081025 Why do the as.factor? Try just the 0/1 instead. In fact
+        # we have now modified this to use the actual levels.
+        
+        ##      respcmd[[crv$GLM]] <- gsub("predict", "as.factor(as.vector(ifelse(predict",
+        ##                                  gsub(")$", ', type="response") > 0.5, 1, 0)))',
+        ##                                       predcmd[[crv$GLM]]))
+        
+        # 081029 No longer need response - already there?
+        # lvls <- sprintf(', type="response") > 0.5, "%s", "%s"))',
+        lvls <- sprintf(') > 0.5, "%s", "%s"))',
+                        levels(as.factor(crs$dataset[[crs$target]]))[2],
+                        levels(as.factor(crs$dataset[[crs$target]]))[1])
+        respcmd[[crv$GLM]] <- gsub("predict", "as.vector(ifelse(predict",
+                                   gsub(")$", lvls, predcmd[[crv$GLM]]))
+        
+        # For GLM, the response is a probability of the class.
+        
+        # 081029 No longer need response - already there?
+        # probcmd[[crv$GLM]] <- gsub(")$", ', type="response")', predcmd[[crv$GLM]])
+        probcmd[[crv$GLM]] <- predcmd[[crv$GLM]]
+      }
     }
-  }
-
-##   if (GBM %in%  mtypes)
-##   {
-##     testset[[GBM]] <- testset0
-
-##     ## For GBM the default needs to know the number of trees to include.
-
-##     predcmd[[GBM]] <- sprintf(paste("crs$pr <- predict(crs$gbm, %s,",
-##                                     "n.trees=length(crs$gbm$trees))"),
-##                               testset[[GBM]])
-##     respcmd[[GBM]] <- predcmd[[GBM]]
-##     probcmd[[GBM]] <- predcmd[[GBM]]
-##   }
-
+  } 
+  
+  ##   if (GBM %in%  mtypes)
+  ##   {
+  ##     testset[[GBM]] <- testset0
+  
+  ##     ## For GBM the default needs to know the number of trees to include.
+  
+  ##     predcmd[[GBM]] <- sprintf(paste("crs$pr <- predict(crs$gbm, %s,",
+  ##                                     "n.trees=length(crs$gbm$trees))"),
+  ##                               testset[[GBM]])
+  ##     respcmd[[GBM]] <- predcmd[[GBM]]
+  ##     probcmd[[GBM]] <- predcmd[[GBM]]
+  ##   }
+  
   # Currently (and perhaps permanently) the ROCR package deals only
   # with binary classification, as does my own Risk Chart.
-
+  
   if (!(theWidget("evaluate_confusion_radiobutton")$getActive()
 
         # 090506 I had a note here that pvo was not working for
@@ -1209,10 +1473,11 @@ executeEvaluateConfusion <- function(respcmd, testset, testname)
 
   for (mtype in getEvaluateModels())
   {
-
+    smtype <- specificModelType(mtype)
+    
     setStatusBar(sprintf(Rtxt("Applying the %s model to the dataset",
                               "to generate a confusion matrix..."),
-                         commonName(mtype)))
+                         commonName(smtype)))
 
     # Generate the command to show the confusion matrix.
 
@@ -1222,28 +1487,14 @@ executeEvaluateConfusion <- function(respcmd, testset, testname)
     #ts <- sub(',.*\\]', ', ]', testset[[mtype]])
     ts <- testset[[mtype]]
 
-    confuse.cmd <- paste(sprintf("table(%s$%s, crs$pr,",
-                                 ts, crs$target),
-                         '\n        useNA="ifany",',
-                         '\n        dnn=c("',
-                         Rtxt("Actual"), '", "',
-                         Rtxt("Predicted"), '"))', sep="")
+    confuse.cmd <-
+      sprintf("rattle::errorMatrix(%s$%s, crs$pr, count=TRUE)", ts, crs$target)
 
-    percentage.cmd <- paste('pcme <- function(actual, cl)',
-                            '{',
-                            '  x <- table(actual, cl)',
-                            '  nc <- nrow(x) # Number of classes.',
-                            '  nv <- length(actual) - sum(is.na(actual) | is.na(cl)) # Number of values.',
-                            '  tbl <- cbind(x/nv,',
-                            '               Error=sapply(1:nc,',
-                            '                 function(r) round(sum(x[r,-r])/sum(x[r,]), 2)))',
-                            '  names(attr(tbl, "dimnames")) <- c("Actual", "Predicted")',
-                            '  return(tbl)',
-                            '}',
-                            sprintf('per <- pcme(%s$%s, crs$pr)', ts, crs$target),
-                            'round(per, 2)',
-                            sep="\n")
+    percentage.cmd <-
+      sprintf('(per <- rattle::errorMatrix(%s$%s, crs$pr))', ts, crs$target)
 
+    # 170215 XDF CHECKKING UP TO HERE
+    
     if (categoricTarget())
     {
       # 080528 TODO generalise to categoricTarget. 091023 Handle the
@@ -1251,17 +1502,17 @@ executeEvaluateConfusion <- function(respcmd, testset, testname)
       # possible values. 150715 TODO Need to update the formulation
       # to account for a single row in the percentage table.
 
-      error.cmd <- 'cat(100*round(1-sum(diag(per), na.rm=TRUE), 2))'
-      avgerr.cmd <- 'cat(100*round(mean(per[,"Error"], na.rm=TRUE), 2))'
+      error.cmd <- 'cat(100-sum(diag(per), na.rm=TRUE))'
+      avgerr.cmd <- 'cat(mean(per[,"Error"], na.rm=TRUE))'
       
     }
 
     # Log the R commands and execute them.
 
     appendLog(sprintf(Rtxt("Generate an Error Matrix for the %s model."),
-                      commonName(mtype)))
+                      commonName(smtype)))
     appendLog(sprintf(Rtxt("Obtain the response from the %s model."),
-                      commonName(mtype)), respcmd[[mtype]])
+                      commonName(smtype)), respcmd[[mtype]])
 
     result <- try(eval(parse(text=respcmd[[mtype]])), TRUE)
 
@@ -1279,7 +1530,7 @@ executeEvaluateConfusion <- function(respcmd, testset, testname)
                                 "or else remove them from the testing dataset.",
                                 "Alternatively, do not include that variable in the",
                                 "modelling. \n\n The actual error message was:\n\n%s"),
-                           mtype, paste(result, "\n")))
+                           smtype, paste(result, "\n")))
       else if (any(grep("undefined columns", result)))
         infoDialog(sprintf(Rtxt("It seems that the dataset on which the predictions",
                                 "from the %s model are required has some variables",
@@ -1293,7 +1544,7 @@ executeEvaluateConfusion <- function(respcmd, testset, testname)
                                 "Please load a CSV file which has",
                                 "the risk and target variables included.",
                                 "\n\n The actual error message was:\n\n%s"),
-                           mtype, paste(result, "\n")))
+                           smtype, paste(result, "\n")))
       else
         errorReport(respcmd, result)
       next()
@@ -1317,13 +1568,13 @@ executeEvaluateConfusion <- function(respcmd, testset, testname)
     appendTextview(TV,
                    sprintf(Rtxt("Error matrix for the %s model",
                                 "on %s (counts):"),
-                           commonName(mtype), testname),
+                           commonName(smtype), testname),
                    "\n\n",
                    confuse.output,
                    "\n\n",
                    sprintf(Rtxt("Error matrix for the %s model",
                                 "on %s (proportions):"),
-                           commonName(mtype), testname),
+                           commonName(smtype), testname),
                    "\n\n",
                    percentage.output,
                    if (categoricTarget())
@@ -1336,7 +1587,7 @@ executeEvaluateConfusion <- function(respcmd, testset, testname)
 
   }
 
-  return(sprintf(Rtxt("Generated confusion matrix."), mtype, testname))
+  return(sprintf(Rtxt("Generated confusion matrix."), smtype, testname))
 }
 
 #----------------------------------------------------------------------
@@ -1352,6 +1603,7 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
   resetTextview(TV)
 
   advanced.graphics <- theWidget("use_ggplot2")$getActive()
+  initial_dev <- dev.list()
 
   # Ensure a risk variable has been specified. 081002 The plotRisk
   # function still works if no risk variable has been specified, so
@@ -1362,23 +1614,26 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
   # Put 1 or 2 charts onto their own plots. Otherwise, put the
   # multiple charts onto one plot, keeping them all the same size
   # (thus if numplots is odd, leave a cell of the plot empty.
-
   numplots <- length(getEvaluateModels())
-  if (numplots == 1)
-    newPlot(1)
-  else if (numplots == 2)
-    newPlot(1)
-  else if (numplots %% 2 == 0)
-    newPlot(numplots)
-  else
-    newPlot(numplots + 1)
+
+  if (!advanced.graphics)
+  {
+    if (numplots == 1)
+      newPlot(1)
+    else if (numplots == 2)
+      newPlot(1)
+    else if (numplots %% 2 == 0)
+      newPlot(numplots)
+    else
+      newPlot(numplots + 1)
+  }
 
   if (numplots <= 2 )
     cex <- 1.0
   else if (numplots <= 4)
     cex <- 0.5
   else
-    cex <- 0.5
+    cex <- 0.3
 
   opar <- par(cex=cex)
 
@@ -1386,10 +1641,11 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
 
   for (mtype in model.list)
   {
-
+    smtype <- specificModelType(mtype)
+    
     setStatusBar(sprintf(Rtxt("Applying %s model to the dataset",
                               "to generate a risk chart ..."),
-                         commonName(mtype)))
+                         commonName(smtype)))
 
     # We need the base testset name here to get the risk variable, which
     # is not usually in the list of included columns.
@@ -1423,28 +1679,28 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
         testsetr <- gsub(testcols, newcols, testset[[mtype]], fixed=TRUE)
       }
 
-      evaluate.cmd <- paste("crs$eval <- evaluateRisk(crs$pr,",
+      evaluate.cmd <- paste("\ncrs$eval <- evaluateRisk(crs$pr,",
                             sprintf("\n    %s$%s,", testset[[mtype]], crs$target),
                             sprintf("\n    %s$%s)", testsetr, risk))
 
 
       if (advanced.graphics)
-        plot.cmd <- paste("print(riskchart(crs$pr,",
-                          '\n                ',
+        plot.cmd <- paste("\nriskchart(crs$pr,",
+                          '\n    ',
                           sprintf("%s$%s, ", testset[[mtype]], crs$target),
-                          '\n                ',
+                          '\n    ',
                           sprintf("%s$%s, ", testsetr, risk),
-                          '\n                ',
+                          '\n    ',
                           'title="',
-                          paste("Risk Chart", commonName(mtype), testname, crs$target,
+                          paste("Risk Chart", commonName(smtype), testname, crs$target,
                                 '", '),
-                          '\n                ',
+                          '\n    ',
                           'risk.name="', risk, '", recall.name="', crs$target, '",',
-                          '\n                ',
+                          '\n    ',
                           'show.lift=', ifelse(numericTarget(), "FALSE", "TRUE"),
                           ', show.precision=', ifelse(numericTarget(), "FALSE", "TRUE"),
                           ', legend.horiz=FALSE',
-                          '))\n',
+                          ') %>% print()\n',
                           sep="")
       else
         plot.cmd <- paste("plotRisk(crs$eval$Caseload, ",
@@ -1454,22 +1710,22 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
                           ', show.lift=', ifelse(numericTarget(), "FALSE", "TRUE"),
                           ', show.precision=', ifelse(numericTarget(), "FALSE", "TRUE"),
                           ")\n",
-                          genPlotTitleCmd(Rtxt("Risk Chart"), commonName(mtype),
+                          genPlotTitleCmd(Rtxt("Risk Chart"), commonName(smtype),
                                         testname, risk),
                         sep="")
     }
     else
     {
-      evaluate.cmd <- paste("crs$eval <- evaluateRisk(crs$pr,",
+      evaluate.cmd <- paste("\ncrs$eval <- evaluateRisk(crs$pr,",
                             sprintf("%s$%s)", testset[[mtype]], crs$target))
 
       if (advanced.graphics)
         plot.cmd <- paste("print(riskchart(crs$pr, ",
-                          '\n                ',
+                          '\n    ',
                           sprintf("%s$%s, ", testset[[mtype]], crs$target),
-                          '\n                ',
+                          '\n    ',
                           'title="',
-                          paste("Performance Chart", commonName(mtype), testname, '"'),
+                          paste("Performance Chart", commonName(smtype), testname, '"'),
                           ', show.lift=', ifelse(numericTarget(), "FALSE", "TRUE"),
                           ', show.precision=', ifelse(numericTarget(), "FALSE", "TRUE"),
                           ', legend.horiz=FALSE',
@@ -1481,7 +1737,7 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
                           ', show.lift=', ifelse(numericTarget(), "FALSE", "TRUE"),
                           ', show.precision=', ifelse(numericTarget(), "FALSE", "TRUE"),
                           ")\n",
-                          genPlotTitleCmd("Performance Chart", commonName(mtype),
+                          genPlotTitleCmd("Performance Chart", commonName(smtype),
                                           testname),
                           sep="")
     }
@@ -1511,7 +1767,7 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
     {
       if (any(grep("has new level", result)) || any(grep("New levels",result)))
         infoDialog("It seems that the dataset on which the probabilities",
-                   "from the", mtype, "model are required has a categoric",
+                   "from the", smtype, "model are required has a categoric",
                    "variable with levels not found in the training",
                    "dataset. The probabilities can not be determined in",
                    "this situation. You may need to either ensure",
@@ -1522,7 +1778,7 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
                    "\n\n", paste(result, "\n"))
       else if (any(grep("undefined columns", result)))
         infoDialog("It seems that the dataset on which the predictions",
-                   "from the", mtype, "model are required has some variables",
+                   "from the", smtype, "model are required has some variables",
                    "missing. This is often the case when your CSV",
                    "dataset does not have the risk or target",
                    "variables included (e.g., when your test dataset",
@@ -1575,8 +1831,8 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
       msg <- ""
     }
     id <- sprintf("c(%s)", paste(id, collapse=","))
-    msg <- paste("Summary ", commonName(mtype), " model ",
-                 sprintf("(built using %s)", mtype), " on ",
+    msg <- paste("Summary ", commonName(smtype), " model ",
+                 sprintf("(built using %s)", smtype), " on ",
                  testname,
                  " by ",
                  ifelse(numericTarget(), "predicted value", "probability"),
@@ -1598,7 +1854,7 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
     appendTextview(TV, paste("The area under the ",
                              if (length(crs$risk))
                              "Recall curve " else "Risk and Recall curves ",
-                             "for ", commonName(mtype), " model\n\n",
+                             "for ", commonName(smtype), " model\n\n",
                              "Area under the Recall (green) curve: ",
                              sprintf("%d%% (%0.3f)\n",
                                      round(100*aucRecall), aucRecall),
@@ -1612,10 +1868,11 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
     # Display the Risk Chart itself now.
 
     # For 2 plots, so as not to overwrite the first plot, if we are
-    # about to plot the second plot, initiate a new plot.
+    # about to plot the second plot, initiate a new plot. The logic is
+    # not quite right as there is an initial empty plot (dev 2)?
 
-    if (advanced.graphics && dev.cur() != 2) # 121219 Not sure why 2?
-      newPlot()
+    if (advanced.graphics)
+      newPlot(1)
     else if (numplots == 2 && mtype == model.list[length(model.list)])
       newPlot(1)
 
@@ -1623,6 +1880,15 @@ executeEvaluateRisk <- function(probcmd, testset, testname)
 
   }
 
+  # 20161119 A phantom and empty X11cario device as dev number 2 pops
+  # up so kill it. The other devices are just cairo? NOT such a good
+  # idea closing the device if other plots are also on display and are
+  # using dev=2 just fine so check if the initial device list is empty
+  # too! The real solution is to figure why the inital dev=2 ends up
+  # empty.
+
+  if (advanced.graphics && is.null(initial_dev)) dev.off(2)
+  
   # Restore par
 
   par(opar)
@@ -2018,7 +2284,9 @@ executeEvaluateCostCurve <- function(probcmd, testset, testname)
 
   for (mtype in model.list)
   {
-    setStatusBar("Applying", commonName(mtype),
+    smtype <- specificModelType(mtype)
+    
+    setStatusBar("Applying", commonName(smtype),
                  "model to the dataset to generate a cost curve ...")
 
     mcount <- mcount + 1
@@ -2046,7 +2314,7 @@ executeEvaluateCostCurve <- function(probcmd, testset, testname)
                       'text(0.12, 1, "Predict +ve")',
                       'text(0.88, 1, "Predict -ve")',
                       # TODO 080810 Add text AUC=... to plot
-                      genPlotTitleCmd(Rtxt("Cost Curve"), commonName(mtype),
+                      genPlotTitleCmd(Rtxt("Cost Curve"), commonName(smtype),
                                       testname),
                       sep="\n")
 
@@ -2056,7 +2324,7 @@ executeEvaluateCostCurve <- function(probcmd, testset, testname)
     eval(parse(text=lib.cmd))
 
     appendLog(sprintf(Rtxt("Generate a Cost Curve for the %s model on %s."),
-                     commonName(mtype), testname),
+                     commonName(smtype), testname),
              probcmd[[mtype]], "\n", plot.cmd)
 
     result <- try(eval(parse(text=probcmd[[mtype]])), silent=TRUE)
@@ -2075,7 +2343,7 @@ executeEvaluateCostCurve <- function(probcmd, testset, testname)
                                 "or else remove them from the testing dataset.",
                                 "Alternatively, do not include that variable in the",
                                 "modelling. \n\nThe actual error message was:"),
-                           mtype),
+                           smtype),
                    "\n\n", paste(result, "\n"))
       else
         errorReport(probcmd, result)
@@ -2114,8 +2382,10 @@ executeEvaluateLift <- function(probcmd, testset, testname)
 
   for (mtype in getEvaluateModels())
   {
+    smtype <- specificModelType(mtype)
+    
     setStatusBar(sprintf(Rtxt("Applying %s model to the dataset to generate",
-                              "a lift chart ..."), mtype))
+                              "a lift chart ..."), smtype))
 
     mcount <- mcount + 1
     plot.cmd <- paste(handleMissingValues(testset, mtype),
@@ -2140,7 +2410,7 @@ executeEvaluateLift <- function(probcmd, testset, testname)
     # print(mtype); print(testname)
 
     appendLog(sprintf(Rtxt("Obtain %s for the %s model on %s."),
-                     Rtxt("predictions"), mtype, testname),
+                     Rtxt("predictions"), smtype, testname),
              probcmd[[mtype]], "\n", plot.cmd)
 
     result <- try(eval(parse(text=probcmd[[mtype]])), silent=TRUE)
@@ -2159,7 +2429,7 @@ executeEvaluateLift <- function(probcmd, testset, testname)
                                 "or else remove them from the testing dataset.",
                                 "Alternatively, do not include that variable in the",
                                 "modelling. \n\n The actual error message was:"),
-                           mtype),
+                           smtype),
                   "\n\n",  paste(result, "\n"))
       else
         errorReport(probcmd, result)
@@ -2190,7 +2460,7 @@ executeEvaluateLift <- function(probcmd, testset, testname)
                       sprintf("add=%s)", addplot),
                       sep="")
     appendLog(sprintf(Rtxt("Generate a Lift Chart for the %s model on %s."),
-                     mtype, sub('\\[test\\]', '[train]', testname)),
+                     smtype, sub('\\[test\\]', '[train]', testname)),
              sub("-crs\\$sample", "crs$sample",
                                    probcmd[[mtype]]), "\n", plot.cmd)
 
@@ -2204,7 +2474,7 @@ executeEvaluateLift <- function(probcmd, testset, testname)
   }
   else
   {
-    models <- getEvaluateModels()
+    models <- sapply(getEvaluateModels(), specificModelType)
     legtitle <- Rtxt("Models")
     title <- testname
   }
@@ -2257,6 +2527,8 @@ executeEvaluateROC <- function(probcmd, testset, testname)
 
   for (mtype in getEvaluateModels())
   {
+    smtype <- specificModelType(mtype)
+    
     # A new plot for each chart.
     
     if (advanced.graphics) newPlot()
@@ -2265,7 +2537,7 @@ executeEvaluateROC <- function(probcmd, testset, testname)
     
     setStatusBar(sprintf(Rtxt("Applying %s model to the dataset to generate",
                               "an ROC plot ..."),
-                         mtype))
+                         smtype))
 
     mcount <- mcount + 1
 
@@ -2281,7 +2553,7 @@ executeEvaluateROC <- function(probcmd, testset, testname)
               'p <- p + geom_line(colour="red")',
               'p <- p + xlab("False Positive Rate") + ylab("True Positive Rate")',
               sprintf('p <- p + ggtitle("ROC Curve %s %s %s")',
-                      commonName(mtype), testname, crs$target),
+                      commonName(smtype), testname, crs$target),
               'p <- p + theme(plot.title=element_text(size=10))',
               paste('p <- p + geom_line(data=data.frame(), aes(x=c(0,1), y=c(0,1)),',
                     'colour="grey")'),
@@ -2312,7 +2584,7 @@ executeEvaluateROC <- function(probcmd, testset, testname)
     }
     
     appendLog(sprintf(Rtxt("Generate an ROC Curve for the %s model on %s."),
-                     mtype, testname),
+                     smtype, testname),
              probcmd[[mtype]], "\n", plot.cmd)
 
     result <- try(eval(parse(text=probcmd[[mtype]])), silent=TRUE)
@@ -2331,7 +2603,7 @@ executeEvaluateROC <- function(probcmd, testset, testname)
                                 "or else remove them from the testing dataset.",
                                 "Alternatively, do not include that variable in the",
                                 "modelling. \n\n The actual error message was:"),
-                           mtype),
+                           smtype),
                    "\n\n",
                    paste(result, "\n"))
       else
@@ -2349,7 +2621,7 @@ executeEvaluateROC <- function(probcmd, testset, testname)
     auc <- eval(parse(text=auc.cmd))
     appendTextview(TV, sprintf(Rtxt("Area under the ROC curve for the",
                                     "%s model on %s is %0.4f"),
-                               mtype, testname, attr(auc, "y.values")))
+                               smtype, testname, attr(auc, "y.values")))
   }
   if (! advanced.graphics)
   {
@@ -2372,7 +2644,7 @@ executeEvaluateROC <- function(probcmd, testset, testname)
                         sprintf("add=%s)\n", addplot),
                         sep="")
       appendLog(sprintf(Rtxt("Generate an ROC curve for the %s model on %s."),
-                        mtype, sub(sprintf("\\[%s\\]", Rtxt("test")), '[train]', testname)),
+                        smtype, sub(sprintf("\\[%s\\]", Rtxt("test")), '[train]', testname)),
                 sub("-crs\\$sample", "crs$sample",
                     probcmd[[mtype]]), "\n", plot.cmd)
       
@@ -2386,7 +2658,7 @@ executeEvaluateROC <- function(probcmd, testset, testname)
     }
     else
     {
-      models <- getEvaluateModels()
+      models <- sapply(getEvaluateModels(), specificModelType)
       legtitle <- Rtxt("Models")
       title <- testname
     }
@@ -2427,8 +2699,10 @@ executeEvaluatePrecision <- function(probcmd, testset, testname)
 
   for (mtype in getEvaluateModels())
   {
+    smtype <- specificModelType(mtype)
+    
     setStatusBar(sprintf(Rtxt("Applying %s model to the dataset to generate",
-                              "a Precision/Recall plot ..."), mtype))
+                              "a Precision/Recall plot ..."), smtype))
 
     mcount <- mcount + 1
 
@@ -2445,7 +2719,7 @@ executeEvaluatePrecision <- function(probcmd, testset, testname)
     eval(parse(text=lib.cmd))
 
     appendLog(sprintf(Rtxt("Generate a Precision/Recall Plot for the %s model on %s."),
-                     mtype, testname),
+                     smtype, testname),
              probcmd[[mtype]], "\n", plot.cmd)
 
     result <- try(eval(parse(text=probcmd[[mtype]])), silent=TRUE)
@@ -2464,7 +2738,7 @@ executeEvaluatePrecision <- function(probcmd, testset, testname)
                                 "or else remove them from the testing dataset.",
                                 "Alternatively, do not include that variable in the",
                                 "modelling. \n\n The actual error message was:"),
-                           mtype), "\n\n", paste(result, "\n"))
+                           smtype), "\n\n", paste(result, "\n"))
       else
         errorReport(probcmd, result)
       next()
@@ -2490,7 +2764,7 @@ executeEvaluatePrecision <- function(probcmd, testset, testname)
                       sprintf("add=%s)\n", addplot),
                       sep="")
     appendLog(sprintf(Rtxt("Generate a Precision/Recall Plot for the %s model on %s."),
-                     mtype, sub('\\[test\\]', '[train]', testname)),
+                     smtype, sub('\\[test\\]', '[train]', testname)),
              sub("-crs\\$sample", "crs$sample",
                                    probcmd[[mtype]]), "\n", plot.cmd)
 
@@ -2504,7 +2778,7 @@ executeEvaluatePrecision <- function(probcmd, testset, testname)
   }
   else
   {
-    models <- getEvaluateModels()
+    models <- sapply(getEvaluateModels(), specificModelType)
     legtitle <- Rtxt("Models")
     title <- testname
   }
@@ -2544,9 +2818,11 @@ executeEvaluateSensitivity <- function(probcmd, testset, testname)
 
   for (mtype in getEvaluateModels())
   {
+    smtype <- specificModelType(mtype)
+
     setStatusBar(sprintf(Rtxt("Applying %s model to the dataset to generate",
                               "a Sensitivity plot ..."),
-                         mtype))
+                         smtype))
 
     mcount <- mcount + 1
     plot.cmd <- paste(handleMissingValues(testset, mtype),
@@ -2561,7 +2837,7 @@ executeEvaluateSensitivity <- function(probcmd, testset, testname)
     eval(parse(text=lib.cmd))
 
     appendLog(sprintf(Rtxt("Generate Sensitivity/Specificity Plot for %s model on %s."),
-                     mtype, testname),
+                     smtype, testname),
              probcmd[[mtype]], "\n", plot.cmd)
 
     result <- try(eval(parse(text=probcmd[[mtype]])), silent=TRUE)
@@ -2580,7 +2856,7 @@ executeEvaluateSensitivity <- function(probcmd, testset, testname)
                                 "or else remove them from the testing dataset.",
                                 "Alternatively, do not include that variable in the",
                                 "modelling.\n\nThe actual error message was:"),
-                           mtype),
+                           smtype),
                    "\n\n", paste(result, "\n"))
       else
         errorReport(probcmd, result)
@@ -2606,7 +2882,7 @@ executeEvaluateSensitivity <- function(probcmd, testset, testname)
                       sprintf("add=%s)\n", addplot),
                       sep="")
     appendLog(sprintf(Rtxt("Generate a Lift Chart for the %s model on %s."),
-                     mtype, sub('\\[test\\]', '[train]', testname)),
+                     smtype, sub('\\[test\\]', '[train]', testname)),
              sub("-crs\\$sample", "crs$sample",
                                    probcmd[[mtype]]), "\n", plot.cmd)
 
@@ -2620,7 +2896,7 @@ executeEvaluateSensitivity <- function(probcmd, testset, testname)
   }
   else
   {
-    models <- getEvaluateModels()
+    models <- sapply(getEvaluateModels(), specificModelType)
     legtitle <- Rtxt("Models")
     title <- testname
   }
@@ -2836,7 +3112,9 @@ executeEvaluateScore <- function(probcmd, respcmd, testset, testname, dfedit.don
 
   for (mtype in the.models)
   {
-    setStatusBar(sprintf(Rtxt("Scoring dataset using %s ..."), mtype))
+    smtype <- specificModelType(mtype)
+    
+    setStatusBar(sprintf(Rtxt("Scoring dataset using %s ..."), smtype))
 
     # Determine whether we want the respcmd (for trees and multinom)
     # or the probcmd (for logistic regression). 081204 Originally we
@@ -2865,7 +3143,7 @@ executeEvaluateScore <- function(probcmd, respcmd, testset, testname, dfedit.don
                                     ifelse(numericTarget(),
                                            Rtxt("predictions"),
                                            Rtxt("class")))),
-                      commonName(mtype), testname),
+                      commonName(smtype), testname),
               thecmd[[mtype]])
 
     result <- try(eval(parse(text=thecmd[[mtype]])), silent=TRUE)
@@ -2886,7 +3164,7 @@ executeEvaluateScore <- function(probcmd, respcmd, testset, testname, dfedit.don
                                 "or else remove them from the testing dataset.",
                                 "Alternatively, do not include that variable in the",
                                 "modelling.\n\nThe actual error message was:\n\n"),
-                           mtype),
+                           smtype),
                    paste(result, "\n"))
       else
         errorReport(thecmd, result)
@@ -3100,10 +3378,11 @@ executeEvaluatePvOplot <- function(probcmd, testset, testname)
 
   for (mtype in model.list)
   {
+    smtype <- specificModelType(mtype)
 
     appendLog(sprintf(Rtxt("%s: Generate a Predicted v Observed plot",
                             "for %s model on %s."),
-                      toupper(mtype), mtype, testname),
+                      toupper(smtype), smtype, testname),
               probcmd[[mtype]])
 
     result <- try(eval(parse(text=probcmd[[mtype]])), silent=TRUE)
@@ -3125,7 +3404,7 @@ executeEvaluatePvOplot <- function(probcmd, testset, testname)
                                 "or else remove them from the testing dataset.",
                                 "Alternatively, do not include that variable in the",
                                 "modelling.\n\nThe actual error message was:"),
-                           mtype),
+                           smtype),
                    "\n\n", paste(result, "\n"))
       else
         errorReport(probcmd, result)
@@ -3355,7 +3634,7 @@ executeEvaluatePvOplot <- function(probcmd, testset, testname)
     # need to extract that.
 
     title.cmd <- paste(genPlotTitleCmd(paste(Rtxt("Predicted vs. Observed"), "\n", sep=""),
-                                       commonName(mtype),
+                                       commonName(smtype),
                                        paste(Rtxt("Model"), "\n", sep=""), testname),
                        '\ngrid()', sep="")
     appendLog(Rtxt("Add a title and grid to the plot."), title.cmd)
@@ -3381,6 +3660,8 @@ executeEvaluateHand <- function(probcmd, testset, testname)
 
   for (mtype in model.list)
   {
+    smtype <- specificModelType(mtype)
+    
     newPlot(4)
     pr <- try(eval(parse(text=probcmd[[mtype]])), silent=TRUE)
     scoreset <- testset[[mtype]]
@@ -3405,6 +3686,6 @@ executeEvaluateHand <- function(probcmd, testset, testname)
 
     with(result$metric,
          cat(sprintf("%s: H=%f,  Gini=%f, AUC=%f,AUCH=%f, KS=%f\n",
-                     mtype, H, Gini, AUC, AUCH, KS)))
+                     smtype, H, Gini, AUC, AUCH, KS)))
   }
 }

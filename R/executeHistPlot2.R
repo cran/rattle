@@ -1,9 +1,15 @@
 #' Perform the required operations for displaying histograms using ggplot2.
 #' 
-#' Time-stamp: <2015-09-17 21:08:44 gjw>
+#' Time-stamp: <2016-09-19 17:06:40 Graham Williams>
 #' 
 executeHistPlot2 <- function(dataset, vars, target, targets, stratify, sampling, pmax)
 {
+  # Check prerequisite packages.
+
+  if (!packageIsAvailable("ggplot2", Rtxt("build plots using a grammar of graphics"))) return()
+  if (!packageIsAvailable("dplyr", Rtxt("mutate the supplied dataset"))) return()
+  if (!packageIsAvailable("gridExtra", Rtxt("arrange plots on a grid"))) return()
+
   startLog(Rtxt("Display histogram plots for the selected variables."))
 
   # We start a new plot since we could be drawing multiple types of
@@ -22,6 +28,9 @@ executeHistPlot2 <- function(dataset, vars, target, targets, stratify, sampling,
     plot.cmd <- stringr::str_c('# Generate the plot.\n\n',
                                sprintf("p%02d", i), ' <- crs %>%\n',
                                '  with(', dataset, ') %>%\n',
+                               if (length(target))
+                                 stringr::str_c('  dplyr::mutate(', target,
+                                                '=as.factor(', target, ')) %>%\n'),
                                '  dplyr::select(', vars[i],
                                ifelse(length(target), stringr::str_c(", ", target), ""),
                                ') %>%\n',

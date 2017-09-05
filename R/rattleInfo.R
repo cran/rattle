@@ -30,7 +30,7 @@ rattleInfo <- function(all.dependencies=FALSE,
   if (have.av) rav <- av["rattle", "Version"]
   
   cat(sprintf("Rattle: version %s", riv))
-  if (have.av) cat(sprintf(" CRAN %s", rav))
+  if (have.av && compareVersion(riv, rav) != 1) cat(sprintf(" CRAN %s", rav))
   cat("\n")
 
   # Record the packages that can be upgraded
@@ -134,7 +134,7 @@ rattleInfo <- function(all.dependencies=FALSE,
                       '> install.packages(c("%s"))\n\n ',
                       '> install.packages(rattleInfo(%s%s%s%s%s%s%s))\n\n'),
                 paste(strwrap(paste(up, collapse='", "'),
-                              width=60, exdent=23), collapse="\n"),
+                              width=crv$log_width, exdent=23), collapse="\n"),
                 ifelse(all.dependencies, "all.dependencies=TRUE", ""),
                 ifelse(all.dependencies &&
                        (include.not.installed ||

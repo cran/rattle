@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-11-25 08:31:04 gjw>
+# Time-stamp: <2017-08-10 16:56:26 Graham Williams>
 #
 # Implement EXPLORE functionality.
 #
@@ -28,7 +28,7 @@ resetExploreTab <- function(new.dataset=TRUE)
   
   if (new.dataset)
   {
-    vl <- getCategoricVariables(type="names",include.target=T)
+    vl <- getCategoricVariables(type="names", include.target=TRUE)
     
     if (length(vl))
     {
@@ -117,8 +117,12 @@ executeExploreTab <- function()
 #    if (theWidget("explore_interactive_latticist_radiobutton")$getActive())
 #      executeExplorePlaywith(dataset)
 #    else
-      if (theWidget("explore_interactive_ggobi_radiobutton")$getActive())
+    if (theWidget("explore_interactive_ggobi_radiobutton")$getActive())
       executeExploreGGobi(dataset, crs$dataname)
+    else if (theWidget("explore_interactive_ggraptr_radiobutton")$getActive())
+    {
+      executeExploreGGRaptR(crs$dataname, crs$dataset)
+    }
 #    else if (theWidget("explore_interactive_plotbuilder_radiobutton")$getActive())
 #      executeExplorePlotBuilder()
   }
@@ -196,14 +200,18 @@ executeExploreSummary <- function(dataset)
     # available.
 
     contents.cmd <- ""
-    if (packageIsAvailable("Hmisc", Rtxt("describe the contents of a data frame")))
+    if (is.null(crs$xdf) &&
+          packageIsAvailable("Hmisc", Rtxt("describe the contents of a data frame")))
     {
       lib.cmd <- "library(Hmisc, quietly=TRUE)"
       appendLog(packageProvides("Hmisc", "contents"), lib.cmd)
       eval(parse(text=lib.cmd))
       contents.cmd <- sprintf("contents(%s)", dataset)
     }
-    summary.cmd <- sprintf("summary(%s)", dataset)
+    if(not.null(crs$xdf))
+      summary.cmd <- sprintf("summary(%s)", "crs$xdf.split[[1]]")
+    else
+      summary.cmd <- sprintf("summary(%s)", dataset)
     
     appendLog(Rtxt("Obtain a summary of the dataset."), contents.cmd, "\n", summary.cmd)
     appendTextview(TV,
@@ -218,8 +226,7 @@ executeExploreSummary <- function(dataset)
                                 "\nEnable the 'Show Missing'",
                                 "check box for details."),
                            missing),
-                   "\n",
-                   collectOutput(contents.cmd),
+                   if (nchar(contents.cmd) > 0) paste("\n", collectOutput(contents.cmd)),
                    "\n\n",
                    Rtxt("For the simple distribution tables below the 1st and 3rd Qu.",
                         "\nrefer to the first and third quartiles, indicating that 25%",
@@ -576,9 +583,10 @@ plotDigitFreq <- function(ds)
 
 executeBenfordPlot2 <- function(dname, benplots, target, targets, stratify, sampling, pmax)
 {
-  if (! packageIsAvailable("ggplot2", Rtxt("plot a Benford's distribution")) ||
-      ! packageIsAvailable("reshape", Rtxt("arrange data for Benford's distribution")))
-    return(FALSE)
+  # Ceck prerequisite packages.
+  
+  if (! packageIsAvailable("ggplot2", Rtxt("plot a Benford's distribution"))) return(FALSE)
+  if (! packageIsAvailable("reshape", Rtxt("arrange data for Benford's distribution"))) return(FALSE)
   
   startLog("Benford's Law")
 
@@ -707,8 +715,12 @@ executeExplorePlot <- function(dataset,
   # rather than relying on going back to the data tab to change.
     
   target <- theWidget("pairs_color_combobox")$getActiveText()
-  if (length(target) && target == " ") target <- NULL
+
+  # 160919 If the target is " " then perhaps we are saying no group
+  # by?
     
+  if (length(target) && target == " ") target <- NULL # crs$target
+
   # Has the advanced graphics (ggplot2) option be enabled?
 
   advanced.graphics <- theWidget("use_ggplot2")$getActive()
@@ -3599,12 +3611,20 @@ executeExploreCorrelation <- function(dataset, newplot=TRUE)
 
   lib.cmd <- sprintf("library(%s, quietly=TRUE)",
                      ifelse(advanced.graphics, "corrplot", "ellipse"))
+  if(not.null(crs$xdf))
+  {
+    crscor.cmd  <- sprintf("%scrs$cor <- rxCor(formula = as.formula(paste( '~', paste(colnames(%s), collapse=' + '))), data=%s)",
+                                               ifelse(nas, naids.cmd, ""),"crs$xdf","crs$xdf")
+  }
+  else
+  {
   crscor.cmd  <- sprintf('%scrs$cor <- cor(%s, use="pairwise", method="%s")',
                          ifelse(nas, naids.cmd, ""),
                          ifelse(nas,
                                 sprintf("is.na(%s[naids])", dataset),
                                 dataset),
                          method)
+  }
   if (ordered)
     crsord.cmd  <- paste("crs$ord <- order(crs$cor[1,])",
                          "crs$cor <- crs$cor[crs$ord, crs$ord]",

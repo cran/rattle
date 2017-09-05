@@ -1,7 +1,7 @@
 \name{audit}
 \docType{data}
 \alias{audit}
-\title{Sample dataset for illustration Rattle functionality.}
+\title{Sample dataset to illustrate Rattle functionality.}
 \description{
   
   The audit dataset is an artificially constructed dataset that has some
@@ -20,7 +20,7 @@
   sized dataset is suitable.
 
   The dataset itself is derived from publicly available data (which has
-  nothing to do with audits). See \link{acquireAuditData} for details.
+  nothing to do with audits).
 
 }
 

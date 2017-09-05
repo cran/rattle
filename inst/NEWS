@@ -1,4 +1,195 @@
-rattle 4.0.6 Graham.Williams@togaware.com 2016-01-26 11:12:01
+rattle 5.1.0 2017-09-04 08:20:34 Graham.Williams@togaware.com
+
+  * Resolve all final check tests and release to CRAN.
+
+rattle 5.0.19 2017-07-10 15:14:34 Graham.Williams@togaware.com
+
+  * Debug the xgboost interface - limited to binary classifcation
+    tasks for now. Key is that the R code is exported and can be used
+    as a template for extended modelling.
+
+rattle 5.0.18 2017-06-27 06:54:48 Graham.Williams@togaware.com
+
+  * Tune Boost interface.
+
+rattle 5.0.17 2017-06-24 10:58:15 Graham.Williams@togaware.com
+
+  * Move the dataset from the rattle package to a separate rattle.data
+    package in line with CRAN guidelines to have a separate package
+    for slower changing datasets of considerable size. This will also
+    allow the option to provide further datasets for rattle as part of
+    that package.
+
+  * Use weather.csv as the sample for both R and Microsoft R as
+    weatherAUS.csv is too large to include in a CRAN package.
+
+  * Ensure strings are treated as categoricals on loading the data
+    with Microsoft R so as to conform to read.csv() and to be
+    consistent with the non-Microsoft R version of Rattle.
+
+rattle 5.0.16 2017-06-17 08:18:26 Graham.Williams@togaware.com
+
+  * Update the weather dataset from the Australian Bureau of
+    Meteorology and add sample weatherAUS.xdf to the package to
+    be loaded as the default example when Microsoft R is
+    detected. XDF is a file system based data format used by
+    Microsoft R to handle datasets of *any* size rather than
+    being limited by available computer RAM.
+
+rattle 5.0.15 2017-06-17 07:48:30 Graham.Williams@togaware.com
+
+  * Merge RevoScaleR (Microsoft R) support for NeuralNetworks and
+    KMeans from Microsoft India Data Group team.
+
+rattle 5.0.14 2017-06-12 13:12:00 Graham.Williams@togaware.com
+
+  * Merge support for RGtk2 2.20.31 and 2.20.33 to resolve the
+    bug across all installations.
+
+rattle 5.0.13 2017-06-05 16:51:18 Graham.Williams@togaware.com
+
+  * Merge initial xgboost support from Zhou Fang. This is in
+    testing and will become the default boosting algorithm soon.
+
+rattle 5.0.12 2017-05-30 13:52:51 Graham.Williams@togaware.com
+
+  * Bug fix call to errorMatrix() where counts= is not count=.
+
+  * Bug fix to evaluate where respcmd for random forest has
+    disappeared when incorporating MRS updates.
+
+rattle 5.0.11 2017-05-26 17:43:01 Graham.Williams@togaware.com
+
+  * RGtk2 version 2.20.33 released and caused some issues with
+    Rattle. Heuristic test of libglade/GtkBuilder began failing
+    and retval no longer used for obtaining returned values. 
+
+rattle 5.0.10 2017-04-30 13:57:16 Graham.Williams@togaware.com
+
+  * Review predict.hclust() to use cutree() by default and
+    predict.kmeans() for a Euclidean distance approach as an
+    option. Bug report by Hamed Mamani.
+
+rattle 5.0.9 2017-04-14 13:17:33 Graham.Williams@togaware.com
+
+  * Introduce a checksum for R datasets (data.frames) so that we
+    can identify when a user has changed the R dataset outside of
+    Rattle, and have the new version loaded.
+
+rattle 5.0.8 Graham.Williams@togaware.com
+
+  * Incorporate updates for ggratpR(). Close to functional and so
+    it is nearly ready for release.
+
+rattle 5.0.7 2017-03-05 18:13:22 Graham.Williams@togaware.com
+
+  * Support for rxDTree, rxDForest, rxGlm, rxLinMod. Thanks to
+    Durga Prasad Chappidi.
+
+rattle 5.0.6 2017-02-25 09:51:55 Graham Williams
+
+  * errorMatrix() more robust to character values and miss-match
+    in factor levels. Thanks to Fang Zhou.
+
+rattle 5.0.5 Graham.Williams@togaware.com 2017-02-15 07:22:43 Graham Williams
+
+  * Update weatherAUS dataset.
+
+  * Bug fix for sample XDF dataset - if smaller the
+    crv$xdf_preview then load the whole dataset into memory.
+       
+  * ggVarImp now has n= option for the top n variables. Also
+    supports xgb.Booster models from xgboost.
+
+rattle 5.0.4 Graham.Williams@togaware.com 2017-02-04 15:15:34 Graham Williams
+
+  * Bug fix ggVarImp to work for randomForest() when importance=FALSE.
+
+  * Add log= option to ggVarImp() for a log scale.
+
+  * Add pc (percentages) and digits to errorMatrix().
+
+rattle 5.0.3 Graham.Williams@togaware.com 2017-02-02 15:18:28 Graham Williams
+
+  * Add sample_n() for xdf - temporary until dplyrXdf supports it.
+
+rattle 5.0.2 Graham.Williams@togaware.com 2016-10-02 15:06:52
+
+  * Implement generic ggVarImp() to plot variable importance for
+    different models.
+
+  * Implement errorMatrix() as a replacement for generating code
+    to do this pcme() during a rattle run.
+
+  * Update the weather AUS dataset from the Australian Bureau of
+    Meteorology.
+
+  * Add a subtitle to riskchart().
+
+rattle 5.0.1 Graham.Williams@togaware.com
+       
+  * Begin exposing :: prefix in the log tab. It's educational and
+    self documenting.
+
+  * Support Explore -> Distribution -> Group By to include the
+    numeric target variable (usually only categorics listed) if
+    it has 10 or fewer levels. Suggested by Eugene Dubassarsky.
+
+  * Additional XDF support: rxDForest.
+
+rattle 5.0.0 Graham.Williams@togaware.com
+
+  * Initial support for the XDF format: rxDTree.
+
+rattle 4.2.0 Graham.Williams@togaware.com 2016-07-22 06:19:15
+
+       * Include dplyr as an Import.
+
+       * Add support for Eugene Dubassarsky's ggraptr.
+
+       * Cleanup and perfect executeModelRF and Log code.
+
+rattle 4.1.8 Graham.Williams@togaware.com 2016-06-24 20:36:51
+
+       * Add transparency to ggpairs plot. Reported by Eugene
+         Dubossarsky.
+
+rattle 4.1.7 Graham.Williams@togaware.com 2016-06-21 21:02:13 
+
+       * Bug fix for Benfords when the target is numeric. An empty
+         Group By will use the target variable to stratify. Reported
+         by Eugene Dubossarsky.
+
+       *  Spelling fixes provided by George Wilson.
+
+rattle 4.1.6 Graham.Williams@togaware.com 2016-06-21 20:34:49
+
+       * Bug fix for new version of GGally - to get target
+         colours. Reported by Eugene Dubossarsky.
+
+rattle 4.1.3 Graham.Williams@togaware.com 2016-05-12 10:22:01
+
+       * Update copyright to 2016.
+
+       * Add stringr dependency.
+
+       * Fix missing comment character in log tab.
+
+rattle 4.1.3 Graham.Williams@togaware.com 2016-03-13 15:07:07
+
+       * Add type= to fancyRpartPlot(). Requested by Michelle Gosse.
+
+rattle 4.1.2 Graham.Williams@togaware.com 2016-03-13 06:24:21
+
+       * Bug fix for missing GUI code for
+         export_filechooserdialog. Reported by Bill Burns.
+
+rattle 4.1.1 Graham.Williams@togaware.com 2016-01-26 19:50:07
+
+       * Bug fix for a single input variable in the dataset when
+         scoring. Reported by Szabo Szilard.
+
+rattle 4.1.0 Graham.Williams@togaware.com 2016-01-26 11:12:01
 
        * Bug fix calculation of confusion matricies when either actual
          or predictive values have missing values. Reported by Roger
@@ -16,8 +207,6 @@ rattle 4.0.6 Graham.Williams@togaware.com 2016-01-26 11:12:01
          proportion. reported by Eugene Dubossarsky.
 
        * Remove grid from ggpairs plot and fine tune for presentation.
-
-       * 
 
 rattle 4.0.0 Graham.Williams@togaware.com 2015-09-21 06:00:49
        

@@ -2,7 +2,7 @@
 ##
 ## This is a model "module" for the rattle GUI interface
 ##
-## Time-stamp: <2010-03-16 06:40:46 Graham Williams>
+## Time-stamp: <2017-07-11 11:31:10 Graham Williams>
 ##
 ## Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -54,12 +54,18 @@ on_ada_defaults_button_clicked <- function(button)
 
 on_ada_importance_button_clicked <- function(button)
 {
-  plotImportanceAda()
+  if (theWidget("model_boost_ada_radiobutton")$getActive())
+    plotImportanceAda()
+  else if (theWidget("model_boost_xgb_radiobutton")$getActive())
+    plotImportanceXgb()
 }
 
 on_ada_errors_button_clicked <- function(button)
 {
-  plotErrorsAda()
+  if (theWidget("model_boost_ada_radiobutton")$getActive())
+    plotErrorsAda()
+  else if (theWidget("model_boost_xgb_radiobutton")$getActive())
+    plotErrorsXgb()
 }
 
 on_ada_list_button_clicked <- function(button)
@@ -156,6 +162,7 @@ drawTreesAdaGui <- function()
 setGuiDefaultsAda <- function(stumps=FALSE)
 {
   theWidget("ada_target_label")$setText(Rtxt("No Target"))
+  xgb <- theWidget("model_boost_xgb_radiobutton")$getActive()
   
   if (stumps)
   {
@@ -178,20 +185,21 @@ setGuiDefaultsAda <- function(stumps=FALSE)
   }
   else
   {
-    theWidget("ada_maxdepth_spinbutton")$setValue(30)
+    
+    theWidget("ada_maxdepth_spinbutton")$setValue(ifelse(xgb,6,30))
     theWidget("ada_minsplit_spinbutton")$setValue(20)
     theWidget("ada_cp_spinbutton")$setValue(0.01)
     theWidget("ada_xval_spinbutton")$setValue(10)
     # These may have been made not sensitive through choosing the
     # Stumps option.
     theWidget("ada_max_depth_label")$setSensitive(TRUE)
-    theWidget("ada_min_split_label")$setSensitive(TRUE)
-    theWidget("ada_complexity_label")$setSensitive(TRUE)
-    theWidget("ada_xval_label")$setSensitive(TRUE)
+    theWidget("ada_min_split_label")$setSensitive(!xgb)
+    theWidget("ada_complexity_label")$setSensitive(!xgb)
+    theWidget("ada_xval_label")$setSensitive(!xgb)
     theWidget("ada_maxdepth_spinbutton")$setSensitive(TRUE)
-    theWidget("ada_minsplit_spinbutton")$setSensitive(TRUE)
-    theWidget("ada_cp_spinbutton")$setSensitive(TRUE)
-    theWidget("ada_xval_spinbutton")$setSensitive(TRUE)
+    theWidget("ada_minsplit_spinbutton")$setSensitive(!xgb)
+    theWidget("ada_cp_spinbutton")$setSensitive(!xgb)
+    theWidget("ada_xval_spinbutton")$setSensitive(!xgb)
   }
 }
 
@@ -199,6 +207,8 @@ showModelAdaExists <- function(state=!is.null(crs$ada))
 {
   # If an ada model exists then show the relevant buttons that require
   # the model to exists.
+
+  xgb <- theWidget("model_boost_xgb_radiobutton")$getActive()
   
   if (state)
   {
@@ -206,14 +216,14 @@ showModelAdaExists <- function(state=!is.null(crs$ada))
     theWidget("ada_importance_button")$setSensitive(TRUE)
     theWidget("ada_errors_button")$show()
     theWidget("ada_errors_button")$setSensitive(TRUE)
-    theWidget("ada_list_button")$show()
-    theWidget("ada_list_button")$setSensitive(TRUE)
-    theWidget("ada_draw_button")$show()
-    theWidget("ada_draw_button")$setSensitive(TRUE)
-    theWidget("ada_continue_button")$show()
-    theWidget("ada_continue_button")$setSensitive(TRUE)
-    theWidget("ada_draw_spinbutton")$show()
-    theWidget("ada_draw_spinbutton")$setSensitive(TRUE)
+    if (!xgb) theWidget("ada_list_button")$show()
+    theWidget("ada_list_button")$setSensitive(!xgb)
+    if (!xgb) theWidget("ada_draw_button")$show()
+    theWidget("ada_draw_button")$setSensitive(!xgb)
+   if (!xgb)  theWidget("ada_continue_button")$show()
+    theWidget("ada_continue_button")$setSensitive(!xgb)
+    if (!xgb) theWidget("ada_draw_spinbutton")$show()
+    theWidget("ada_draw_spinbutton")$setSensitive(!xgb)
   }
   else
   {

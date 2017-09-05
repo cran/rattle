@@ -1,7 +1,7 @@
 \name{setupDataset}
 \alias{setupDataset}
 \title{
-  Given specific contents of env add ohter dataset related variables.
+  Given specific contents of env add other dataset related variables.
 }
 \description{
   

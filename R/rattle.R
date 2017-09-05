@@ -1,10 +1,10 @@
-# Rattle: A GUI for Data Mining in R
+# Rattle: A GUI for Data Science in R
 #
 # BASE FUNCTIONS
 #
-# Time-stamp: <2015-09-21 22:21:48 gjw>
+# Time-stamp: <2017-09-04 09:07:17 Graham Williams>
 #
-# Copyright (c) 2009-2015 Togaware Pty Ltd
+# Copyright (c) 2009-2017 Togaware Pty Ltd
 #
 # This files is part of Rattle.
 #
@@ -34,6 +34,13 @@ if(getRversion() >= "2.15.1")
                            "Caseload",
                            "Risk",
                            "Precision",
+                           "Measure",
+                           "Importance",
+                           "Variable",
+                           "IncNodePurity",
+                           "Feature",
+                           "Gain",
+                           "desc",
                            "pos",
                            "ticks",
                            "target",
@@ -47,9 +54,12 @@ if(getRversion() >= "2.15.1")
                            "lbl",
                            "hj",
                            "vj",
+                           "fpr",
+                           "tpr",
                            "score",
                            "low",
-                           "high"
+                           "high",
+                           "."
                            ))
 
 # The function paste0() was introduced in 2.15.0
@@ -72,11 +82,11 @@ Rtxt <- function(...)
 
 RtxtNT <- Rtxt
 
-VERSION <- "4.1.0"
-DATE <- "2016-01-26"
+VERSION <- "5.1.0"
+DATE <- "2017-09-04"
 
 # 091223 Rtxt does not work until the rattle GUI has started, perhaps?
-COPYRIGHT <- paste(Rtxt("Copyright"), "(C) 2006-2015 Togaware Pty Ltd.")
+COPYRIGHT <- paste(Rtxt("Copyright"), "(C) 2006-2017 Togaware Pty Ltd.")
 
 # Acknowledgements: Frank Lu has provided much feedback and has
 # extensively tested early versions of Rattle. Many colleagues at the
@@ -201,7 +211,7 @@ toga <- function() browseURL("http://rattle.togaware.com")
 ########################################################################
 # RATTLE Version 2
 
-rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=NULL)
+rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=TRUE)
 {
   # 101113 Add the useGtkBuilder argument so that a user can override
   # the automatic determination of which one to use: libglade versus
@@ -264,34 +274,64 @@ rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=NULL)
   #  stop(sprintf(Rtxt("The RGtk2 package is not available but is required",
   #                    "for the %s GUI."), crv$appname))
 
+  # 20161113 Test if a windowing capability is available and if not
+  # fail out of rattle().
+  
+  if (! RGtk2::gtkInit())
+    stop("Can't load RGtk2.\n",
+         "  A windowing system can't be accessed?\n",
+         "  Maybe you are using a remote terminal (ssh) or RStudio browser connection.\n",
+         "  Consider using remote desktop, ssh -X, or X2Go depending on your platform.\n",
+         "  Running rattle() locally on a desktop is the default.")
+  
   # 101113 Use GtkBUilder or LibGlade?
   
-  # 101009 We need to handle the case of an old install of Gtk (e.g.,
-  # 2.12.9 on MS/Windows or GNU/Linux) where GtkBuilder does not
-  # recognise the 'requires' element. We construct a string for the
-  # xml and try to test this situation, and if the result from
+  # 20101009 We need to handle the case of an old install of Gtk
+  # (e.g., 2.12.9 on MS/Windows or GNU/Linux) where GtkBuilder does
+  # not recognise the 'requires' element. We construct a string for
+  # the xml and try to test this situation, and if the result from
   # gtkBuilderAddFromString has $error$message of "Unhandled tag:
   # 'requires'" then set crv$useGtkBuilder to FALSE.
 
-  if (missing(useGtkBuilder))
-  {
-    op <- options(warn=-1)
-    g <- RGtk2::gtkBuilderNew()
-    res <- g$addFromString('<requires/>', 20)
-    options(op)
+  # 20170526 As of version 2.20.33 of RGtk2 the testing for libglade
+  # versus GtkBuilder which attempted a addFromString returned an
+  # error rather than a warning. All is okay with 2.20.31 for
+  # RGtk2. Perhaps the Gtk situation has changed since 2010 and we no
+  # longer need this additional test. Let's use GtkBuilder by
+  # default. Retain the addFromStrong hack for backward compatibility
+  # though retval issues then pop up!
 
-    if (! res$retval && res$error$message[1] == "Unhandled tag: 'requires'")
-      crv$useGtkBuilder <- FALSE
-    else if (.Platform$OS.type=="windows" && version$major<="2" && version$minor<"12")
-      # 101009 Always use glade for old installs of R on MS/Windows
-      # rather than trying to figure out when it might work with
-      # GtkBuilder.
-      crv$useGtkBuilder <- FALSE
-    else
-      crv$useGtkBuilder <- TRUE
+  crv$useGtkBuilder <- useGtkBuilder
+  if (packageVersion("RGtk2") == "2.20.31")
+  { 
+    if (missing(useGtkBuilder))
+    {
+      op <- options(warn=-1)
+      g <- RGtk2::gtkBuilderNew()
+      # 20170526 Michael Lawrence noted that requires should be within
+      # interface and that is the cause of errors coming through for
+      # Rattle at present. However perhaps we do not need this testing
+      # any longer?
+      res <- g$addFromString('<interface><requires/></interface>', 20)
+      res <- g$addFromString('<requires/>', 20)
+      options(op)
+      
+      if (! res$retval && res$error$message[1] == "Unhandled tag: 'requires'")
+        crv$useGtkBuilder <- FALSE
+      else if (.Platform$OS.type=="windows" && version$major<="2" && version$minor<"12")
+        # 20101009 Always use glade for old installs of R on MS/Windows
+        # rather than trying to figure out when it might work with
+        # GtkBuilder.
+        crv$useGtkBuilder <- FALSE
+      else
+        crv$useGtkBuilder <- TRUE
+    }
+    # 20170526 This should be the default value as a parameter now
+    # rather then this convoluted approach. Seems like it needs to be
+    # FALSE actually but then than requires libglade. So it should be
+    #GtkBuilder.
+    crv$useGtkBuilder <- TRUE
   }
-  else
-    crv$useGtkBuilder <- useGtkBuilder
   
   # Check to make sure libglade is available.
 
@@ -592,8 +632,12 @@ rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=NULL)
 
   crv$GLM   	<- "glm"
   crv$RPART 	<- "rpart"
-  #GBM <- "gbm"
+  crv$RXDTREE 	<- "rxdtree"
+  crv$RXDFOREST <- "rxdforest"
+  crv$BOOST     <- "boost"
   crv$ADA   	<- "ada"
+  crv$XGB   	<- "xgb"
+  crv$RXBT   	<- "rxbtrees"
   crv$RF    	<- "rf"
   crv$SVM   	<- "svm"
   crv$KSVM  	<- "ksvm"
@@ -992,7 +1036,7 @@ configureGUI <- function()
   rattle.menu$SetRightJustified(TRUE)
   rattle.menu$getChild()$setMarkup(id.string)
 
-  # Icon 090705 Set the icon to be the R logo. Save the pixbuf in
+  # Icon 20090705 Set the icon to be the R logo. Save the pixbuf in
   # crv$icon so that plots can also set the icon appropriately. How to
   # get all windows to inherit this icon?
 
@@ -1002,12 +1046,23 @@ configureGUI <- function()
   if (crv$icon == "")
     crv$icon <- NULL
   else
-    crv$icon <- RGtk2::gdkPixbufNewFromFile(crv$icon)$retval
+    # 20170626 RGtk2 2.20.33 does not seem to use retval any
+    # longer. Maybe it is just the returned value now! TODO Check the
+    # RGtk2 change logs to confirm this.
+  {
+    if (packageVersion("RGtk2") == "2.20.31")
+      crv$icon <- RGtk2::gdkPixbufNewFromFile(crv$icon)$retval
+    else
+      crv$icon <- RGtk2::gdkPixbufNewFromFile(crv$icon)
+  }
 
   # 150921 Change the Connect-R button to be the Connect-R logo.
 
   connectr.logo <- system.file("etc/ConnectRlogo.png", package="rattle")
-  connectr.pixbuf <- RGtk2::gdkPixbufNewFromFile(connectr.logo)$retval
+  if (packageVersion("RGtk2") == "2.20.31")
+    connectr.pixbuf <- RGtk2::gdkPixbufNewFromFile(connectr.logo)$retval
+  else
+    connectr.pixbuf <- RGtk2::gdkPixbufNewFromFile(connectr.logo)
   connectr.icon <- RGtk2::gtkImageNewFromPixbuf(connectr.pixbuf)
   connectr.button <- theWidget("connectr_toolbutton")
   RGtk2::gtkToolButtonSetIconWidget(connectr.button, connectr.icon)
@@ -1382,21 +1437,33 @@ displayWelcomeTabMessage <- function()
                 paste0(Rtxt("Welcome to Rattle (rattle.togaware.com)."),
                        "\n\n",
                        Rtxt("Rattle is a free graphical user",
-                            "interface for Data Mining, developed using R.",
+                            "interface for Data Science, developed using R.",
                             "R is a free software environment",
-                            "for statistical computing and graphics.",
-                            "Together they provide a sophisticated",
-                            "environments for data mining,",
+                            "for statistical computing, graphics,",
+                            "machine learning and artificial intelligence.",
+                            "Together Rattle and R provide a sophisticated",
+                            "environment for data science,",
                             "statistical analyses, and data visualisation."),
                        "\n\n",
                        Rtxt("See the Help menu for extensive support in",
                             "using Rattle.",
-                            "The book Data Mining with Rattle and R is available from",
-                            "Amazon.",
+                            "The books Data Mining with Rattle and R and Essential",
+                            "Data Science are available from Amazon.",
                             "The Togaware Desktop Data Mining Survival Guide",
                             "includes Rattle documentation",
                             "and is available from",
                             "datamining.togaware.com"),
+                       "\n\n",
+                       Rtxt("Rattle works with open source R",
+                            "which is limited to datasets and processing",
+                            "that fit into your computers memory.",
+                            #"If Microsoft R (client or server) is installed then Rattle will",
+                            #"automatically use its extended functionality.",
+                            #"Microsoft R extends open source R to support",
+                            #"data sets of any size and includes parallel (hence faster) implementations",
+                            #"of many advanced machine learning algorithms",
+                            #"used today for artificial intelligence model building.",
+                            "Further details from https://docs.microsoft.com/en-us/r-server/"),
                        "\n\n",
                        Rtxt("Rattle is licensed under the",
                             "GNU General Public License, Version 2.",
@@ -1404,13 +1471,14 @@ displayWelcomeTabMessage <- function()
                             "See Help -> About for details."),
                        "\n\n",
                        sprintf(Rtxt("Rattle Version %s.",
-                                    "Copyright 2006-2015 Togaware Pty Ltd."),
+                                    "Copyright 2006-2017 Togaware Pty Ltd."),
                                VERSION),
 #LOG_LICENSE
-                       "\n",
+                       " ",
                        Rtxt("Rattle is a registered trademark of Togaware Pty Ltd."),
-                       "\n",
-                       Rtxt("Rattle was created and implemented by Graham Williams.")),
+                       " ",
+                       Rtxt("Rattle was created and implemented by Graham Williams",
+                            "with contributions as acknowledged in 'library(help=rattle)'.")),
                 tvsep=FALSE)
 }
 
@@ -1474,6 +1542,8 @@ resetRattle <- function(new.dataset=TRUE)
 
     crs$dataset  <- NULL
     crs$dataname <- NULL
+    crs$cksum    <- 0     # 20170414 Initial R dataset checksum.
+    crs$xdf      <- NULL
     # crs$dwd      <- NULL
     crs$mtime    <- NULL
     crs$input    <- NULL
@@ -1543,6 +1613,7 @@ resetRattle <- function(new.dataset=TRUE)
   crv$MODEL$setCurrentPage(crv$MODEL.RPART.TAB)
   theWidget("rpart_radiobutton")$setActive(TRUE)
   #theWidget("all_models_radiobutton")$setActive(TRUE)
+  theWidget("model_boost_xgb_radiobutton")$setActive(TRUE)
 
   crv$EVALUATE$setCurrentPage(crv$EVALUATE.CONFUSION.TAB)
   theWidget("evaluate_confusion_radiobutton")$setActive(TRUE)
@@ -1562,6 +1633,8 @@ resetRattle <- function(new.dataset=TRUE)
     theWidget("data_sample_entry")$setText("70/15/15")
   }
 
+  if (crv$mrs) theWidget("data_xdf_checkbutton")$show()
+  
   # 080520 Don't turn these off - it makes sense to allow the user to
   # set these options even before the dataset is loaded.
 
@@ -1902,16 +1975,23 @@ variablesHaveChanged <- function(action)
 
 # 110703: I used to test if the package name was in the result from
 # installed.packages(), but as Brian Ripley points out and from the
-# man page for the function, installed.packages() is very slow on
-# MS/Windows and on networked file systems as it touches a couple of
-# files for each package, and with over a thousand packages installed
-# that will be a lot of files. So simply check for the package using
-# system.file().
+# man page for the function itself, installed.packages() is very slow
+# on MS/Windows and on networked file systems as it touches a couple
+# of files for each package, and with over a thousand packages
+# installed that will be a lot of files. So simply check for the
+# package using system.file().
 
 package.installed <- function(package) nchar(system.file(package=package)) > 0
   
-packageIsAvailable <- function(pkg, msg=NULL)
+packageIsAvailable <- function(pkg, msg=NULL, use.git=FALSE, alt.msg=NULL)
 {
+  # 160904 XDF TODO Add new arguments use.git and alt.msg. The package
+  # dplyrXdf, for example, is available from github rather than
+  # CRAN. So use.git is set to the github (or other) URL for
+  # installing the package. The package RevoScaleR is not readily
+  # available and so we need to have an alternative message to say
+  # that this needs to be obtained from Microsoft.
+  
   appname <- ifelse(exists("crv") && ! is.null(crv$appname), crv$appname, "Rattle")
   localmsg <- sprintf(Rtxt("The package '%s' is required to %s.",
                            "It does not appear to be installed.",
@@ -1925,11 +2005,18 @@ packageIsAvailable <- function(pkg, msg=NULL)
   if (! package.installed(pkg))
   {
     if (not.null(msg))
+    {
       if (questionDialog(localmsg))
       {
         install.packages(pkg)
         return(TRUE)
       }
+    }
+    else if (not.null(alt.msg))
+    {
+      infoDialog(alt.msg)
+      return(FALSE)
+    }
     return(FALSE)
   }
   else
@@ -2467,7 +2554,10 @@ copyPlotToClipboard <- function(dev.num=dev.cur())
 
   temp.name <- paste(tempfile(), ".png", sep="")
   savePlotToFile(temp.name, dev.num)
-  im <- RGtk2::gdkPixbufNewFromFile(temp.name)$retval
+  if (packageVersion("RGtk2") == "2.20.31")
+    im <- RGtk2::gdkPixbufNewFromFile(temp.name)$retval
+  else
+    im <- RGtk2::gdkPixbufNewFromFile(temp.name)
   RGtk2::gtkClipboardGet("CLIPBOARD")$setImage(im)
   file.remove(temp.name)
 }
@@ -2809,7 +2899,6 @@ closeRattle <- function(ask=FALSE)
   # littler or R CMD BATCH and we close rather than quit.
 
   if (crv$close == "quit") quit(save="no")
-
 }
 
 interrupt_rattle <- function(action, window)
@@ -2905,7 +2994,6 @@ configureAbout <- function(ab)
 #XX#                      "\nevaluated the program and accept the program as is."))
 
 }
-
 
 on_paste1_activate <- notImplemented
 on_copy1_activate <- notImplemented

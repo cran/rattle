@@ -1,6 +1,6 @@
 #' Perform the required operations for displaying a pairs plot.
 #' 
-#' Time-stamp: <2015-11-15 10:06:37 gjw>
+#' Time-stamp: <2016-09-19 15:58:14 Graham Williams>
 #' 
 executePairsPlotSelect2 <- function(dataset, vars, target, targets, stratify, sampling, pmax)
 {
@@ -16,28 +16,29 @@ executePairsPlotSelect2 <- function(dataset, vars, target, targets, stratify, sa
   }
   else
   {
-    colorStr<-sprintf('colour="%s",',v1)
+    colorStr<-sprintf('mapping=ggplot2::aes(colour=%s, alpha=0.5),',v1)
   }
 
-  plot.cmd <- paste0('GGally::ggpairs(', dataset, ',\n',
-                     '        columns=c(',
+  plot.cmd <- paste0(dataset, ' %>%\n',
+                     '  dplyr::mutate(', v1, '=as.factor(', v1, ')) %>%\n',
+                     '  GGally::ggpairs(columns=c(',
                      paste(varsi, collapse=','), '),\n', 
                      if (colorStr!="") paste0('        ', colorStr, "\n"),
-                     '        diag=list(continuous="density",\n',
-                     '                  discrete="bar"),\n',
-                     '        upper=list(continuous="cor",\n',
-                     '                   combo="box",\n',
-                     '                   discrete="ratio"),\n',
-                     '        lower=list(continuous="points",\n',
-                     '                   combo="denstrip",\n',
-                     '                   discrete="facetbar"))',
+                     '                diag=list(continuous="density",\n',
+                     '                          discrete="bar"),\n',
+                     '                upper=list(continuous="cor",\n',
+                     '                           combo="box",\n',
+                     '                           discrete="ratio"),\n',
+                     '                lower=list(continuous="points",\n',
+                     '                           combo="denstrip",\n',
+                     '                           discrete="facetbar"))',
                      ' +\n  ggplot2::theme(panel.grid.major=ggplot2::element_blank())')
   # When this next blank theme is included we get bad plots???? Some
   # problem with colour.
   #
   #                         '         panel.grid.minor=ggplot2::element_blank())')
       
-  appendLibLog(Rtxt("Use GGally's ggpairs() to do the hard work."), plot.cmd)
+  appendLog(Rtxt("Use GGally's ggpairs() to do the hard work."), plot.cmd)
   newPlot()
   eval(parse(text=sprintf("suppressMessages(print(%s))", plot.cmd)))
 }

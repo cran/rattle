@@ -1,13 +1,13 @@
-# Gnome R Data Miner: GNOME interface to R for Data Mining
+# R Data Scientist: Gtk interface to R for Data Science
 #
-# Time-stamp: <2015-12-12 11:12:49 gjw>
+# Time-stamp: <2017-08-18 12:11:33 Graham Williams>
 #
-# Copyright (c) 2009-2015 Togaware Pty Ltd
+# Copyright (c) 2009-2017 Togaware Pty Ltd
 
 # These could be in rattle.R
 
-crs <- new.env()
-crv <- new.env()
+crs <- new.env() # Current Rattle State
+crv <- new.env() # Current Rattle Variables
 
 if (! exists("RATTLE.DATA")) RATTLE.DATA <- NULL
 if (! exists("RATTLE.SCORE.IN")) RATTLE.SCORE.IN <- NULL
@@ -107,6 +107,10 @@ on_aboutdialog_response <- function(object, ...)
   crv$appname <- "Rattle"
   crv$projext <- ".rattle"
 
+  # 20170624 Note if Microsoft R Server
+
+  crv$mrs <- packageIsAvailable("RevoScaleR")
+  
   # 111204 Fix issue of Mac OS/X not ignoring warnings in the .ui
   # file, so use an alternative one for now until work out permanent
   # fix. 130309 No longer an issue since the ubuntu string is no
@@ -117,8 +121,13 @@ on_aboutdialog_response <- function(object, ...)
   crv$rattleUI <- "rattle.ui"
   # if (Sys.info()["sysname"] == "Darwin") crv$rattleUI <- "rattle_macosx.ui"
 
-  crv$log.intro <- paste("#", sprintf(Rtxt("%s is Copyright (c) 2006-2015 %s."),
-                                      "Rattle", "Togaware Pty Ltd"))
+  crv$log.intro <- paste0("# Rattle is Copyright (c) 2006-2017 Togaware Pty Ltd.",
+                          "\n# It is open source software and is freely available.",
+                          "\n# It is licensed under the GNU General Public License,",
+                          "\n# Version 2. Rattle comes with ABSOLUTELY NO WARRANTY.",
+                          "\n# Rattle was written by Graham Williams with contributions",
+                          "\n# from others as acknowledged in 'library(help=rattle)'.",
+                          "\n# Visit https://rattle.togaware.com/ for details.")
   crv$support.msg <- sprintf(Rtxt("If this is a bug please contact %s.\n\n%s"),
                              "support@togaware.com",
                              Rtxt("Please supply the output of rattleInfo()",
@@ -133,6 +142,10 @@ on_aboutdialog_response <- function(object, ...)
 
   # Some global constants
 
+  # 160901 XDF Default number if rows for a preview.
+
+  crv$xdf.preview <- 1e4
+  
   # Default seed to use
 
   crv$seed <- 42
@@ -141,7 +154,7 @@ on_aboutdialog_response <- function(object, ...)
   # works okay on GNU/Linux. On Vista I see ISO8859-1 as the default
   # and Acken sees CP932 for Japanese.
   
-  crv$csv.encoding <- "UTF-8"
+  crv$csv_encoding <- "UTF-8"
 
   # 100410 All monofonts come out vertically aligned in Japanese???
   
@@ -154,8 +167,9 @@ on_aboutdialog_response <- function(object, ...)
   crv$show.timestamp <- TRUE
   ## crv$tooltiphack <- FALSE
   crv$close <- "ask"
-  # crv$sample.dataset <- "audit"
-  crv$sample.dataset <- "weather"
+
+  crv$sample_csv <- "weather"
+  crv$sample_xdf <- "weather"
 
   # 100402 Record whether the Execute button is currently in
   # action. The problem is that in loading a CSV file if the Execute
@@ -196,6 +210,8 @@ on_aboutdialog_response <- function(object, ...)
   crv$default.train.percentage <- 70 # The default sample percentage value.
   crv$default.sample <- "70/15/15" # The default train/validate/test split.
 
+  crv$log_width <- 80 # The wrap column for the log tab.
+  
   # Popup a warning above this many rows in the table being loaded via
   # ODBC
 
@@ -214,7 +230,7 @@ on_aboutdialog_response <- function(object, ...)
   crv$rpart.cp.default        <- 0.010
   crv$rpart.minsplit.default  <- 20
   crv$rpart.minbucket.default <- 7
-  crv$rpart.maxdepth.default  <- 30
+  crv$rpart.maxdepth.default  <- 3
 
   crv$ada.ntree.default   <- 50
 
@@ -243,10 +259,10 @@ on_aboutdialog_response <- function(object, ...)
   # 091221 The Rtxt does not seem to work from the rattle.R file, so
   # do it here again.
   
-  COPYRIGHT <- sprintf(Rtxt("Copyright (c) 2006-2015 %s."), "Togaware Pty Ltd")
+  COPYRIGHT <- sprintf(Rtxt("Copyright (c) 2006-2017 %s."), "Togaware Pty Ltd")
 
   msg <- paste(Rtxt("Rattle: A free graphical interface",
-                    "for data mining with R."), "\n",
+                    "for data science with R."), "\n",
                Rtxt("Version"), " ", VERSION, " ",
                COPYRIGHT, "\n",
 #LICENSE

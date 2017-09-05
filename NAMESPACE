@@ -6,14 +6,18 @@ export(
     calcInitialDigitDistr,
     calculateAUC,
     centers.hclust,
+    comcat,
     copyPlotToClipboard,
     digitDistr,
     drawTreesAda,
     drawTreeNodes,
+    errorMatrix,
     evaluateRisk,
     fancyRpartPlot,
     generateAprioriSummary,
     genPlotTitleCmd,
+    ggVarImp,
+    importance,
     listAdaVarsUsed,
     listTreesAda,
     listVersions,
@@ -34,6 +38,7 @@ export(
     rattle.print.summary.multinom,
     rescale.by.group,
     riskchart,
+    rocChart,
     # 120117 Remove for now - could be harmful.
     # overwritePackageFunction,
     savePlotToFile,
@@ -41,12 +46,22 @@ export(
     toga,
     treeset.randomForest,
     whichNumerics,
+    xgboost,
     crs,crv
     )
 
 exportPattern("_") # Needed for the Glade interface
 
 S3method(asRules, rpart)
+S3method(ggVarImp, randomForest)
+S3method(ggVarImp, rpart)
+S3method(ggVarImp, rxDForest)
+S3method(ggVarImp, xgb.Booster)
+S3method(ggVarImp, xgb.formula)
+S3method(predict, xgb.formula)
+S3method(print, xgb.formula)
+S3method(importance, xgb.formula)
+S3method(xgboost, formula)
 S3method(predict, hclust)
 S3method(predict, kmeans)
 S3method(print.summary, nnet)

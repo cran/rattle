@@ -33,7 +33,7 @@
   creating a new project for it on the Connect-R crowd sourcing
   service.</tooltip>
   <tooltip widget="data_csv_radiobutton">Load data from a comma
-    separated value (CSV) file, as might be exported from a
+    separated value (CSV) file as might be exported from a
     spreadsheet or database.</tooltip>
   <tooltip widget="data_arff_radiobutton">Load data from an ARFF file
     (CSV with data types) as is used with the Weka data mining
@@ -66,6 +66,12 @@
   <tooltip widget="data_header_checkbutton">Indicates whether the
     first row of the datafile is the names of the columns. Otherwise,
     random names will be made up.</tooltip>
+  <tooltip widget="data_xdf_checkbutton">XDF is Microsoft's
+    PROPRIETARY disk based data format for handling datasets of any
+    size, not limited to the available memory. Microsoft's CLOSED SOURCE
+    machine learning algorithms can then operate on this data offering
+    multiple core (parallel) implementations. When selected any CSV file
+    loaded will be transformed to the XDF disk-based format.</tooltip>
   <tooltip widget="data_odbc_dsn_entry">Enter a known ODBC
     data source name (DSN). Then press the Enter key to query the
     database for a list of available tables.</tooltip>
@@ -276,7 +282,7 @@
     any missing values.</tooltip>
   <tooltip widget="delete_naents_radiobutton">Delete any observations with
     any missing value.</tooltip>
-  <tooltip widget="sample_tab_label">Transform the data in various
+  <tooltip widget="transform_tab_label">Transform the data in various
     ways.</tooltip>
   <tooltip widget="kmeans_radiobutton">Generate clusters using a
     kmeans algorithm.</tooltip>
@@ -359,7 +365,7 @@
     probabilities for each class. E.g. for two classes: 0.5,0.5. Must
     add up to 1.</tooltip>
   <tooltip widget="model_tree_loss_entry">Weight the outcome classes
-    differently. E.g., 0,10,1,0 (TN, FN, FP, TP).</tooltip>
+    differently. E.g., 0,10,1,0 (TN, FP, FN, TP).</tooltip>
   <tooltip widget="label84">minbucket</tooltip>
   <tooltip widget="rpart_minbucket_spinbutton">This is the minimum
     number of observations allowed in any leaf node of the decision
