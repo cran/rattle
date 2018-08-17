@@ -66,7 +66,7 @@ S3method(predict, hclust)
 S3method(predict, kmeans)
 S3method(print.summary, nnet)
 
-import(RGtk2)
+#import(RGtk2)
 import(stats)
 import(utils)
 import(grDevices)

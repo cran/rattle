@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-05-17 08:54:15 gjw>
+# Time-stamp: <2017-09-10 10:08:08 Graham Williams>
 #
 # Implement biclust functionality.
 #
@@ -19,7 +19,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 
 ########################################################################
 # ToDo 100121
@@ -45,7 +45,7 @@ on_biclust_radiobutton_toggled <- function(button)
 executeClusterBiclust <- function(include)
 {
   TV <- "biclust_textview"
-  sampling  <- not.null(crs$sample)
+  sampling  <- not.null(crs$train)
 
   # Obtain interface information.
 
@@ -75,7 +75,7 @@ executeClusterBiclust <- function(include)
   biclust.cmd <- sprintf(paste('crs$biclust <- biclust(',
                                'as.matrix(na.omit(crs$dataset[%s, %s])),',
                                'method=%s)', sep=""),
-                         ifelse(sampling, "crs$sample", ""),
+                         ifelse(sampling, "crs$train", ""),
                          include, method)
 
   appendLog(sprintf(Rtxt("Generate %s using method '%s'."),

@@ -32,7 +32,7 @@ fancyRpartPlot(model, main="", sub, caption, palettes, type=2, ...)
   \item{...}{additional arguments passed on to prp.}
 
 }
-\references{Package home page: \url{http://rattle.togaware.com}}
+\references{Package home page: \url{https://rattle.togaware.com}}
 \author{\email{Graham.Williams@togaware.com}}
 
 \examples{
@@ -55,16 +55,21 @@ test   <- setdiff(seq_len(nobs), train)
 actual <- ds[test, target]
 risks  <- ds[test, risk]
 
-# Build the model.
+# Fit the model.
 
-model <- rpart(form, data=ds[train, vars])
+fit <- rpart(form, data=ds[train, vars])
 
 ## Plot the model.
 
-fancyRpartPlot(model)
+fancyRpartPlot(fit)
 
-## Choose different colours
+## Choose different colours.
 
-fancyRpartPlot(model, palettes=c("Greys", "Oranges"))}
-}
+fancyRpartPlot(fit, palettes=c("Greys", "Oranges"))
+
+## Add a main title to the plot.
+
+fancyRpartPlot(fit, main=target) 
+
+}}
 \keyword{hplot}

@@ -2,9 +2,9 @@
 #
 # BASE FUNCTIONS
 #
-# Time-stamp: <2017-09-04 09:07:17 Graham Williams>
+# Time-stamp: <2018-08-15 21:18:30 Graham.Williams@togaware.com>
 #
-# Copyright (c) 2009-2017 Togaware Pty Ltd
+# Copyright (c) 2009-2018 Togaware Pty Ltd
 #
 # This files is part of Rattle.
 #
@@ -19,7 +19,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 
 # 120704 Avoid "no visible binding for global variable" warnings on a
 # check. However, this then requires R >= 2.15.1, so only do this
@@ -82,11 +82,11 @@ Rtxt <- function(...)
 
 RtxtNT <- Rtxt
 
-VERSION <- "5.1.0"
-DATE <- "2017-09-04"
+VERSION <- "5.2.0"
+DATE <- "2018-08-17"
 
 # 091223 Rtxt does not work until the rattle GUI has started, perhaps?
-COPYRIGHT <- paste(Rtxt("Copyright"), "(C) 2006-2017 Togaware Pty Ltd.")
+COPYRIGHT <- paste(Rtxt("Copyright"), "(C) 2006-2018 Togaware Pty Ltd.")
 
 # Acknowledgements: Frank Lu has provided much feedback and has
 # extensively tested early versions of Rattle. Many colleagues at the
@@ -109,7 +109,7 @@ COPYRIGHT <- paste(Rtxt("Copyright"), "(C) 2006-2017 Togaware Pty Ltd.")
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 
 # STYLE GUIDE
 #
@@ -206,13 +206,16 @@ COPYRIGHT <- paste(Rtxt("Copyright"), "(C) 2006-2017 Togaware Pty Ltd.")
 ##   }
 ## }
 
-toga <- function() browseURL("http://rattle.togaware.com")
+toga <- function() browseURL("https://rattle.togaware.com")
 
 ########################################################################
 # RATTLE Version 2
 
 rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=TRUE)
 {
+  cmd <- "require(RGtk2)"
+  eval(parse(text=cmd))
+  
   # 101113 Add the useGtkBuilder argument so that a user can override
   # the automatic determination of which one to use: libglade versus
   # GtkBuilder. If NULL then automatically determine.
@@ -1021,7 +1024,7 @@ configureGUI <- function()
 {
   # Toolbar
 
-  theWidget("report_toolbutton")$show()
+#  theWidget("report_toolbutton")$show()
 
   id.string <- paste0('<span foreground="blue">',
                       '<i>', crv$appname, '</i> ',
@@ -1058,14 +1061,14 @@ configureGUI <- function()
 
   # 150921 Change the Connect-R button to be the Connect-R logo.
 
-  connectr.logo <- system.file("etc/ConnectRlogo.png", package="rattle")
-  if (packageVersion("RGtk2") == "2.20.31")
-    connectr.pixbuf <- RGtk2::gdkPixbufNewFromFile(connectr.logo)$retval
-  else
-    connectr.pixbuf <- RGtk2::gdkPixbufNewFromFile(connectr.logo)
-  connectr.icon <- RGtk2::gtkImageNewFromPixbuf(connectr.pixbuf)
-  connectr.button <- theWidget("connectr_toolbutton")
-  RGtk2::gtkToolButtonSetIconWidget(connectr.button, connectr.icon)
+  ## connectr.logo <- system.file("etc/ConnectRlogo.png", package="rattle")
+  ## if (packageVersion("RGtk2") == "2.20.31")
+  ##   connectr.pixbuf <- RGtk2::gdkPixbufNewFromFile(connectr.logo)$retval
+  ## else
+  ##   connectr.pixbuf <- RGtk2::gdkPixbufNewFromFile(connectr.logo)
+  ## connectr.icon <- RGtk2::gtkImageNewFromPixbuf(connectr.pixbuf)
+  ## connectr.button <- theWidget("connectr_toolbutton")
+  ## RGtk2::gtkToolButtonSetIconWidget(connectr.button, connectr.icon)
   
   # 101202 Remove the By Group button and instead if a rescale has a
   # categoric selected then do by group. TODO.
@@ -1447,23 +1450,14 @@ displayWelcomeTabMessage <- function()
                        "\n\n",
                        Rtxt("See the Help menu for extensive support in",
                             "using Rattle.",
-                            "The books Data Mining with Rattle and R and Essential",
-                            "Data Science are available from Amazon.",
+                            "The two books Data Mining with Rattle and R",
+                            "(https://bit.ly/rattle_data_mining) and The Essentials",
+                            "of Data Science (https://bit.ly/essentials_data_science)",
+                            "are available from Amazon.",
                             "The Togaware Desktop Data Mining Survival Guide",
                             "includes Rattle documentation",
                             "and is available from",
                             "datamining.togaware.com"),
-                       "\n\n",
-                       Rtxt("Rattle works with open source R",
-                            "which is limited to datasets and processing",
-                            "that fit into your computers memory.",
-                            #"If Microsoft R (client or server) is installed then Rattle will",
-                            #"automatically use its extended functionality.",
-                            #"Microsoft R extends open source R to support",
-                            #"data sets of any size and includes parallel (hence faster) implementations",
-                            #"of many advanced machine learning algorithms",
-                            #"used today for artificial intelligence model building.",
-                            "Further details from https://docs.microsoft.com/en-us/r-server/"),
                        "\n\n",
                        Rtxt("Rattle is licensed under the",
                             "GNU General Public License, Version 2.",
@@ -1471,7 +1465,7 @@ displayWelcomeTabMessage <- function()
                             "See Help -> About for details."),
                        "\n\n",
                        sprintf(Rtxt("Rattle Version %s.",
-                                    "Copyright 2006-2017 Togaware Pty Ltd."),
+                                    "Copyright 2006-2018 Togaware Pty Ltd."),
                                VERSION),
 #LOG_LICENSE
                        " ",
@@ -1540,30 +1534,30 @@ resetRattle <- function(new.dataset=TRUE)
   {
     # Initialise CRS
 
-    crs$dataset  <- NULL
-    crs$dataname <- NULL
-    crs$cksum    <- 0     # 20170414 Initial R dataset checksum.
-    crs$xdf      <- NULL
+    crs$dataset    <- NULL
+    crs$dataname   <- NULL
+    crs$cksum      <- 0     # 20170414 Initial R dataset checksum.
+    crs$xdf        <- NULL
     # crs$dwd      <- NULL
-    crs$mtime    <- NULL
-    crs$input    <- NULL
-    crs$target   <- NULL
-    crs$weights  <- NULL
-    crs$risk     <- NULL
-    crs$ident    <- NULL
-    crs$ignore   <- NULL
+    crs$mtime      <- NULL
+    crs$input      <- NULL
+    crs$target     <- NULL
+    crs$weights    <- NULL
+    crs$risk       <- NULL
+    crs$ident      <- NULL
+    crs$ignore     <- NULL
     crs$nontargets <- NULL # 080426 Started but not yet implemented.
-    crs$sample   <- NULL
-    crs$sample.on <- TRUE
-    crs$sample.seed <- NULL
-    crs$tain <- NULL # 100110 For now use crs$sample for the sample until migrate rstat
-    crs$validate <- NULL
-    crs$test <- NULL
-    crs$testset  <- NULL
-    crs$testname <- NULL
+    crs$tain       <- NULL # 100110 Used to be crs$sample. need to  migrate rstat.
+    crs$train      <- NULL
+    crs$train.on   <- TRUE
+    crs$train.seed <- NULL
+    crs$validate   <- NULL
+    crs$test       <- NULL
+    crs$testset    <- NULL
+    crs$testname   <- NULL
     crs$transforms <- NULL
-    crs$projname <- NULL # 101115
-    crs$filename <- NULL # 101115
+    crs$projname   <- NULL # 101115
+    crs$filename   <- NULL # 101115
   }
 
   # Clear out all current models.
@@ -2031,7 +2025,7 @@ sampleNeedsExecute <- function()
   # If sampling is active, make sure there is a sample.
 
   if (theWidget("data_sample_checkbutton")$getActive()
-      && is.null(crs$sample))
+      && is.null(crs$train))
   {
     errorDialog(Rtxt("Sampling is active but has not been Executed.",
                      "Either ensure you Execute the sampling by clicking",
@@ -2044,7 +2038,7 @@ sampleNeedsExecute <- function()
   # would I need this test?
 
 ###   if (! theWidget("data_sample_checkbutton")$getActive()
-###       && not.null(crs$sample))
+###       && not.null(crs$train))
 ###   {
 ###     errorDialog("Sampling is inactive but has not been Executed",
 ###                  "since being made inactive.",
@@ -2916,15 +2910,15 @@ interrupt_rattle <- function(action, window)
 
 on_rattle_menu_activate <- function(action, window)
 {
-  browseURL("http://rattle.togaware.com")
+  browseURL("https://rattle.togaware.com")
 }
 
 on_delete_menu_activate <- notImplemented
 
-on_connectr_toolbutton_clicked <- function(action, window)
-{
-  browseURL("http://connect-r.com/posting.php?mode=post&f=2")
-}
+## on_connectr_toolbutton_clicked <- function(action, window)
+## {
+##   browseURL("https://connect-r.com/posting.php?mode=post&f=2")
+## }
 
 ## Map the unchanged glade defaults
 
@@ -2986,7 +2980,7 @@ configureAbout <- function(ab)
 #XX#                      "\nGeneral Public License as published by the Free",
 #XX#                      "\nSoftware Foundation; either version 2 of the License, or (at your",
 #XX#                      "\noption) any later version. See the file gpl-license in the",
-#XX#                      "\ndistribution and at http://www.gnu.org/copyleft/gpl.html for details.",
+#XX#                      "\ndistribution and at https://www.gnu.org/copyleft/gpl.html for details.",
 #XX#                      "\n\nThis program is distributed without any warranty; without even the",
 #XX#                      "\nimplied warranty of merchantability or fitness for a particular purpose.",
 #XX#                      "\nPlease see the GNU General Public License for more details.",

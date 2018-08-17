@@ -26,7 +26,7 @@
   rule for each path from the root node to a leaf node.
 
 }
-\references{Package home page: \url{http://rattle.togaware.com}}
+\references{Package home page: \url{https://rattle.togaware.com}}
 \author{\email{Graham.Williams@togaware.com}}
 \examples{
 \dontrun{asRules.rpart(my.rpart)}

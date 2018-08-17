@@ -2,7 +2,7 @@
 #
 # This is a model or template "module" for rattle.
 #
-# Time-stamp: <2017-07-11 15:34:33 Graham Williams>
+# Time-stamp: <2017-10-29 21:28:37 Graham Williams>
 #
 # Copyright (c) 2009-2017 Togaware Pty Ltd
 #
@@ -19,7 +19,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 
 # This implements a generic interface for interacting with the ada
 # modeller and ada models. It can be used independent of the Rattle
@@ -64,7 +64,7 @@ buildModelXgb <- function(formula,
                      "),\n                                                  ",
                      # Use eval since crs$weights could be a formula
                      'as.integer(eval(parse(text = "', crs$weights,
-                     '"))[crs$sample])),]',
+                     '"))[crs$train])),]',
                      sep="")
   
   # Construct the appropriate parameter.
@@ -163,9 +163,18 @@ genResponseXgb <- function(dataset)
   # the model to new data.
   
   threshold <- 0.5
-  return(sprintf(paste0("lvls <- levels(as.factor(crs$dataset[[crs$target]]))\n",
+
+  res <- sprintf(paste0("lvls <- levels(as.factor(crs$dataset[[crs$target]]))\n",
                         "crs$pr <- factor(ifelse(%s > %s,\n\t\t\tlvls[2], lvls[1]))"),
-                 sub("crs\\$pr <- ", "", genProbabilityXgb(dataset)), threshold))
+                 sub("crs\\$pr <- ", "",
+                     # 20171029 Dwight Barry Need target for xgb
+                     # predict! This requires a fix in
+                     # predict.xgb.formula(). FIXME
+                     sub("crs\\$input", "crs$input, crs$target",
+                         genProbabilityXgb(dataset))),
+                 threshold)
+  
+  return(res)
 }
 
 plotImportanceXgb <- function()

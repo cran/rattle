@@ -1,8 +1,8 @@
 # R Data Scientist: Gtk interface to R for Data Science
 #
-# Time-stamp: <2017-08-18 12:11:33 Graham Williams>
+# Time-stamp: <2018-07-01 22:15:47 Graham.Williams@togaware.com>
 #
-# Copyright (c) 2009-2017 Togaware Pty Ltd
+# Copyright (c) 2009-2018 Togaware Pty Ltd
 
 # These could be in rattle.R
 
@@ -102,7 +102,7 @@ on_aboutdialog_response <- function(object, ...)
   # 
   # The test version of R 2.12.0 was downloaded from
   #
-  # http://cran.r-project.org/bin/windows/base/rtest.html
+  # https://cran.r-project.org/bin/windows/base/rtest.html
 
   crv$appname <- "Rattle"
   crv$projext <- ".rattle"
@@ -121,8 +121,8 @@ on_aboutdialog_response <- function(object, ...)
   crv$rattleUI <- "rattle.ui"
   # if (Sys.info()["sysname"] == "Darwin") crv$rattleUI <- "rattle_macosx.ui"
 
-  crv$log.intro <- paste0("# Rattle is Copyright (c) 2006-2017 Togaware Pty Ltd.",
-                          "\n# It is open source software and is freely available.",
+  crv$log.intro <- paste0("# Rattle is Copyright (c) 2006-2018 Togaware Pty Ltd.",
+                          "\n# It is free (as in libre) open source software.",
                           "\n# It is licensed under the GNU General Public License,",
                           "\n# Version 2. Rattle comes with ABSOLUTELY NO WARRANTY.",
                           "\n# Rattle was written by Graham Williams with contributions",
@@ -210,7 +210,7 @@ on_aboutdialog_response <- function(object, ...)
   crv$default.train.percentage <- 70 # The default sample percentage value.
   crv$default.sample <- "70/15/15" # The default train/validate/test split.
 
-  crv$log_width <- 80 # The wrap column for the log tab.
+  crv$log_width <- 70 # The wrap column for the log tab.
   
   # Popup a warning above this many rows in the table being loaded via
   # ODBC
@@ -259,7 +259,7 @@ on_aboutdialog_response <- function(object, ...)
   # 091221 The Rtxt does not seem to work from the rattle.R file, so
   # do it here again.
   
-  COPYRIGHT <- sprintf(Rtxt("Copyright (c) 2006-2017 %s."), "Togaware Pty Ltd")
+  COPYRIGHT <- sprintf(Rtxt("Copyright (c) 2006-2018 %s."), "Togaware Pty Ltd")
 
   msg <- paste(Rtxt("Rattle: A free graphical interface",
                     "for data science with R."), "\n",

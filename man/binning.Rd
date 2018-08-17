@@ -38,5 +38,5 @@ binning(x, bins=4, method=c("quantile", "wtd.quantile", "kmeans"),
   
 }
 \value{A factor is returned.}
-\references{Package home page: \url{http://rattle.togaware.com}}
+\references{Package home page: \url{https://rattle.togaware.com}}
 \author{Daniele Medri and Graham Williams}

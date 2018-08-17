@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2017-08-10 16:56:26 Graham Williams>
+# Time-stamp: <2018-07-01 20:18:18 Graham.Williams@togaware.com>
 #
 # Implement EXPLORE functionality.
 #
@@ -19,7 +19,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 
 resetExploreTab <- function(new.dataset=TRUE)
 {
@@ -68,7 +68,7 @@ executeExploreTab <- function()
 
   vars <- "c(crs$input, crs$risk, crs$target)" # 20110102 getIncludedVariables(risk=TRUE)
   dataset <- sprintf("%s[%s, %s]", "crs$dataset",
-                     ifelse(sampling, "crs$sample", ""),
+                     ifelse(sampling, "crs$train", ""),
                      ifelse(is.null(vars),"", vars))
 
   # For the distribution plot, we do list all variables in the
@@ -79,7 +79,7 @@ executeExploreTab <- function()
   # "avdataset".
 
   avdataset <- sprintf("%s[%s,]", "crs$dataset",
-                     ifelse(sampling, "crs$sample", ""))
+                     ifelse(sampling, "crs$train", ""))
   
   vars <- "crs$numeric" # 20110102 getIncludedVariables(numonly=TRUE)
   
@@ -91,14 +91,14 @@ executeExploreTab <- function()
   #  ndataset <- NULL
   #else
     ndataset <- sprintf("%s[%s, %s]", "crs$dataset",
-                        ifelse(sampling, "crs$sample", ""),
+                        ifelse(sampling, "crs$train", ""),
                         ifelse(is.null(vars),"",vars))
 
   # Numeric input variables
 
   vars <- "crs$numeric" # 20110102 inputVariables(numonly=TRUE)
   nidataset <- sprintf("%s[%s, %s]", "crs$dataset",
-                       ifelse(sampling, "crs$sample", ""),
+                       ifelse(sampling, "crs$train", ""),
                        ifelse(is.null(vars),"",vars))
   
   # Dispatch
@@ -172,7 +172,7 @@ executeExploreSummary <- function(dataset)
   #   is there a sample
   #   list of numeric variables
   
-  sampling  <- not.null(crs$sample)
+  sampling  <- not.null(crs$train)
 
   numeric.cmd <- sprintf(paste("seq(1,ncol(%s))",
                                "[as.logical(sapply(%s, is.numeric))]",
@@ -323,7 +323,7 @@ executeExploreSummary <- function(dataset)
       ## Load the mice package into the library
 
       lib.cmd <- "library(mice, quietly=TRUE)"
-      appendLog(packageProvides("md.pattern", "mice"), lib.cmd)
+      appendLog(packageProvides("mice", "md.pattern"), lib.cmd)
       eval(parse(text=lib.cmd))
       
       ## Variables to be included, as a string of indicies.
@@ -795,7 +795,7 @@ executeExplorePlot <- function(dataset,
   if (is.null(sampling))
   {
     use.sample <- theWidget("data_sample_checkbutton")$getActive()
-    sampling  <- use.sample && not.null(crs$sample)
+    sampling  <- use.sample && not.null(crs$train)
   }
 
   # Record other options.
@@ -813,7 +813,7 @@ executeExplorePlot <- function(dataset,
     
     bind.cmd <- sprintf('%s[crs$dataset%s$%s=="%s","%%s"], grp="%s")',
                         bind.cmd,
-                        ifelse(sampling, "[crs$sample,]", ""),
+                        ifelse(sampling, "[crs$train,]", ""),
                         target, targets[i], targets[i])
   }
   
@@ -831,7 +831,7 @@ executeExplorePlot <- function(dataset,
   #
   # or if sampling is enabled:
   #
-  # All = crs$dataset[crs$sample,]$%s  
+  # All = crs$dataset[crs$train,]$%s  
   #
   # For each level:
   #
@@ -839,7 +839,7 @@ executeExplorePlot <- function(dataset,
   #
   # or if sampling is enabled:
   #
-  # '0' = crs$dataset[crs$sample,][crs$dataset[crs$sample,]$Adjusted=="0",]$%s
+  # '0' = crs$dataset[crs$train,][crs$dataset[crs$train,]$Adjusted=="0",]$%s
   #
   # This is a newer alternative to identifying the dataset
   # segments. We build this list of target and a specification of the
@@ -851,7 +851,7 @@ executeExplorePlot <- function(dataset,
   {
     tmpDataSet <- data.frame(New=sprintf('%s[crs$dataset%s$%s=="%s",]$%%s',
                                dataset,
-                               ifelse(sampling, "[crs$sample,]", ""),
+                               ifelse(sampling, "[crs$train,]", ""),
                                target, targets[i]))
     colnames(tmpDataSet) <-  c(targets[i])
     genericDataSet <- cbind(genericDataSet, tmpDataSet)
@@ -910,9 +910,9 @@ executeExplorePlot <- function(dataset,
 
       # 080918 Use the colorspace package to get a better colour
       # map. See
-      # http://epub.wu-wien.ac.at/dyn/virlib/wp/eng/showentry?ID=epub-wu-01_c87
+      # https://epub.wu-wien.ac.at/dyn/virlib/wp/eng/showentry?ID=epub-wu-01_c87
       # and
-      # http://statmath.wu.ac.at/~zeileis/papers/Zeileis+Hornik+Murrell-2009.pdf
+      # https://statmath.wu.ac.at/~zeileis/papers/Zeileis+Hornik+Murrell-2009.pdf
     
     if (packageIsAvailable("colorspace"))
       cols <- "col=colorspace::rainbow_hcl(%d)," # 090524, start = 270, end = 150),"
@@ -1067,7 +1067,7 @@ executeExplorePlot <- function(dataset,
     # plot actually interferred with multiple plots on a page.
     #
     # Note this tip that could help:
-    # http://wiki.r-project.org/rwiki/doku.php?id=tips:easier:tbtable
+    # https://wiki.r-project.org/rwiki/doku.php?id=tips:easier:tbtable
     #
 
     ## hs <- hist(ds[ds$grp=="All",1], breaks="fd", plot=FALSE)
@@ -1086,13 +1086,13 @@ executeExplorePlot <- function(dataset,
 
     # 090524 A note on using breaks in the histogram: The default is
     # to use Sturges' rule from 1926. Rob Hyndman
-    # (http://robjhyndman.com/papers/sturges.pdf) argues that Sturges'
+    # (https://robjhyndman.com/papers/sturges.pdf) argues that Sturges'
     # rule is wrong. Sturges' rule leads to oversmoothed
     # histograms. Hyndman notes that Scott's (1979) rule and Freedman
     # and Diaconis's (1981) rule are just as simple to use as Sturges'
     # rule, but are well-founded in statistical theory. Sturges' rule
     # does not work for large n. Also see
-    # http://www.math.leidenuniv.nl/~gill/teaching/statistics/histogram.pdf
+    # https://www.math.leidenuniv.nl/~gill/teaching/statistics/histogram.pdf
     # So let's use the Freedman and Diaconis approach.
     
     plot.cmd <- paste('hs <- hist(ds[ds$grp=="All",1], main="", xlab="%s", ',
@@ -1384,7 +1384,7 @@ executeExplorePlot <- function(dataset,
         expect.cmd <- paste('unlist(lapply(1:9, function(x) log10(1 + 1/x)))')
       else
         expect.cmd <- paste('unlist(lapply(10:99, function(x) log10(1 + 1/x)))')
-    # see http://www.mathpages.com/home/kmath302/kmath302.htm
+    # see https://www.mathpages.com/home/kmath302/kmath302.htm
     else if (digspin > 1) 
       expect.cmd <- sprintf(paste('unlist(lapply(0:9, function(x) {sum(log10',
                                   '(1 + 1/(10*(seq(10^(%d-2), ',
@@ -1912,13 +1912,13 @@ executeExplorePlot <- function(dataset,
 
     if (is.null(target))
       ds.cmd <- sprintf("table(crs$dataset%s$%s)",
-                        ifelse(sampling, "[crs$sample,]", ""),
+                        ifelse(sampling, "[crs$train,]", ""),
                         mosplots[s])
     else
       ds.cmd <- paste(sprintf(paste("table(crs$dataset%s$%s,",
                                       "crs$dataset%s$%s)"),
-                              ifelse(sampling, "[crs$sample,]", ""), mosplots[s],
-                              ifelse(sampling, "[crs$sample,]", ""), target))
+                              ifelse(sampling, "[crs$train,]", ""), mosplots[s],
+                              ifelse(sampling, "[crs$train,]", ""), target))
     appendLog(Rtxt("Generate the table data for plotting."),
               paste("ds <-", ds.cmd))
     ds <- eval(parse(text=ds.cmd))
@@ -2080,7 +2080,7 @@ executeExplorePlot2 <- function(dataset,
   if (is.null(sampling))
   {
     use.sample <- theWidget("data_sample_checkbutton")$getActive()
-    sampling  <- use.sample && not.null(crs$sample)
+    sampling  <- use.sample && not.null(crs$train)
   }
 
   # Record other options.
@@ -2098,7 +2098,7 @@ executeExplorePlot2 <- function(dataset,
     
     bind.cmd <- sprintf('%s[crs$dataset%s$%s=="%s","%%s"], %s="%s")',
                         bind.cmd,
-                        ifelse(sampling, "[crs$sample,]", ""),
+                        ifelse(sampling, "[crs$train,]", ""),
                         target, targets[i], target, targets[i])
   }
   
@@ -2116,7 +2116,7 @@ executeExplorePlot2 <- function(dataset,
   #
   # or if sampling is enabled:
   #
-  # All = crs$dataset[crs$sample,]$%s  
+  # All = crs$dataset[crs$train,]$%s  
   #
   # For each level:
   #
@@ -2124,7 +2124,7 @@ executeExplorePlot2 <- function(dataset,
   #
   # or if sampling is enabled:
   #
-  # '0' = crs$dataset[crs$sample,][crs$dataset[crs$sample,]$Adjusted=="0",]$%s
+  # '0' = crs$dataset[crs$train,][crs$dataset[crs$train,]$Adjusted=="0",]$%s
   #
   # This is a newer alternative to identifying the dataset
   # segments. We build this list of target and a specification of the
@@ -2136,7 +2136,7 @@ executeExplorePlot2 <- function(dataset,
   {
     tmpDataSet <- data.frame(New=sprintf('%s[crs$dataset%s$%s=="%s",]$%%s',
                                dataset,
-                               ifelse(sampling, "[crs$sample,]", ""),
+                               ifelse(sampling, "[crs$train,]", ""),
                                target, targets[i]))
     colnames(tmpDataSet) <-  c(targets[i])
     genericDataSet <- cbind(genericDataSet, tmpDataSet)
@@ -2176,8 +2176,8 @@ executeExplorePlot2 <- function(dataset,
     # points.
 
     # 080918 Use the colorspace package to get a better colour map. See
-    # http://epub.wu-wien.ac.at/dyn/virlib/wp/eng/showentry?ID=epub-wu-01_c87 and
-    # http://statmath.wu.ac.at/~zeileis/papers/Zeileis+Hornik+Murrell-2009.pdf
+    # https://epub.wu-wien.ac.at/dyn/virlib/wp/eng/showentry?ID=epub-wu-01_c87 and
+    # https://statmath.wu.ac.at/~zeileis/papers/Zeileis+Hornik+Murrell-2009.pdf
     
     if (packageIsAvailable("colorspace"))
       cols <- "fill=colorspace::rainbow_hcl(%d)," # 090524, start = 270, end = 150),"
@@ -2336,7 +2336,7 @@ executeExplorePlot2 <- function(dataset,
     # plot actually interferred with multiple plots on a page.
     #
     # Note this tip that could help:
-    # http://wiki.r-project.org/rwiki/doku.php?id=tips:easier:tbtable
+    # https://wiki.r-project.org/rwiki/doku.php?id=tips:easier:tbtable
     #
 
     ## hs <- hist(ds[ds$grp=="All",1], breaks="fd", plot=FALSE)
@@ -2355,13 +2355,13 @@ executeExplorePlot2 <- function(dataset,
 
     # 090524 A note on using breaks in the histogram: The default is
     # to use Sturges' rule from 1926. Rob Hyndman
-    # (http://robjhyndman.com/papers/sturges.pdf) argues that Sturges'
+    # (https://robjhyndman.com/papers/sturges.pdf) argues that Sturges'
     # rule is wrong. Sturges' rule leads to oversmoothed
     # histograms. Hyndman notes that Scott's (1979) rule and Freedman
     # and Diaconis's (1981) rule are just as simple to use as Sturges'
     # rule, but are well-founded in statistical theory. Sturges' rule
     # does not work for large n. Also see
-    # http://www.math.leidenuniv.nl/~gill/teaching/statistics/histogram.pdf
+    # https://www.math.leidenuniv.nl/~gill/teaching/statistics/histogram.pdf
     # So let's use the Freedman and Diaconis approach.
     
     plot.cmd <- paste('hs <- hist(ds[ds$grp=="All",1], main="", xlab="%s", ',
@@ -2650,7 +2650,7 @@ executeExplorePlot2 <- function(dataset,
 
     if (digspin == 1)
       expect.cmd <- paste('unlist(lapply(1:9, function(x) log10(1 + 1/x)))')
-    # see http://www.mathpages.com/home/kmath302/kmath302.htm
+    # see https://www.mathpages.com/home/kmath302/kmath302.htm
     else if (digspin > 1) 
       expect.cmd <- sprintf(paste('unlist(lapply(0:9, function(x) {sum(log10',
                                   '(1 + 1/(10*(seq(10^(%d-2), ',
@@ -3308,13 +3308,13 @@ executeExplorePlot2 <- function(dataset,
 
     if (is.null(target))
       ds.cmd <- sprintf("table(crs$dataset%s$%s)",
-                        ifelse(sampling, "[crs$sample,]", ""),
+                        ifelse(sampling, "[crs$train,]", ""),
                         mosplots[s])
     else
       ds.cmd <- paste(sprintf(paste("table(crs$dataset%s$%s,",
                                       "crs$dataset%s$%s)"),
-                              ifelse(sampling, "[crs$sample,]", ""), mosplots[s],
-                              ifelse(sampling, "[crs$sample,]", ""), target))
+                              ifelse(sampling, "[crs$train,]", ""), mosplots[s],
+                              ifelse(sampling, "[crs$train,]", ""), target))
     appendLog(Rtxt("Generate the table data for plotting."),
               paste("ds <-", ds.cmd))
     ds <- eval(parse(text=ds.cmd))

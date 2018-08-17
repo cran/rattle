@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-05-17 08:54:03 gjw>
+# Time-stamp: <2017-09-10 10:07:44 Graham Williams>
 #
 # Implement associations functionality.
 #
@@ -19,7 +19,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 
 ########################################################################
 # TODO
@@ -165,7 +165,7 @@ executeAssociateTab <- function()
   
   # Required information.
   
-  sampling   <- not.null(crs$sample)
+  sampling   <- not.null(crs$train)
   support    <- theWidget("associate_support_spinbutton")$getValue()
   confidence <- theWidget("associate_confidence_spinbutton")$getValue()
   minlen     <- theWidget("associate_minlen_spinbutton")$getValue()
@@ -177,10 +177,10 @@ executeAssociateTab <- function()
   if (baskets)
     transaction.cmd <- paste("crs$transactions <- as(split(",
                              sprintf('crs$dataset[%s, %s],\n%*scrs$dataset[%s, %s]',
-                                     ifelse(sampling, "crs$sample", ""),
+                                     ifelse(sampling, "crs$train", ""),
                                      "crs$target",
                                      29, "",
-                                     ifelse(sampling, "crs$sample", ""),
+                                     ifelse(sampling, "crs$train", ""),
                                      "crs$ident"),
                              '),',
                              sprintf('\n%*s"transactions")', 23, ""),
@@ -188,7 +188,7 @@ executeAssociateTab <- function()
   else
     transaction.cmd <- paste("crs$transactions <- as(",
                              sprintf('crs$dataset[%s, %s], "transactions")',
-                                     ifelse(sampling, "crs$sample", ""),
+                                     ifelse(sampling, "crs$train", ""),
                                      include), sep="")
   appendLog(Rtxt("Generate a transactions dataset."), transaction.cmd)
 
@@ -305,7 +305,7 @@ plotAssociateFrequencies <- function()
  
   # Required information
   
-  sampling  <- not.null(crs$sample)
+  sampling  <- not.null(crs$train)
   support <- theWidget("associate_support_spinbutton")$getValue()
 
   # Transform data into a transactions dataset for arules.
@@ -316,15 +316,15 @@ plotAssociateFrequencies <- function()
   if (baskets)
     transaction.cmd <- paste("crs$transactions <- as(split(",
                              sprintf('crs$dataset%s$%s, crs$dataset%s$%s',
-                                     ifelse(sampling, "[crs$sample,]", ""),
+                                     ifelse(sampling, "[crs$train,]", ""),
                                      crs$target,
-                                     ifelse(sampling, "[crs$sample,]", ""),
+                                     ifelse(sampling, "[crs$train,]", ""),
                                      crs$ident),
                              '), "transactions")', sep="")
   else
     transaction.cmd <- paste("crs$transactions <- as(",
                              sprintf('crs$dataset[%s,%s], "transactions")',
-                                     ifelse(sampling, "crs$sample", ""),
+                                     ifelse(sampling, "crs$train", ""),
                                      include), sep="")
   appendLog(Rtxt("Generate a transactions dataset."), transaction.cmd)
   eval(parse(text=transaction.cmd))

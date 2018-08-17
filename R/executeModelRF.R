@@ -1,6 +1,6 @@
 #' Build a random forest model: traditional or conditional.
 #' 
-#' Time-stamp: <2016-07-22 22:06:58 Graham Williams>
+#' Time-stamp: <2017-09-10 10:10:03 Graham Williams>
 #'
 executeModelRF <- function(traditional=TRUE, conditional=!traditional)
 {
@@ -127,7 +127,7 @@ executeModelRF <- function(traditional=TRUE, conditional=!traditional)
   
   # Some convenience booleans.
 
-  sampling   <- not.null(crs$sample)
+  sampling   <- not.null(crs$train)
   including  <- not.null(included)
   subsetting <- sampling || including
 
@@ -136,7 +136,7 @@ executeModelRF <- function(traditional=TRUE, conditional=!traditional)
 
   dataset <- paste("crs$dataset",
                    if (subsetting) "[",
-                   if (sampling) "crs$sample",
+                   if (sampling) "crs$train",
                    if (subsetting) ", ",
                    if (including) included,
                    if (subsetting) "]",
@@ -158,13 +158,13 @@ executeModelRF <- function(traditional=TRUE, conditional=!traditional)
                        # Use eval since crs$weights could be a formula
                        'as.integer(eval(parse(text = "', crs$weights,
                        '"))',
-                       if (sampling) '[crs$sample]',
+                       if (sampling) '[crs$train]',
                        ')),]',
                        sep="")
     else
       dataset <- sprintf("%s,\n  weights=%s%s", dataset,
                        crs$weights,
-                       ifelse(sampling, "[crs$sample]", ""))
+                       ifelse(sampling, "[crs$train]", ""))
 
 
   # 100107 Deal with missing values. I've not tested whether cforest
@@ -213,7 +213,7 @@ executeModelRF <- function(traditional=TRUE, conditional=!traditional)
           #                         ",\n      data=crs$dataset",
           #                         ",\n      data=na.omit(crs$dataset"),
           #                  if (subsetting) "[",
-          #                  if (sampling) "crs$sample",
+          #                  if (sampling) "crs$train",
           #                  if (subsetting) ",",
           #                  if (including) included,
           #                  ifelse(subsetting,
@@ -230,7 +230,7 @@ executeModelRF <- function(traditional=TRUE, conditional=!traditional)
           # 100521 Turn subsampling with replacement off since
           # it is more likely to produce biased imprtance
           # measures, as explained in
-          # http://www.ncbi.nlm.nih.gov/pmc/articles/PMC1796903/
+          # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1796903/
           # Note that for cforest, cforest_unbiased uses
           # replace=FALSE also.
           if (traditional) ",\n  replace=FALSE",
@@ -270,7 +270,7 @@ executeModelRF <- function(traditional=TRUE, conditional=!traditional)
       # it. We can test this is the error if the following returns
       # non-zero:
       #
-      # sum(crs$dataset[crs$sample,c(2:10, 13:14)]==-Inf, na.rm=TRUE)
+      # sum(crs$dataset[crs$train,c(2:10, 13:14)]==-Inf, na.rm=TRUE)
       
       Rtxt("The call to '%s' failed.",
            "The problem may be with the data",
@@ -294,7 +294,7 @@ executeModelRF <- function(traditional=TRUE, conditional=!traditional)
            "This is a known problem and is fixed in 4.5-26.",
            "Please install a newer version of randomForest.\n",
            "\ninstall.packages('randomForest',\n",
-           "    repos='http://rattle.togaware.com')") %>%
+           "    repos='https://rattle.togaware.com')") %>%
         errorDialog()
       
       setTextview(TV)

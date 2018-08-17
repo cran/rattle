@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-05-17 08:54:45 gjw>
+# Time-stamp: <2017-09-10 10:08:18 Graham Williams>
 #
 # CTREE OPTION OF THE TREE TAB
 #
@@ -19,7 +19,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 
 ########################################################################
 #
@@ -29,7 +29,7 @@
 # 100815 TODO The "partykit" package from R-Forge (only for now)
 # includes .list.rules.party() to convert tree into rules:
 #
-# install.packages("partykit", repos = "http://R-Forge.R-project.org")
+# install.packages("partykit", repos = "https://R-Forge.R-project.org")
 # library("partykit")
 # Rebuild the ctree as partykit provides new ctree.
 # partykit:::.list.rules.party(crs$rpart)
@@ -129,7 +129,7 @@ executeModelCTree <- function()
   
   # Some convenience booleans
 
-  sampling  <- not.null(crs$sample)
+  sampling  <- not.null(crs$train)
   including <- not.null(included)
   subsetting <- sampling || including
   
@@ -140,7 +140,7 @@ executeModelCTree <- function()
 
   fit.cmd <- paste("crs$rpart <- ctree(", frml, ", data=crs$dataset",
                    if (subsetting) "[",
-                   if (sampling) "crs$sample",
+                   if (sampling) "crs$train",
                    if (subsetting) ",",
                    if (including) included,
                    if (subsetting) "]",

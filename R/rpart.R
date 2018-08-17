@@ -2,7 +2,7 @@
 #
 # RPART TAB
 #
-# Time-stamp: <2015-07-26 11:55:23 gjw>
+# Time-stamp: <2018-07-13 17:35:16 Graham.Williams@togaware.com>
 #
 # Copyright (c) 2009-2014 Togaware Pty Ltd except as noted:
 #
@@ -24,7 +24,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 
 ########################################################################
 #
@@ -426,7 +426,7 @@ executeModelRPart <- function(action="build")
                               '"class"', '"anova"'),
                        ifelse(is.null(parms), "", parms),
                        ifelse(is.null(control), "", control),
-                       ")", sep="")
+                       ",\n    model=TRUE)", sep="") # For rpart.plot
 
     print.cmd <- paste("print(crs$rpart)", "printcp(crs$rpart)",
                        'cat("\\n")', sep="\n")
@@ -439,7 +439,7 @@ executeModelRPart <- function(action="build")
   ##   {
   ##     pds.string <- paste("crs$dataset",
   ##                         if (subsetting) "[",
-  ##                         if (sampling) "-crs$sample",
+  ##                         if (sampling) "-crs$train",
   ##                         if (subsetting) ", ",
   ##                         if (including) included,
   ##                         if (subsetting) "]", sep="")

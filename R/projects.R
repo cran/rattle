@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-07-12 15:52:44 gjw>
+# Time-stamp: <2017-09-10 10:16:48 Graham Williams>
 #
 # Project functionality.
 #
@@ -19,7 +19,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 
 ########################################################################
 # CALLBACKS
@@ -272,8 +272,8 @@ saveProject <- function()
 
   # Save seed information
 
-  crs$sample.on <- theWidget("data_sample_checkbutton")$getActive()
-  crs$sample.seed <- theWidget("sample_seed_spinbutton")$getValue()
+  crs$train.on <- theWidget("data_sample_checkbutton")$getActive()
+  crs$train.seed <- theWidget("sample_seed_spinbutton")$getValue()
   crs$kmeans.seed <- theWidget("kmeans_seed_spinbutton")$getValue()
   
   # Save Model options
@@ -439,24 +439,24 @@ loadProject <- function()
   # 090402 Are these needed any more now we assign crs above? I don't
   # think so. Comment out all the following assignments as well.
   
-#  crs$sample      <- crs$sample
-#  crs$sample.seed <- crs$sample.seed
+#  crs$train      <- crs$train
+#  crs$train.seed <- crs$train.seed
 
   # 100609 Check if crs$partition is null, and if so we assume an old
   # rattle project, so restore the sample size in the old
   # way. Eventually should be able to reomve this.
   
   if (is.null(crs$partition))
-    if(crs$sample.on)
+    if(crs$train.on)
     {
       nrows <- nrow(crs$dataset)
-      srows <- length(crs$sample)
+      srows <- length(crs$train)
       per <- 100*srows/nrows
       theWidget("data_sample_checkbutton")$setActive(TRUE)
       theWidget("sample_count_spinbutton")$setRange(1,nrows)
       theWidget("sample_count_spinbutton")$setValue(srows)
-      if (not.null(crs$sample.seed))
-        theWidget("sample_seed_spinbutton")$setValue(crs$sample.seed)
+      if (not.null(crs$train.seed))
+        theWidget("sample_seed_spinbutton")$setValue(crs$train.seed)
       else
         theWidget("sample_seed_spinbutton")$setValue(crv$seed)
       theWidget("sample_percentage_spinbutton")$setValue(per)
@@ -467,7 +467,7 @@ loadProject <- function()
     }
   else
   {
-    theWidget("data_sample_checkbutton")$setActive(crs$sample.on)
+    theWidget("data_sample_checkbutton")$setActive(crs$train.on)
   }
 
   # Make sure we don't attempt to reload the file on executing the

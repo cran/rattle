@@ -1,6 +1,6 @@
 # R Data Scientist: GNOME interface to R for Data Science
 #
-# Time-stamp: <2017-08-18 18:34:13 Graham Williams>
+# Time-stamp: <2017-09-10 10:09:35 Graham Williams>
 #
 # Implement evaluate functionality.
 #
@@ -19,7 +19,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 
 ########################################################################
 # CALLBACKS
@@ -550,7 +550,7 @@ executeEvaluateTab <- function()
   else
   {
     testset0 <- "crs$dataset"
-    training <- "[crs$sample,]"
+    training <- "[crs$train,]"
     validate <- "[crs$validate,]"
     testing  <- "[crs$test,]"
   }
@@ -609,9 +609,9 @@ executeEvaluateTab <- function()
       if (theWidget("data_sample_checkbutton")$getActive())
       {
         if (is.null(included))
-          testset0 <- "crs$dataset[crs$sample,]"
+          testset0 <- "crs$dataset[crs$train,]"
         else
-          testset0 <- sprintf("crs$dataset[crs$sample, %s]", included)
+          testset0 <- sprintf("crs$dataset[crs$train, %s]", included)
       }
       else
       {
@@ -651,14 +651,14 @@ executeEvaluateTab <- function()
         if (newSampling())
           testset0 <- "crs$dataset[crs$test,]"
         else
-          testset0 <- "crs$dataset[-crs$sample,]"
+          testset0 <- "crs$dataset[-crs$train,]"
       }
       else
       {
         if (newSampling())
           testset0 <- sprintf("crs$dataset[crs$test, %s]", included)
         else
-          testset0 <- sprintf("crs$dataset[-crs$sample, %s]", included)
+          testset0 <- sprintf("crs$dataset[-crs$train, %s]", included)
       }
     }
     testname <- sprintf("%s [%s]", crs$dataname, Rtxt("test"))
@@ -841,7 +841,7 @@ executeEvaluateTab <- function()
   ## generate either a prediction of the response or a probability of
   ## the class, as appropriate to the particular evaluator.
   ##
-  ## PREDICT: crs$pr <- predict(crs$model, crs$testset[crs$sample, c(...)])
+  ## PREDICT: crs$pr <- predict(crs$model, crs$testset[crs$train, c(...)])
 
   ## PROBABILITY: this predicts a matrix, each column a probability
   ## for that class.
@@ -1214,8 +1214,8 @@ executeEvaluateTab <- function()
     ## levels.
     ## 060622 Seems like the problem is that the na.omit is working on
     ## different subsets of the columns:
-    ##   na.omit(crs$dataset[-crs$sample, c(2:22,25)]) versus
-    ##   na.omit(crs$dataset[-crs$sample,])
+    ##   na.omit(crs$dataset[-crs$train, c(2:22,25)]) versus
+    ##   na.omit(crs$dataset[-crs$train,])
     ## because in the second one we want to retrieve the Risk variable,
     ## which is
     ## not in the first! Instead, let's always extract the list of omitted
@@ -1225,8 +1225,8 @@ executeEvaluateTab <- function()
     ## Then use testset[-romit,]
     ## Note that predict automatically removes NAs.
     ## I.e.
-    ## crs$eval <- evaluateRisk(crs$pr, na.omit(crs$dataset[-crs$sample,
-    ## c(2:22,25)])$Target1,crs$dataset[-crs$sample,][-romit,]$NETADJ_AS_LBLTY)
+    ## crs$eval <- evaluateRisk(crs$pr, na.omit(crs$dataset[-crs$train,
+    ## c(2:22,25)])$Target1,crs$dataset[-crs$train,][-romit,]$NETADJ_AS_LBLTY)
     ##
     ## 060623 For now in the risk chart function we add the risk
     ## variable back into the testset to ensure it can be accessed,
@@ -2448,7 +2448,7 @@ executeEvaluateLift <- function(probcmd, testset, testname)
     mcount <- mcount + 1
     plot.cmd <- paste(Rtxt("\n# Also convert rate of positive predictions to percentage\n"),
                       "\nper <- performance(prediction(crs$pr, ",
-                      sprintf("%s$%s),", sub("-crs\\$sample", "crs$sample",
+                      sprintf("%s$%s),", sub("-crs\\$sample", "crs$train",
                                   testset[[mtype]]), crs$target),
                       '"lift", "rpp")\n',
                       "per@x.values[[1]] <- per@x.values[[1]]*100\n\n",
@@ -2461,11 +2461,11 @@ executeEvaluateLift <- function(probcmd, testset, testname)
                       sep="")
     appendLog(sprintf(Rtxt("Generate a Lift Chart for the %s model on %s."),
                      smtype, sub('\\[test\\]', '[train]', testname)),
-             sub("-crs\\$sample", "crs$sample",
+             sub("-crs\\$sample", "crs$train",
                                    probcmd[[mtype]]), "\n", plot.cmd)
 
     result <- try(eval(parse(text=sub("-crs\\$sample",
-                               "crs$sample", probcmd[[mtype]]))), silent=TRUE)
+                               "crs$train", probcmd[[mtype]]))), silent=TRUE)
     eval(parse(text=plot.cmd))
     models <- c(Rtxt("Test"), Rtxt("Train"))
     nummodels <- 2
@@ -2637,7 +2637,7 @@ executeEvaluateROC <- function(probcmd, testset, testname)
                         Rtxt("# Calling the function directly works.\n\n"),
                         ".plot.performance(performance(prediction(crs$pr, ",
                         sprintf("%s$%s),",
-                                sub("-crs\\$sample", "crs$sample",
+                                sub("-crs\\$sample", "crs$train",
                                     testset[[mtype]]), crs$target),
                         '"tpr", "fpr"), ',
                         'col="#00CCCCFF", lty=2, ',
@@ -2645,11 +2645,11 @@ executeEvaluateROC <- function(probcmd, testset, testname)
                         sep="")
       appendLog(sprintf(Rtxt("Generate an ROC curve for the %s model on %s."),
                         smtype, sub(sprintf("\\[%s\\]", Rtxt("test")), '[train]', testname)),
-                sub("-crs\\$sample", "crs$sample",
+                sub("-crs\\$sample", "crs$train",
                     probcmd[[mtype]]), "\n", plot.cmd)
       
       result <- try(eval(parse(text=sub("-crs\\$sample",
-                                   "crs$sample", probcmd[[mtype]]))), silent=TRUE)
+                                   "crs$train", probcmd[[mtype]]))), silent=TRUE)
       eval(parse(text=plot.cmd))
       models <- c(Rtxt("Test"), Rtxt("Train"))
       nummodels <- 2
@@ -2757,7 +2757,7 @@ executeEvaluatePrecision <- function(probcmd, testset, testname)
                       Rtxt("# Calling the function directly (.plot.performance) does work.\n\n"),
                       ".plot.performance(performance(prediction(crs$pr, ",
                       sprintf("%s$%s),",
-                              sub("-crs\\$sample", "crs$sample",
+                              sub("-crs\\$sample", "crs$train",
                                   testset[[mtype]]), crs$target),
                       '"prec", "rec"), ',
                       'col="#00CCCCFF", lty=2, ',
@@ -2765,11 +2765,11 @@ executeEvaluatePrecision <- function(probcmd, testset, testname)
                       sep="")
     appendLog(sprintf(Rtxt("Generate a Precision/Recall Plot for the %s model on %s."),
                      smtype, sub('\\[test\\]', '[train]', testname)),
-             sub("-crs\\$sample", "crs$sample",
+             sub("-crs\\$sample", "crs$train",
                                    probcmd[[mtype]]), "\n", plot.cmd)
 
     result <- try(eval(parse(text=sub("-crs\\$sample",
-                               "crs$sample", probcmd[[mtype]]))), silent=TRUE)
+                               "crs$train", probcmd[[mtype]]))), silent=TRUE)
     eval(parse(text=plot.cmd))
     models <- c(Rtxt("Test"), Rtxt("Train"))
     nummodels <- 2
@@ -2875,7 +2875,7 @@ executeEvaluateSensitivity <- function(probcmd, testset, testname)
                       Rtxt("# Calling the function directly (.plot.performance) does work.\n\n"),
                       ".plot.performance(performance(prediction(crs$pr, ",
                       sprintf("%s$%s),",
-                              sub("-crs\\$sample", "crs$sample",
+                              sub("-crs\\$sample", "crs$train",
                                   testset[[mtype]]), crs$target),
                       '"sens", "spec"), ',
                       'col="#00CCCCFF", lty=2, ',
@@ -2883,11 +2883,11 @@ executeEvaluateSensitivity <- function(probcmd, testset, testname)
                       sep="")
     appendLog(sprintf(Rtxt("Generate a Lift Chart for the %s model on %s."),
                      smtype, sub('\\[test\\]', '[train]', testname)),
-             sub("-crs\\$sample", "crs$sample",
+             sub("-crs\\$sample", "crs$train",
                                    probcmd[[mtype]]), "\n", plot.cmd)
 
     result <- try(eval(parse(text=sub("-crs\\$sample",
-                               "crs$sample", probcmd[[mtype]]))), silent=TRUE)
+                               "crs$train", probcmd[[mtype]]))), silent=TRUE)
     eval(parse(text=plot.cmd))
     models <- c(Rtxt("Test"), Rtxt("Train"))
     nummodels <- 2
@@ -3071,8 +3071,8 @@ executeEvaluateScore <- function(probcmd, respcmd, testset, testname, dfedit.don
   # just the first testset), but possibly others, and there is an
   # assumption that they are all of the forms:
   #
-  # crs$dataset[-crs$sample, c(...)]
-  # na.omit(crs$dataset[-crs$sample, c(...)])
+  # crs$dataset[-crs$train, c(...)]
+  # na.omit(crs$dataset[-crs$train, c(...)])
   #
   # or else they are all of the forms:
   #
@@ -3184,13 +3184,13 @@ executeEvaluateScore <- function(probcmd, respcmd, testset, testname, dfedit.don
     #
     # Various formats include:
     #
-    #    train	crs$dataset[crs$sample, c(3:12,14)]
-    #    test	crs$dataset[-crs$sample, c(3:12,14)]
+    #    train	crs$dataset[crs$train, c(3:12,14)]
+    #    test	crs$dataset[-crs$train, c(3:12,14)]
     #    csv	crs$testset[,c(3:12,14)]
     #    df	crs$testset
     #
     # Want
-    #    subset(crs$dataset[-crs$sample,], select=Idents) + crs$pr
+    #    subset(crs$dataset[-crs$train,], select=Idents) + crs$pr
     #
 
     scoreset <- testset[[mtype]]
@@ -3204,20 +3204,20 @@ executeEvaluateScore <- function(probcmd, respcmd, testset, testname, dfedit.don
     # even more rows for the subset command than it does for the
     # predict command. Yet we still want to ensure we have all the
     # appropriate columns available. So use
-    # na.omit(crs$dataset[-crs$sample, c(2:4,6:10,13)])@na.action to
-    # remove the rows from crs$dataset[-crs$sample,] that have
+    # na.omit(crs$dataset[-crs$train, c(2:4,6:10,13)])@na.action to
+    # remove the rows from crs$dataset[-crs$train,] that have
     # missing values with regard the columns c(2:4,6:10,13). Thus if
     # we have scoreset as:
     #
-    #  na.omit(crs$dataset[-crs$sample, c(2:4,6:10,13)])
+    #  na.omit(crs$dataset[-crs$train, c(2:4,6:10,13)])
     #
     # we want to:
     #
-    #  omitted <- na.omit(crs$dataset[-crs$sample, c(2:4,6:10,13)])@na.action
+    #  omitted <- na.omit(crs$dataset[-crs$train, c(2:4,6:10,13)])@na.action
     #
     # and then scoreset should become:
     #
-    #  crs$dataset[-crs$sample,][-omitted,]
+    #  crs$dataset[-crs$train,][-omitted,]
 
     # First deal with the na.omit case, to capture the list of rows
     # omitted.
@@ -3353,7 +3353,7 @@ executeEvaluatePvOplot <- function(probcmd, testset, testname)
   # (thus if numplots is odd, leave a cell of the plot empty.
 
   # TODO [140623] This needs to be updaed to work wiht crs$train, etc
-  # rather than crs$sample.
+  # rather than crs$train.
   
   model.list <- getEvaluateModels()
   numplots <- length(model.list)
@@ -3424,13 +3424,13 @@ executeEvaluatePvOplot <- function(probcmd, testset, testname)
     #
     # Various formats include:
     #
-    #    train	crs$dataset[crs$sample, c(3:12,14)]
-    #    test	crs$dataset[-crs$sample, c(3:12,14)]
+    #    train	crs$dataset[crs$train, c(3:12,14)]
+    #    test	crs$dataset[-crs$train, c(3:12,14)]
     #    csv	crs$testset[,c(3:12,14)]
     #    df	crs$testset
     #
     # Want
-    #    subset(crs$dataset[-crs$sample,], select=Idents) + crs$pr
+    #    subset(crs$dataset[-crs$train,], select=Idents) + crs$pr
     #
 
     scoreset <- testset[[mtype]]
@@ -3443,20 +3443,20 @@ executeEvaluatePvOplot <- function(probcmd, testset, testname)
     # included that have NAs, and hence the na.omit will remove even
     # more rows for the subset command than it does for the predict
     # command. Yet we still want to ensure we have all the appropriate
-    # columns available. So use na.omit(crs$dataset[-crs$sample,
+    # columns available. So use na.omit(crs$dataset[-crs$train,
     # c(2:4,6:10,13)])@na.action to remove the rows from
-    # crs$dataset[-crs$sample,] that have missing values with regard
+    # crs$dataset[-crs$train,] that have missing values with regard
     # the columns c(2:4,6:10,13). Thus if we have scoreset as:
     #
-    #  na.omit(crs$dataset[-crs$sample, c(2:4,6:10,13)])
+    #  na.omit(crs$dataset[-crs$train, c(2:4,6:10,13)])
     #
     # we want to:
     #
-    #  omitted <- na.omit(crs$dataset[-crs$sample, c(2:4,6:10,13)])@na.action
+    #  omitted <- na.omit(crs$dataset[-crs$train, c(2:4,6:10,13)])@na.action
     #
     # and then scoreset should become:
     #
-    #  crs$dataset[-crs$sample,][-omitted,]
+    #  crs$dataset[-crs$train,][-omitted,]
 
     # First deal with the na.omit case, to capture the list of rows
     # omitted.
@@ -3478,10 +3478,10 @@ executeEvaluatePvOplot <- function(probcmd, testset, testname)
                       getSelectedVariables("target"),
                       getSelectedVariables("input"),
                       getSelectedVariables("risk"))
-    if (is.null(crs$sample))
+    if (is.null(crs$train))
       tmpset <- crs$dataset[, scorevarlist]
     else
-      tmpset <- crs$dataset[-crs$sample, scorevarlist]
+      tmpset <- crs$dataset[-crs$train, scorevarlist]
 
     if (substr(scoreset, 1, 7) == "na.omit" &&
         !dim(tmpset)[1]==dim(na.omit(tmpset))[1])

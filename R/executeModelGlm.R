@@ -75,7 +75,7 @@ executeModelGLM <- function()
 
     # In addition to the default summary, add the chi-square test of
     # the difference between the null model and the current model as
-    # presented in http://www.ats.ucla.edu/stat/R/dae/probit.htm.
+    # presented in https://www.ats.ucla.edu/stat/R/dae/probit.htm.
 
     
     

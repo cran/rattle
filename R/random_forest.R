@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2017-01-30 21:30:47 Graham Williams>
+# Time-stamp: <2017-09-10 10:18:37 Graham Williams>
 #
 # RANDOM FOREST TAB
 #
@@ -236,14 +236,14 @@ plotRandomForestOOBROC <- function()
                     '\naucc <- verification::roc.area(as.integer(as.factor(',
                     if (!naimpute) 'na.omit(',
                     'crs$dataset[',
-                    if (not.null(crs$sample)) 'crs$sample',
+                    if (not.null(crs$train)) 'crs$train',
                     if (!naimpute) ',])[',
                     ', crs$target]))-1,',
                     '\n                 crs$rf$votes[,2])$A',
                     '\nverification::roc.plot(as.integer(as.factor(',
                     if (!naimpute) 'na.omit(',
                     'crs$dataset[',
-                    if (not.null(crs$sample)) 'crs$sample',
+                    if (not.null(crs$train)) 'crs$train',
                     if (!naimpute) ',])[',
                     ', crs$target]))-1,',
                     '\n         crs$rf$votes[,2], main="")',

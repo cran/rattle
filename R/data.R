@@ -1,6 +1,6 @@
 # R Data Scientist: Gtk interface to R for Data Science
 #
-# Time-stamp: <2017-09-04 08:17:40 Graham Williams>
+# Time-stamp: <2017-09-19 08:48:07 Graham Williams>
 #
 # DATA TAB
 #
@@ -19,7 +19,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 #
 ########################################################################
 #
@@ -101,7 +101,7 @@ urlModTime <- function(filename)
 {
   # Return the modification time of the file. Strip out any "file://"
   # prefix to the filename. We note that this will not work for
-  # http:// urls.
+  # https:// urls.
 
   return(file.info(gsub("file:///", "/", filename))$mtime)
 }
@@ -1016,7 +1016,7 @@ executeDataCSV <- function(filename=NULL)
 
   if (use_sample_dataset &&
         ! (crv$mrs && theWidget("data_xdf_checkbutton")$getActive()))
-    read.cmd <- sprintf(paste('fname <- system.file("csv",',
+    read.cmd <- sprintf(paste('fname       <- system.file("csv",',
                               '"%s.csv", package="rattle")',
                               '\ncrs$dataset <- read.csv(fname,',
                               'encoding="%s")'),
@@ -1147,7 +1147,7 @@ executeDataCSV <- function(filename=NULL)
                           filename, crv$csv_encoding, hdr, sep, dec, nastring,
                           stripwhite)
     else
-      read.cmd <- sprintf(paste('fname <- "%s"',
+      read.cmd <- sprintf(paste('fname         <- "%s"',
                                 '\ncrs$dataset <- read.csv(fname%s%s%s%s%s,',
                                 'encoding="%s")'),
                           filename, hdr, sep, dec, nastring, stripwhite,
@@ -1158,7 +1158,7 @@ executeDataCSV <- function(filename=NULL)
 
   startLog()
 
-  appendLog(Rtxt("Load the dataset from file."), read.cmd)
+  appendLog(Rtxt("Load a dataset from file."), read.cmd)
   resetRattle()
   result <- try(eval(parse(text=read.cmd)), silent=TRUE)
   if (inherits(result, "try-error"))
@@ -2055,7 +2055,7 @@ exportDataTab <- function()
   # If sample is active then only save the sample.
 
   if (sampling)
-    writeCSV(crs$dataset[crs$sample,], save.name)
+    writeCSV(crs$dataset[crs$train,], save.name)
   else
     writeCSV(crs$dataset, save.name)
 
@@ -2071,7 +2071,7 @@ exportDataTab <- function()
 # DATA ROLES
 #
 # The DATA Execute will perform a sampling of the data and stores
-# the indicies in crs$sample. It will also build the list of variable
+# the indicies in crs$train. It will also build the list of variable
 # roles and stores these in crs$input, crs$ident, crs$ignore,
 # crs$target, and crs$risk. This is then used in MODEL to limit the
 # dataset in the call to rpart to just the crs$input variables.  In
@@ -2107,7 +2107,7 @@ on_data_sample_checkbutton_toggled <- function(button)
     theWidget("data_sample_entry")$setSensitive(FALSE)
     # theWidget("explore_sample_label")$hide()
   }
-  crs$sample <- crs$train <- crs$validate <- crs$test <- NULL
+  crs$train <- crs$validate <- crs$test <- NULL
   setStatusBar()
 }
 
@@ -2287,7 +2287,7 @@ executeSelectTab <- function(resample=TRUE)
 
   set.cursor("watch", Rtxt("Determining variable roles and characteristics..."))
   
-  startLog(Rtxt("Note the user selections."))
+  startLog(Rtxt("Action the user selections from the Data tab."))
 
   if (resample) executeSelectSample()
 
@@ -2787,7 +2787,7 @@ executeSelectSample <- function()
   ds <- ifelse(is.null(crs$xdf), "dataset", "xdf")
   
   # Record that a random sample of the dataset is desired and the
-  # random sample itself is loaded into crs$sample. 080425 Whilst we
+  # random sample itself is loaded into crs$train. 080425 Whilst we
   # are at it we also set the variable crs$targeted to be those row
   # indicies that have a non NA target.
 
@@ -2796,8 +2796,8 @@ executeSelectSample <- function()
     if (newSampling())
     {
       ssizes <- parseSampleEntry()/100
-      ssize <- floor(nr * ssizes[1])
-      vsize <- floor(nr * ssizes[2])
+      ssize <- round(nr * ssizes[1])
+      vsize <- round(nr * ssizes[2])
       if (ssizes[3] == 0)
         tsize <- 0
       else
@@ -2818,36 +2818,57 @@ executeSelectSample <- function()
       sample.intro <- paste0('# nobs=', nr, ' train=', ssize) 
       
       sample.cmd <- sprintf(paste0("%s\n",
-                                   "crs$nobs     <- nrow(crs$%s)\n",
-                                   "crs$train    <- crs$sample <- ",
+                                   "crs$nobs <- nrow(crs$%s)\n\n",
+                                   "crs$train <- ",
                                    "sample(crs$nobs, %s*crs$nobs)\n"),
-                            sample.cmd, ds, round(ssize/nr, 2))
+                            sample.cmd, ds, round(ssizes[1], 2))
+
+      sample.intro %<>% paste0(' validate=', vsize)
 
       if (vsize > 0)
       {
-        sample.intro %<>% paste0(' validate=', vsize)
-        
-        sample.cmd <- sprintf(paste0("%scrs$validate <- ",
-                                     "sample(setdiff(seq_len(crs$nobs), ",
-                                     "crs$train), ",
-                                     "%s*crs$nobs)\n"),
-                              sample.cmd, round(vsize/nr, 2))
+        if (tsize > 0)
+        { 
+          sample.cmd <- paste(sample.cmd,
+                              "crs$nobs %>%",
+                              "  seq_len() %>%",
+                              "  setdiff(crs$train) %>%",
+                              paste0("  sample(", round(ssizes[2], 2), "*crs$nobs) ->"),
+                              "crs$validate\n",
+                              sep="\n")
+        }
+        else
+        {
+          sample.cmd <- paste(sample.cmd,
+                              "crs$nobs %>%",
+                              "  seq_len() %>%",
+                              "  setdiff(crs$train) ->",
+                              "crs$validate",
+                              sep="\n")
+        }
       }
       else
+      {
         sample.cmd <- sprintf("%scrs$validate <- NULL\n", sample.cmd)
+      }
       
+      sample.intro %<>% paste0(' test=', nr-ssize-vsize)
+
       if (tsize > 0)
       {
-        sample.intro %<>% paste0(' test=', nr-ssize-vsize)
-
-        sample.cmd <- sprintf(paste0("%scrs$test     <- ",
-                                     "setdiff(setdiff(seq_len(crs$nobs), ",
-                                     "crs$train), crs$validate)"),
-                              sample.cmd)
+        sample.cmd <- paste(sample.cmd,
+                            "crs$nobs %>%",
+                            "  seq_len() %>%",
+                            "  setdiff(crs$train) %>%",
+                            "  setdiff(crs$validate) ->",
+                            "crs$test",
+                            sep="\n")
       }
       else
-        sample.cmd <- sprintf("%scrs$test     <- NULL\n", sample.cmd)
-
+      {
+        sample.cmd <- sprintf("%s\n\ncrs$test <- NULL\n", sample.cmd)
+      }
+      
       sample.cmd <- paste0(sample.intro, "\n\n", sample.cmd)
     }
     else
@@ -2856,7 +2877,7 @@ executeSelectSample <- function()
       # now starting to be used.
 
       sample.cmd <- paste(sprintf("set.seed(%s)\n\n", seed),
-                          "crs$train <- crs$sample <- sample(crs$nobs, ",
+                          "crs$train <- sample(crs$nobs, ",
                           ssize,
                           ")", sep="")
     }
@@ -2893,7 +2914,7 @@ executeSelectSample <- function()
   }
   else
   {
-    crs$sample <- crs$train <- crs$validate <- crs$test <- NULL
+    crs$train <- crs$validate <- crs$test <- NULL
 
     theWidget("evaluate_validation_radiobutton")$setSensitive(FALSE)
     theWidget("evaluate_testing_radiobutton")$setSensitive(FALSE)
@@ -2909,10 +2930,10 @@ executeSelectSample <- function()
 
   ## Set some defaults that depend on sample size.
 
-  #if (is.null(crs$sample))
+  #if (is.null(crs$train))
   #  crv$rf.sampsize.default <- length(crs$dataset)
   #else
-  #  crv$rf.sampsize.default <- length(crs$sample)
+  #  crv$rf.sampsize.default <- length(crs$train)
   #theWidget("rf_sampsize_spinbutton")$setValue(crv$rf.sampsize.default)
 
   ## 080520 Don't set the status bar - it is overwritten by the
@@ -2922,7 +2943,7 @@ executeSelectSample <- function()
 
 ##  if (theWidget("data_sample_checkbutton")$getActive())
 ##    setStatusBar("The sample has been generated.",
-##                  "There are", length(crs$sample), "observations.")
+##                  "There are", length(crs$train), "observations.")
 ##  else
 ##    setStatusBar("Sampling is inactive.")
 }

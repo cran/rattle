@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-07-09 19:13:01 gjw>
+# Time-stamp: <2017-09-10 10:09:47 Graham Williams>
 #
 # Implement biclust functionality.
 #
@@ -19,7 +19,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 
 ########################################################################
 # Callbacks
@@ -45,7 +45,7 @@ on_kmeans_weights_plot_button_clicked <- function(button)
 executeClusterEwkm <- function(include)
 {
   TV <- "kmeans_textview"
-  sampling  <- not.null(crs$sample)
+  sampling  <- not.null(crs$train)
 
   # Obtain interface information.
   
@@ -76,7 +76,7 @@ executeClusterEwkm <- function(include)
   # Determine the dataset to use.
 
   ds <- sprintf("na.omit(crs$dataset[%s, %s])",
-                ifelse(sampling, "crs$sample", ""), include)
+                ifelse(sampling, "crs$train", ""), include)
   
   # Check if we should rescale
 

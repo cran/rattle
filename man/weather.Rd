@@ -138,19 +138,19 @@
 \source{
 
   The daily observations are available from
-  \url{http://www.bom.gov.au/climate/data}.  Copyright Commonwealth of
+  \url{https://www.bom.gov.au/climate/data}.  Copyright Commonwealth of
   Australia 2010, Bureau of Meteorology.
 
   Definitions adapted from
-  \url{http://www.bom.gov.au/climate/dwo/IDCJDW0000.shtml}
+  \url{https://www.bom.gov.au/climate/dwo/IDCJDW0000.shtml}
   
 }
 
 \references{
 
-  Package home page: \url{http://rattle.togaware.com}. Data source:
-  \url{http://www.bom.gov.au/climate/dwo/} and
-  \url{http://www.bom.gov.au/climate/data}.
+  Package home page: \url{https://rattle.togaware.com}. Data source:
+  \url{https://www.bom.gov.au/climate/dwo/} and
+  \url{https://www.bom.gov.au/climate/data}.
 
 }
 
@@ -158,7 +158,7 @@
 
 \seealso{
 
-  \code{rattle.data::weatherAUS}, \code{\link{audit}}.
+  \code{\link{weatherAUS}}, \code{\link{audit}}.
 
 }
 

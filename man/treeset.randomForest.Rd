@@ -22,7 +22,7 @@ treeset.randomForest(model, n=1, root=1, format="R")
   \item{format}{one of "R", "VB".}
   
 }
-\references{Package home page: \url{http://rattle.togaware.com}}
+\references{Package home page: \url{https://rattle.togaware.com}}
 \author{\email{Graham.Williams@togaware.com}}
 \examples{
 ## Display a treeset for a specific model amongst the 500.

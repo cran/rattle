@@ -6,7 +6,7 @@ rattleInfo <- function(all.dependencies=FALSE,
 
   # TODO: Add in support for BIOC
 
-  cran.repos <- "http://cran.rstudio.org"
+  cran.repos <- "https://cran.rstudio.org"
   bioc.repos <- ""
 
   # Using installed.packages() can be a "very slow way to find
@@ -57,13 +57,13 @@ rattleInfo <- function(all.dependencies=FALSE,
   {
     if (! "pkgDepTools" %in% rownames(iv))
     {
-      source("http://bioconductor.org/biocLite.R")
+      source("https://bioconductor.org/biocLite.R")
       pkg <- "pkgDepTools"
       biocLite("pkgDepTools")
     }
     if (! "Rgraphviz" %in% rownames(iv))
     {
-      source("http://bioconductor.org/biocLite.R")
+      source("https://bioconductor.org/biocLite.R")
       biocLite("Rgraphviz")
     }
 

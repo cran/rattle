@@ -19,7 +19,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 ##
 ## Below we define the Rattle GUI specific functions for controlling
 ## ada modelling. The interface callbacks make calls to R functions,

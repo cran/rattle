@@ -3,13 +3,13 @@
 ###################################################
 ### code chunk number 1: install (eval = FALSE)
 ###################################################
-## install.packages(rattle, dependencies=c("Depends", "Suggests"))
+## install.packages("rattle", dependencies=c("Depends", "Suggests"))
 
 
 ###################################################
 ### code chunk number 2: install_togaware (eval = FALSE)
 ###################################################
-## install.packages("rattle", repos="http://rattle.togaware.com", type="source")
+## install.packages("rattle", repos="https://rattle.togaware.com", type="source")
 
 
 ###################################################

@@ -24,7 +24,7 @@ listTreesAda(model, trees=0)
   Ada model.
 
 }
-\references{Package home page: \url{http://rattle.togaware.com}}
+\references{Package home page: \url{https://rattle.togaware.com}}
 \author{\email{Graham.Williams@togaware.com}}
 \examples{
 \dontrun{listTreesAda(ds.ada)}

@@ -1,6 +1,6 @@
 # R Data Scientist: GNOME interface to R for Data Science
 #
-# Time-stamp: <2017-06-25 15:12:40 Graham Williams>
+# Time-stamp: <2017-09-10 10:23:54 Graham Williams>
 #
 # 080921 TEXT MINING DATA
 #
@@ -19,7 +19,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 #
 ########################################################################
 #
@@ -46,7 +46,7 @@
 ## target <- c(1, 0, 0, 1, 0)
 ## crs$dataset <- as.data.frame(cbind(tdm@.Data, target))
 ## set.seed(123)
-## crs$sample <- sample(nrow(crs$dataset), 4)
+## crs$train <- sample(nrow(crs$dataset), 4)
 
 ## ##
 ## ## Ignore 1 (15th), 61 (_is_), 238 (30%) or get error, probably
@@ -54,16 +54,16 @@
 ## ##
 
 ## crs$rpart <- rpart(target ~ .,
-##                    data=crs$dataset[crs$sample,c(2:60,62:237,239:285)],
+##                    data=crs$dataset[crs$train,c(2:60,62:237,239:285)],
 ##                    method="class")
 
 ## crs$rf <- randomForest(as.factor(target) ~ .,
-##                        data=crs$dataset[crs$sample,c(2:60,62:237,239:285)],
+##                        data=crs$dataset[crs$train,c(2:60,62:237,239:285)],
 ##                        importance=TRUE, na.action=na.omit)
 
 
 ## crs$glm <- glm(target ~ .,
-##                data=crs$dataset[crs$sample,c(2:60,62:237,239:285)],
+##                data=crs$dataset[crs$train,c(2:60,62:237,239:285)],
 ##                family=binomial(logit))
 
 ## ##
@@ -71,10 +71,10 @@
 ## ##
 
 
-## crs$ada <- ada(target ~ ., data=crs$dataset[crs$sample,c(2:60,62:237,239:285)])
+## crs$ada <- ada(target ~ ., data=crs$dataset[crs$train,c(2:60,62:237,239:285)])
 
 ## crs$ksvm <- ksvm(as.factor(target) ~ .,
-##                  data=crs$dataset[crs$sample,c(2:60,62:237,239:285)],
+##                  data=crs$dataset[crs$train,c(2:60,62:237,239:285)],
 ##                  prob.model=TRUE)
 
 executeDataCorpus <- function()

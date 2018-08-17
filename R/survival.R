@@ -1,6 +1,6 @@
 # Rattle Survival
 #
-# Time-stamp: <2015-05-17 08:58:46 gjw>
+# Time-stamp: <2017-09-10 10:23:43 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -17,7 +17,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 
 ########################################################################
 # GUI
@@ -77,7 +77,7 @@ buildModelSurvival <- function(formula, dataset, tv=NULL, method=c("para", "coxp
   gui <- not.null(tv)
   if (gui) startLog(Rtxt("Survival Model"))
 
-  sampling <- not.null(crs$sample)
+  sampling <- not.null(crs$train)
 
   # Load the required package into the library.
 

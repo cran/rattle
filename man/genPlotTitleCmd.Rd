@@ -23,7 +23,7 @@ genPlotTitleCmd(..., vector=FALSE)
     the main title.}
   \item{vector}{whether to return a vector as the result.}
 }
-\references{Package home page: \url{http://rattle.togaware.com}}
+\references{Package home page: \url{https://rattle.togaware.com}}
 \author{\email{Graham.Williams@togaware.com}}
 \seealso{
 

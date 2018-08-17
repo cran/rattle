@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-08-21 19:01:23 gjw>
+# Time-stamp: <2017-09-10 10:23:35 Graham Williams>
 #
 # Implement kmeans functionality.
 #
@@ -19,7 +19,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 
 ########################################################################
 # CALLBACKS
@@ -103,7 +103,7 @@ on_kmeans_discriminant_plot_button_clicked <- function(button)
 executeClusterKMeans <- function(include)
 {
   TV <- "kmeans_textview"
-  sampling  <- not.null(crs$sample)
+  sampling  <- not.null(crs$train)
 
   # Obtain interface information.
   
@@ -126,7 +126,7 @@ executeClusterKMeans <- function(include)
   # Determine the dataset to use.
 
   ds <- sprintf("na.omit(crs$dataset[%s, %s])",
-                ifelse(sampling, "crs$sample", ""), include)
+                ifelse(sampling, "crs$train", ""), include)
 
   # Check if we should rescale
 
@@ -231,7 +231,7 @@ executeClusterKMeans <- function(include)
     {
       kmeans.cmd <- sprintf(paste('crs$kmeans <-',
                                   'kmeans(na.omit(crs$dataset[%s, %s]), %s)'),
-                            ifelse(sampling, "crs$sample", ""), include, i)
+                            ifelse(sampling, "crs$train", ""), include, i)
       eval(parse(text=seed.cmd))
       eval(parse(text=kmeans.cmd))
       css[i] <- sum(crs$kmeans$withinss)
@@ -447,7 +447,7 @@ displayClusterStatsKMeans <- function()
   # cluster, and so we don't need to check so many conditions.
 
   TV <- "kmeans_textview"
-  sampling  <- not.null(crs$sample)
+  sampling  <- not.null(crs$train)
 
   # 091219 Why would we check this here - the cluster is already
   # built?
@@ -515,7 +515,7 @@ displayClusterStatsKMeans <- function()
 
   stats.cmd <- sprintf(paste("cluster.stats(dist(na.omit(crs$dataset[%s, %s]%s)),",
                              "crs$kmeans$cluster%s)\n"),
-                       ifelse(sampling, "crs$sample", ""),
+                       ifelse(sampling, "crs$train", ""),
                        include,
                        ifelse(large, "[smpl,]", ""),
                        ifelse(large, "[smpl]", ""))
@@ -560,7 +560,7 @@ dataPlotKMeans <- function()
   # Some background information.  Assume we have already built the
   # cluster, and so we don't need to check so many conditions.
 
-  sampling  <- not.null(crs$sample)
+  sampling  <- not.null(crs$train)
 
   include <- "intersect(crs$input, crs$numeric)"
   incvars <- eval(parse(text=include))
@@ -664,7 +664,7 @@ dataPlotKMeans <- function()
 
   plot.cmd <- sprintf(paste("plot(na.omit(crs$dataset[%s, %s]%s), ",
                             "col=crs$kmeans$cluster)\n%s", sep=""),
-                      ifelse(sampling, "crs$sample", ""), include,
+                      ifelse(sampling, "crs$train", ""), include,
                       ifelse(large,
                              ifelse(manyvars, "[smpl, vars]", "[smpl,]"),
                              ifelse(manyvars, "[vars]", "")),
@@ -693,7 +693,7 @@ discriminantPlotKMeans <- function()
   # Some background information.  Assume we have already built the
   # cluster, and so we don't need to check so many conditions.
 
-  sampling <- not.null(crs$sample)
+  sampling <- not.null(crs$train)
 
   include <- "intersect(crs$input, crs$numeric)"
   incvars <- eval(parse(text=include))
@@ -720,7 +720,7 @@ discriminantPlotKMeans <- function()
   # cluster::clusplot.
 
  plot.cmd <- paste(sprintf("cluster::clusplot(na.omit(crs$dataset[%s, %s]), ",
-                            ifelse(sampling, "crs$sample", ""), include),
+                            ifelse(sampling, "crs$train", ""), include),
                    "crs$kmeans$cluster, color=TRUE, shade=TRUE, ",
                    "main='Discriminant Coordinates ",
                    crs$dataname, "')\n",

@@ -40,7 +40,7 @@ acquireAuditData(write.to.file=FALSE)
 
 }
 
-\references{Package home page: \url{http://rattle.togaware.com}}
+\references{Package home page: \url{https://rattle.togaware.com}}
 
 \author{\email{Graham.Williams@togaware.com}}
 

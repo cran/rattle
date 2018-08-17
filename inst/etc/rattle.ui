@@ -11,7 +11,7 @@
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">normal</property>
     <property name="program_name">Rattle</property>
-    <property name="copyright" translatable="yes">Copyright (C) 2006-2014 Togaware
+    <property name="copyright" translatable="yes">Copyright (C) 2006-2018 Togaware
 All rights reserved.</property>
     <property name="comments" translatable="yes">The R Analytical Tool To Learn Easily
 (Data Science Built on R)</property>
@@ -21,7 +21,7 @@ All rights reserved.</property>
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
 (at your option) any later version. See the file gpl-license in the
-distribution and at http://www.gnu.org/copyleft/gpl.html for details.
+distribution and at https://www.gnu.org/copyleft/gpl.html for details.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -41,6 +41,15 @@ Contributions also from:
     Mark Vere Culp
     Akbar Waljee
     Denis White
+    Akbar Waljee
+    Brian Ripley
+    Jose Magana
+    Surendra Tipparaju
+    Durga Prasad Chappidi
+    Dinesh Manyam Venkata
+    Mrinal Chakraborty
+    Fang Zhou
+    Cameron Chisholm
 </property>
     <property name="logo_icon_name">image-missing</property>
     <signal name="response" handler="on_aboutdialog_response" swapped="no"/>
@@ -1214,15 +1223,38 @@ Contributions also from:
                                 <signal name="activate" handler="on_help_distributions_activate" swapped="no"/>
                               </object>
                             </child>
-                            <child>
-                              <object class="GtkMenuItem" id="ggobi1">
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="label" translatable="yes">_GGobi</property>
-                                <property name="use_underline">True</property>
-                                <signal name="activate" handler="on_help_ggobi_activate" swapped="no"/>
-                              </object>
-                            </child>
+			    <child>
+			      <object class="GtkMenuItem" id="help_explore_interactive_menuitem">
+				<property name="visible">True</property>
+				<property name="can_focus">False</property>
+				<property name="label" translatable="yes">_Interactive</property>
+				<property name="use_underline">True</property>
+				<child type="submenu">
+				  <object class="GtkMenu" id="help_explore_interactive_menu">
+                                    <property name="visible">True</property>
+				    <property name="can_focus">False</property>
+				    <child>
+				      <object class="GtkMenuItem" id="ggobi1">
+					<property name="visible">True</property>
+					<property name="can_focus">False</property>
+					<property name="label" translatable="yes">GGobi</property>
+					<property name="use_underline">True</property>
+					<signal name="activate" handler="on_help_ggobi_activate" swapped="no"/>
+				      </object>
+				    </child>
+				    <child>
+				      <object class="GtkMenuItem" id="ggraptr1">
+					<property name="visible">True</property>
+					<property name="can_focus">False</property>
+					<property name="label" translatable="yes">GGRaptr</property>
+					<property name="use_underline">True</property>
+					<signal name="activate" handler="on_help_ggraptr_activate" swapped="no"/>
+				      </object>
+				    </child>
+				  </object>
+				</child>
+			      </object>
+			    </child>
                             <child>
                               <object class="GtkMenuItem" id="correlation1">
                                 <property name="visible">True</property>
@@ -1761,6 +1793,15 @@ Contributions also from:
                               </object>
                             </child>
                             <child>
+                              <object class="GtkMenuItem" id="help_hand">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="label" translatable="yes">_Hand</property>
+                                <property name="use_underline">True</property>
+                                <signal name="activate" handler="on_help_hand_activate" swapped="no"/>
+                              </object>
+                            </child>
+                            <child>
                               <object class="GtkMenuItem" id="help_lift">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
@@ -1940,8 +1981,9 @@ Contributions also from:
                     <property name="expand">False</property>
                   </packing>
                 </child>
-                <child>
+                <!--child>
                   <object class="GtkToolButton" id="report_toolbutton">
+                    <property name="visible">False</property>
                     <property name="can_focus">False</property>
                     <property name="label" translatable="yes">Report</property>
                     <property name="stock_id">gtk-justify-fill</property>
@@ -1951,7 +1993,7 @@ Contributions also from:
                     <property name="expand">False</property>
                     <property name="homogeneous">True</property>
                   </packing>
-                </child>
+                </child-->
                 <child>
                   <object class="GtkToolButton" id="export_button">
                     <property name="visible">True</property>
@@ -2024,19 +2066,6 @@ Contributions also from:
                   </object>
                   <packing>
                     <property name="expand">False</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkToolButton" id="connectr_toolbutton">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Connect R</property>
-                    <property name="stock_id">gtk-network</property>
-                    <signal name="clicked" handler="on_connectr_toolbutton_clicked" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">True</property>
                   </packing>
                 </child>
               </object>

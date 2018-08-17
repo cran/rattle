@@ -1,6 +1,6 @@
 #' Build a decision tree based from xdf dataset.
 #' 
-#' Time-stamp: <2017-08-18 12:14:38 Graham Williams>
+#' Time-stamp: <2017-09-10 10:10:23 Graham Williams>
 #'
 executeModelRxDTree <- function()
 {
@@ -221,7 +221,7 @@ executeModelRxDTree <- function()
   ## ##   {
   ## ##     pds.string <- paste("crs$dataset",
   ## ##                         if (subsetting) "[",
-  ## ##                         if (sampling) "-crs$sample",
+  ## ##                         if (sampling) "-crs$train",
   ## ##                         if (subsetting) ", ",
   ## ##                         if (including) included,
   ## ##                         if (subsetting) "]", sep="")

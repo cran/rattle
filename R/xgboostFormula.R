@@ -84,6 +84,9 @@ importance.xgb.formula <- function(model, data, ...)
 
 predict.xgb.formula <- function(object, newdata, ...)
 {
+  # 20171029 FIXME needs to be able to run without providing a target
+  # variable column in the dataset.
+  
   # Transform to model matrix of just the variables required based on
   # the formula.
   

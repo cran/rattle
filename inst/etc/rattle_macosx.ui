@@ -14,13 +14,13 @@
 All rights reserved.</property>
     <property name="comments" translatable="yes">The R Analytical Tool To Learn Easily
 (A GNOME Data Miner Built on R)</property>
-    <property name="website">http://rattle.togaware.com/</property>
+    <property name="website">https://rattle.togaware.com/</property>
     <property name="website_label" translatable="yes">Rattle Home</property>
     <property name="license" translatable="yes">This program is copyright free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
 (at your option) any later version. See the file gpl-license in the
-distribution and at http://www.gnu.org/copyleft/gpl.html for details.
+distribution and at https://www.gnu.org/copyleft/gpl.html for details.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of

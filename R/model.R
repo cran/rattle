@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2017-07-10 20:47:16 Graham Williams>
+# Time-stamp: <2017-09-10 10:11:07 Graham Williams>
 #
 # MODEL TAB
 #
@@ -19,7 +19,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 
 ########################################################################
 # CALLBACKS
@@ -981,7 +981,7 @@ executeModelSVM <- function()
                      "),\n                                        ",
                      # Use eval since crs$weights could be a formula
                      'as.integer(eval(parse(text = "', crs$weights,
-                     '"))[crs$sample])),]',
+                     '"))[crs$train])),]',
                      sep="")
   
   
@@ -1173,8 +1173,8 @@ exportSVMModel <- function()
 ## > Overfitting, which varying different validation method will not solve.
 
 
-## You might find http://www.csie.ntu.edu.tw/~cjlin/papers/guide/guide.pdf
-## <http://www.csie.ntu.edu.tw/~cjlin/papers/guide/guide.pdf>  helpful.
+## You might find https://www.csie.ntu.edu.tw/~cjlin/papers/guide/guide.pdf
+## <https://www.csie.ntu.edu.tw/~cjlin/papers/guide/guide.pdf>  helpful.
 
 ## Parameter tuning is essential for avoiding overfitting.
 

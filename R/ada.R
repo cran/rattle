@@ -2,7 +2,7 @@
 #
 # This is a model or template "module" for rattle.
 #
-# Time-stamp: <2015-07-12 15:54:19 gjw>
+# Time-stamp: <2017-09-10 10:07:11 Graham Williams>
 #
 # Copyright (c) 2009-2015 Togaware Pty Ltd
 #
@@ -19,7 +19,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 
 # This implements a generic interface for interacting with the ada
 # modeller and ada models. It can be used independent of the Rattle
@@ -60,7 +60,7 @@ buildModelAda <- function(formula,
                      "),\n                                                  ",
                      # Use eval since crs$weights could be a formula
                      'as.integer(eval(parse(text = "', crs$weights,
-                     '"))[crs$sample])),]',
+                     '"))[crs$train])),]',
                      sep="")
   
   # Construct the appropriate rpart control.

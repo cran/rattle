@@ -1,4 +1,6 @@
 \name{rattle_gui}
+\alias{on_help_ggraptr_activate}
+\alias{on_help_hand_activate}
 \alias{on_connectr_toolbutton_clicked}
 \alias{on_pam_radiobutton_toggled}
 \alias{on_aboutdialog_response}
@@ -305,6 +307,6 @@
 \title{Interal Rattle user interface callbacks.}
 \description{These are exported from the package so that the GUI can
   access the callbacks. They should otherwise be ignored.}
-\references{Package home page: \url{http://rattle.togaware.com}}
+\references{Package home page: \url{https://rattle.togaware.com}}
 \author{\email{Graham.Williams@togaware.com}}
 \keyword{internal}

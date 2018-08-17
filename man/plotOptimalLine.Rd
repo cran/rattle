@@ -33,7 +33,7 @@ plotOptimalLine(x, y1, y2, pr = NULL, colour = "plum", label = NULL)
   plotRisk.
 
 }
-\references{Package home page: \url{http://rattle.togaware.com}}
+\references{Package home page: \url{https://rattle.togaware.com}}
 \author{\email{Graham.Williams@togaware.com}}
 \seealso{\code{\link{plotRisk}}.}
 \examples{

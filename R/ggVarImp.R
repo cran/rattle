@@ -18,11 +18,13 @@ ggVarImpPlot <- function(ds,
                                  y    = Importance,
                                  fill = Variable)) +
     ggplot2::geom_bar(stat     = "identity",
-                      position = "identity") +
+                      position = "identity",
+                      width    = 0.1) +
     ggplot2::labs(title   = title,
                   y       = label,
                   x       = "",
                   caption = caption) +
+    ggplot2::scale_y_continuous(labels=scales::comma) +
     ggplot2::coord_flip() +
     ggplot2::theme(axis.text.x     = ggplot2::element_text(angle=45, hjust=1),
                    legend.position = "none") ->

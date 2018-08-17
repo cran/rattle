@@ -1,10 +1,10 @@
 # Gnome R Data Science: GNOME interface to R for Data Science
 #
-# Time-stamp: <2017-07-25 16:09:22 Graham Williams>
+# Time-stamp: <2018-05-22 06:15:16 Graham.Williams@togaware.com>
 #
 # Implement hclust functionality.
 #
-# Copyright (c) 2009-2017 Togaware Pty Ltd
+# Copyright (c) 2009-2018 Togaware Pty Ltd
 #
 # This files is part of Rattle.
 #
@@ -19,7 +19,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 
 ########################################################################
 # CALLBACKS
@@ -497,9 +497,11 @@ displayHClustStats <- function()
 
   include <- "crs$numeric" # 20110102 getNumericVariables()
   
-  # Cluster centers.
+  # Cluster centers. 20180522 Remove the na.omit - it is crashing -
+  # reported by Tony Nolan.
 
-  centers.cmd <- sprintf("centers.hclust(na.omit(crs$dataset[%s, %s]), crs$hclust, %d)",
+  #centers.cmd <- sprintf("centers.hclust(na.omit(crs$dataset[%s, %s]), crs$hclust, %d)",
+  centers.cmd <- sprintf("centers.hclust(crs$dataset[%s, %s], crs$hclust, %d)",
                        ifelse(sampling, "crs$train", ""), include, nclust)
   appendLog(Rtxt("List the suggested cluster centers for each cluster"), centers.cmd)
   appendTextview(TV, Rtxt("Cluster means:"), "\n\n",
@@ -511,7 +513,11 @@ displayHClustStats <- function()
   # Error in silhouette.default(clustering, dmatrix = dmat) : 
   # object 'sildist' not found
 
-  stats.cmd <- sprintf(paste("cluster.stats(dist(na.omit(crs$dataset[%s, %s])),",
+  # 20180522 Remove the na.omit - it is crashing - reported by Tony
+  # Nolan.
+
+  #stats.cmd <- sprintf(paste("cluster.stats(dist(na.omit(crs$dataset[%s, %s])),",
+  stats.cmd <- sprintf(paste("cluster.stats(dist(crs$dataset[%s, %s]),",
                              "cutree(crs$hclust, %d), silhouette=FALSE)\n"),
                        ifelse(sampling, "crs$train", ""), include,
                        nclust)

@@ -1,6 +1,6 @@
 # Rattle: A GUI for Data Mining in R
 #
-# Time-stamp: <2017-01-30 14:05:32 Graham Williams>
+# Time-stamp: <2018-08-12 15:16:19 Graham.Williams@togaware.com>
 #
 # Copyright (c) 2009-2014 Togaware Pty Ltd
 #
@@ -29,7 +29,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 
 fancyRpartPlot <- function(model,
                            main="",
@@ -39,7 +39,15 @@ fancyRpartPlot <- function(model,
                            type=2,
                            ...)
 {
-  # Migrate to replacing sub wiht caption in line wiht ggplot.
+  if (!inherits(model, "rpart")) 
+    stop("The model object must be an rpart object. ",
+         "Instead we found: ", paste(class(model), collapse=", "), ".")
+
+  # For new version of rpart.plot (20180710 v3.0.0).
+
+  roundint <- ! is.null(model$model)
+  
+  # Migrate to replacing sub with caption in line with ggplot.
   
   if (missing(sub) & missing(caption))
   {
@@ -140,7 +148,9 @@ fancyRpartPlot <- function(model,
                   varlen=0, faclen=0,
                   shadow.col="grey",
                   fallen.leaves=TRUE,
-                  branch.lty=3, ...)
+                  branch.lty=3,
+                  roundint=roundint,
+                  ...)
   
   title(main=main, sub=sub)
 }

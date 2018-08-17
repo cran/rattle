@@ -45,7 +45,7 @@ riskchart <- function(pr,
 
   # Is Risk included in the supplied data?
   
-  include_risk <- risk.name %in% colnames(data)
+  include_risk <- "Risk" %in% colnames(data)
   
   score <- as.numeric(row.names(data))
   locateScores <- function(s) 
@@ -74,16 +74,89 @@ riskchart <- function(pr,
 
   if (include_risk)
   {
-    # Should this be adjusted too wrt the maximal obtainable? I think
-    # so. By the time we get to maximal (x=sr and y=100), then we have
-    # the maximal risk covered. However, given each case is not equal
-    # in terms of risk, we potentially get odd numbers >100% - maybe
-    # not, actually.
+    # Updated by Cameron Chisholm 20170908 to include the optimal risk
+    # chart (pink) and corrected AUC for risk.
+    #
+    # NOTE: Have only tested on thousands of rows - not sure of
+    # performance scaling to calculate the actual AUC.
+    #
+    # 1) Generate the optimal revenue scenario
+    #
+    # 2) Calculate the relative AUC between the actual and optimal
+    #    revenue curves
+    #
+    # We already have all the data we need as part of the riskchart
+    # function so thankfully it's just a matter of playing with the
+    # data we already have. The riskchart already provides controls
+    # around when to calculate risk data so we can also hijack these
+    # controls so we don't try and calculate risk when it isn't
+    # wanted.
+    #
+    # To generate the optimal revenue curve we take the risk data,
+    # sort it in descending order by risk, calculate cumulative risk
+    # captured, the overall percentage of risk captured, and the
+    # percentage of caseload. Once we have this we can draw the pink
+    # optimal risk curve.
+    #
+    # To calculate the AUC of the optimal risk curve we have to sort
+    # our risk data in descending order by percentage of
+    # caseload. Once we have this we can pass the percentage of
+    # caseload and percentage of risk into the Rattle function
+    # calculateAUC.
+    #
+    # Once we have the AUC of the optimal curve we just divide the
+    # actual risk AUC (this is already computed in the risk chart
+    # function) by the optimal risk AUC to get the relative AUC.
+    #
+    # Once we have all the data we need it's simply a matter of adding
+    # another layer to the ggplot code to plot the optimal risk curve
+    # and editing the legend to use the new relative AUC.
+    
     risk_auc <- with(data, calculateAUC(Caseload, Risk))
-    risk_auc <- round(100*ifelse(show.maximal,
-                                 (2*risk_auc)/(2-data$Precision[1]),
-                                 risk_auc))
-    risk.name <- sprintf("%s (%s%%)", risk.name, risk_auc)
+
+    # Sort the data and make it a 1 column data frame.
+
+    sorted_risk <- ri %>% sort(decreasing=TRUE) %>% as.data.frame()
+    names(sorted_risk) <- c("risk")
+    
+    # Avoid global variable binding NOTE for now.
+
+    c.risk <- percent.risk <- risk <- row.num <- percent.caseload <- NULL
+
+    # Row-wise risk calculations.
+
+    sorted_risk %<>%
+      dplyr::mutate(c.risk = cumsum(risk)) %>% 
+      dplyr::mutate(percent.risk = c.risk/sum(risk)) %>% 
+      # Get the row number so we can calculate the percentage of
+      # caseload for each row.
+      dplyr::mutate(row.num = as.integer(row.names.data.frame(.))) %>% 
+      dplyr::mutate(percent.caseload = row.num/nrow(.))
+    
+    # Need to reverse order to calculate AUC.
+
+    sorted_risk <- dplyr::arrange(sorted_risk, desc(percent.caseload))
+
+    # Calculate the AUC for the optimal risk case.
+
+    sorted_risk_auc <- calculateAUC(sorted_risk$percent.caseload,
+                                    sorted_risk$percent.risk)
+
+    # Add a row for the no data case.
+
+    sorted_risk <- rbind(data.frame(risk             = 0,
+                                    c.risk           = 0,
+                                    percent.risk     = 0,
+                                    row.num          = 0,
+                                    percent.caseload = 0),
+                         sorted_risk)
+
+    risk.name <- sprintf("%s (%s%%)", risk.name, round(risk_auc * 100))
+    
+    # Risk auc = area under actual risk/area under optimal risk case.
+
+    risk_auc <- risk_auc/sorted_risk_auc
+    
   }
   
   # How to get recall.name etc in the following - by default it is not
@@ -91,10 +164,14 @@ riskchart <- function(pr,
 
   p <- ggplot2::ggplot(data, ggplot2::aes(x=100*Caseload))
   p <- p + ggplot2::scale_colour_manual(breaks=c("Recall", "Risk", "Precision"),
-                                        labels=c(recall.name, risk.name, precision.name),
+                                        labels=c(recall.name,
+                                                 risk.name,
+                                                 precision.name),
                                         values=c("blue", "forestgreen", "red"))
   p <- p + ggplot2::scale_linetype_manual(breaks=c("Recall", "Risk", "Precision"),
-                                          labels=c(recall.name, risk.name, precision.name),
+                                          labels=c(recall.name,
+                                                   risk.name,
+                                                   precision.name),
                                           values=c(3, 1, 2))
 
   if (show.maximal)
@@ -105,6 +182,17 @@ riskchart <- function(pr,
     
     mx <- data.frame(x=c(0, 100*data$Precision[1], 100), y=c(0, 100, 100))
     p <- p + ggplot2::geom_line(data=mx, ggplot2::aes(x, y), colour="grey")
+
+    # This is the maximal risk curve.
+
+    if(include_risk)
+    {
+      p <- p + ggplot2::geom_line(data=sorted_risk,
+                                  ggplot2::aes(x=percent.caseload*100,
+                                               y=percent.risk*100),
+                                  colour="pink")
+    }
+
   }
   
   p <- p + ggplot2::geom_line(ggplot2::aes(y=100*Recall,
@@ -169,7 +257,9 @@ riskchart <- function(pr,
   p <- p + ggplot2::scale_y_continuous(breaks=seq(0, 100, 20))
   
   if (include_risk)
-    p <- p + ggplot2::geom_line(ggplot2::aes(y=100*Risk, colour="Risk", linetype="Risk"))
+    p <- p + ggplot2::geom_line(ggplot2::aes(y        = 100*Risk,
+                                             colour   = "Risk",
+                                             linetype = "Risk"))
 
   if (include.baseline && show.precision)
     p <- p + ggplot2::geom_text(data=data.frame(x=100, y=100*data$Precision[1]+4,
@@ -182,7 +272,8 @@ riskchart <- function(pr,
     lift_seq <- seq(base_lift, 100, base_lift)
     lifts <- data.frame(x=110, y=lift_seq, label=lift_seq/base_lift)
     # 140906 R-Devel CMD check complains label not defined in:
-    # p <- p + ggplot2::geom_text(data=lifts, ggplot2::aes(x, y, label=label), size=3)
+    # p <- p + ggplot2::geom_text(data=lifts,
+    #                             ggplot2::aes(x, y, label=label), size=3)
     # So use aes_string
     p <- p + ggplot2::geom_text(data=lifts,
                                 ggplot2::aes_string("x", "y", label="label"), size=3)

@@ -9,6 +9,9 @@ normVarNames <- function(vars, sep="_")
   rep  <- sep
   vars <- gsub(pat, rep, vars)
 
+  vars <- gsub('\u2019', '', vars)
+  vars <- gsub("'", '', vars)
+  
   # Replace any all capitals words with Initial capitals. This uses an
   # extended perl regular expression. The ?<! is a zero-width negative
   # look-behind assertion that matches any occurrence of the following
@@ -35,6 +38,10 @@ normVarNames <- function(vars, sep="_")
   rep  <- paste0(sep, '\\1')
   vars <- gsub(pat, rep, vars, perl=TRUE)
 
+  # Remove "\t"
+
+  vars <- gsub("\\t", "", vars)
+  
   # Remove any resulting initial or trailing underscore or multiples:
   #
   # _2level -> 2level
@@ -52,6 +59,10 @@ normVarNames <- function(vars, sep="_")
   pat  <- paste0(sep, "+")
   rep  <- sep
   vars <- gsub(pat, rep, vars)
+
+  # Insert character if names starts with a numeric.
+
+  vars <- gsub("^([0-9])", "n_\\1", vars)
   
   return(vars)
 }

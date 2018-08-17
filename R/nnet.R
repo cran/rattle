@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2017-08-18 12:15:18 Graham Williams>
+# Time-stamp: <2017-09-10 10:16:14 Graham Williams>
 #
 # NNET OPTION 061230
 #
@@ -19,7 +19,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 
 #######################################################################
 #
@@ -38,16 +38,16 @@
 # use multinom from nnet package - but that is just same as glm.
 #
 ##        mymn <- multinom(TARGET_Adjusted ~ .,
-##                         data=crs$dataset[crs$sample,c(2:10,13)])
-##        crs$pr <- predict(mymn, crs$dataset[-crs$sample, c(2:10,13)]) # (0,1)
-##        table(crs$pr, crs$dataset[-crs$sample, c(2:10,13)]$TARGET_Adjusted,
+##                         data=crs$dataset[crs$train,c(2:10,13)])
+##        crs$pr <- predict(mymn, crs$dataset[-crs$train, c(2:10,13)]) # (0,1)
+##        table(crs$pr, crs$dataset[-crs$train, c(2:10,13)]$TARGET_Adjusted,
 ##              dnn=c("Predicted", "Actual"))
-##        crs$pr <- predict(mymn, crs$dataset[-crs$sample, c(2:10,13)],
+##        crs$pr <- predict(mymn, crs$dataset[-crs$train, c(2:10,13)],
 ##                          type="prob")
 ##        crs$eval <- evaluateRisk(crs$pr,
-##                                 crs$dataset[-crs$sample,
+##                                 crs$dataset[-crs$train,
 ##                                             c(2:10,13)]$TARGET_Adjusted,
-##                                 crs$dataset[-crs$sample,
+##                                 crs$dataset[-crs$train,
 ##                                             c(2:10,13,12)]$RISK_Adjustment)
 ##        plotRisk(crs$eval$Caseload, crs$eval$Precision,
 ##                 crs$eval$Recall, crs$eval$Risk)
@@ -112,7 +112,7 @@ executeModelNNet <- function()
 
   # Some convenience booleans
 
-  sampling <- not.null(crs$sample)
+  sampling <- not.null(crs$train)
   including <- not.null(included)
   subsetting <- sampling || including
 
@@ -154,7 +154,7 @@ executeModelNNet <- function()
                             "nnet", "multinom"),
                      "(", frml, ",\n    data=crs$dataset",
                      if (subsetting) "[",
-                     if (sampling) "crs$sample",
+                     if (sampling) "crs$train",
                      if (subsetting) ",",
                      if (including) included,
                      if (subsetting) "]",

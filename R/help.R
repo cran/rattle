@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-08-21 19:15:35 gjw>
+# Time-stamp: <2018-07-01 20:24:22 Graham.Williams@togaware.com>
 #
 # Help Menu
 #
@@ -19,7 +19,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 
 popupTextviewHelpWindow <- function(topic, package)
 {
@@ -63,34 +63,35 @@ on_help_general_activate <- function(action, window)
                 "Public License (GPL).",
                 "<<>>",
                 "Interaction with Rattle logically proceeds by progressing through the Tabs:",
-                "first load in some Data, select Variables for exploring and mining,",
-                "possibly Sample the data, Explore the data, build your Models,",
+                "first load in some Data and select variables for exploring and mining,",
+                "and possibly sampling the data, Explore the data, apply statistical Tests,",
+                "build your Models,",
                 "and Evaluate them. For any tab, the modus operandi is to configure",
                 "the options available and then click the Execute button (or F2) to perform",
                 "the appropriate tasks. Note that the tasks are NOT performed until",
                 "the Execute button (or F2 or the Execute menu item under Tools) is clicked.",
                 "<<>>",
-                "The Status Bar indicates when the action",
-                "is completed. Messages from R (e.g., error messages. although I do attempt",
-                "to catch them first) will appear in the R console",
+                "The Status Bar at the bottom of the window indicates when the action",
+                "is completed. Messages from R (e.g., error messages - although Rattle does",
+                "attempt to catch them first) will appear in the R console",
                 "from where you started Rattle. The corresponding R Code will",
                 "appear in the Log tab.",
                 "This allows you to review the R commands",
-                "that perform the corresponding data mining tasks. Even better though,",
-                "you can copy the text from here and paste it into the same R Console",
-                "from which Rattle is running, and execute the commands directly.",
+                "that perform the corresponding data mining tasks. Even better, you can save the",
+                "code from the Log tab as an R script file and copmletely replicate your interactions",
+                "with Rattle, sipmly by running the script. You can also paste the code into the same R Console",
+                "from which Rattle is running, and execute the commands directly, then continue back in Rattle.",
                 "This allows you to use Rattle to do the basics, and then where you",
                 "need more sophistication, go into R directly. Rattle uses a variable called",
                 "crs to store its current state, and you can modify this directly.",
                 "<<>>",
-                "Rattle is being extensively tested",
-                "on binary classification problems (with 0/1 or a two level variable",
-                "as the outcomes for the Target variable). It is less well tested on",
-                "mulitnomial classification and regression tasks. but is become stable",
-                "in those areas also, over time.",
+                "Rattle works well for",
+                "binary classification problems (with 0/1 or a two level variable",
+                "as the outcomes for the Target variable) with support for",
+                "mulitnomial classification and regression tasks.",
                 "<<>>",
-                "The most we can guarantee about this",
-                "code is that there are bugs! When you find one, or a misfeature or",
+                "The most we guarantee",
+                "is that there are bugs! When you find one, or a misfeature or",
                 "something else you would like Rattle to do, please do email",
                 "support@togaware.com.",
                 "<<>>",
@@ -394,6 +395,16 @@ on_help_ggobi_activate <- function(action, window)
     if (packageIsAvailable("rggobi", viewDocMsg("rggobi")))
       {
         popupTextviewHelpWindow("rggobi", "rggobi")
+      }
+}
+
+on_help_ggraptr_activate <- function(action, window)
+{
+  if (showHelpPlus(Rtxt("GGRaptr implements a shiny-based interactive tool to visually explore",
+                        "a dataset using GGPlot2.")))
+    if (packageIsAvailable("ggraptR", viewDocMsg("ggraptR")))
+      {
+        popupTextviewHelpWindow("ggraptR", "ggraptR")
       }
 }
 
@@ -961,6 +972,19 @@ on_help_cost_curve_activate <- function(action, window)
   showHelp(Rtxt("A cost curve plots the probability cost function against the",
            "normalized expected cost for a range of possible thresholds for the family of",
            "models."))
+}
+
+on_help_hand_activate <- function(action, window)
+{
+  if (showHelpPlus(Rtxt("David Hand has developed 4 visualisations to evaluate the",
+                        "performance of a model. The hmeasure package implements this and",
+                        "is used here to generate the so-called Hand plot.")))
+  {
+    if (packageIsAvailable("hmeasure", viewDocMsg("HMeasure")))
+    {
+      popupTextviewHelpWindow("HMeasure", "hmeasure")
+    }
+  }
 }
 
 on_help_lift_activate <- function(action, window)

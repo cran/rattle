@@ -49,7 +49,7 @@ drawTreeNodes(tree, cex = par("cex"), pch = par("pch"),
   A variation of draw.tree() from the maptree package.
 
 }
-\references{Package home page: \url{http://rattle.togaware.com}}
+\references{Package home page: \url{https://rattle.togaware.com}}
 \author{\email{Graham.Williams@togaware.com}, Denis White}
 \examples{
 ## this is usually used in the context of the plotRisk function

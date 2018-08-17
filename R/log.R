@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2017-07-04 07:33:34 Graham Williams>
+# Time-stamp: <2017-09-10 09:32:39 Graham Williams>
 #
 # Implement LOG functionality.
 #
@@ -19,7 +19,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 
 ########################################################################
 # CALLBACKS
@@ -38,8 +38,8 @@ initiateLog <- function()
   
   if (! is.null(crv$log.intro))
     appendTextview("log_textview",
-                   paste0("#============================================================\n\n",
-                          crv$log.intro),
+                   paste0("#", paste0(rep("=", 71), collapse=""),
+                          "\n\n", crv$log.intro),
                    tvsep=FALSE)
 
   startLog(paste(sprintf(Rtxt("%s version %s user '%s'"),
@@ -47,13 +47,14 @@ initiateLog <- function()
 #LOG_LICENSE
                  #sprintf("# Started %s by %s\n\n", Sys.time(), Sys.info()["user"]),
     "\n\n",
-    Rtxt("# This log captures Rattle interactions as an R script.",
-         "\n\n# For repeatability export this log of all activity to a",
-         "\n# file using the Export button or the Tools menu. This",
-         "\n# script can serve as a starting point for developing your",
-         "\n# own scripts. Exporting to a file called 'model.R' will",
-         "\n# allow you to type into a new R Console the command",
-         "\n#\"source('model.R')\" and so repeat all actions. Generally,",
+    Rtxt("# This log captures interactions with Rattle as an R script.",
+         "\n\n# For repeatability, export this activity log to a",
+         "\n# file, like 'model.R' using the Export button or",
+         "\n# through the Tools menu. Th script can then serve as a",
+         "\n# starting point for developing your own scripts.",
+         "\n# After xporting to a file called 'model.R', for exmample,",
+         "\n# you can type into a new R Console the command",
+         "\n# \"source('model.R')\" and so repeat all actions. Generally,",
          "\n# you will want to edit the file to suit your own needs.",
          "\n# You can also edit this log in place to record additional",
          "\n# information before exporting the script.",
@@ -66,8 +67,8 @@ initiateLog <- function()
     '\n# our own scripts we often collect together the library',
     '\n# commands at the beginning of the script here.\n\n',
     crv$library.command,
-    '   # Access weather dataset and utilities.',
-    '\nlibrary(magrittr) # For the %>% and %<>% pipeline operators.',
+    '   # Access the weather dataset and utilities.',
+    '\nlibrary(magrittr) # Utilise %>% and %<>% pipeline operators.',
     "\n\n",
     Rtxt("# This log generally records the process of building a model.",
          "\n# However, with very little effort the log can also be used",
@@ -103,7 +104,7 @@ startLog <- function(msg=NULL)
   if (is.null(crv$rattleGUI)) return()
 
   appendLog(paste("\n\n#",
-                  paste(rep("=", 60), collapse=""),
+                  paste(rep("=", 71), collapse=""),
                   if (not.null(crv$show.timestamp) && crv$show.timestamp)
                   paste("\n# ", crv$appname, " ", Rtxt("timestamp:"), " ",
                         Sys.time(), " ", version$platform, sep=""),

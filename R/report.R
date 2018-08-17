@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2015-05-17 08:58:38 gjw>
+# Time-stamp: <2018-08-15 20:18:41 Graham.Williams@togaware.com>
 #
 # Reporting support
 #
@@ -19,7 +19,7 @@
 # General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# along with Rattle. If not, see <https://www.gnu.org/licenses/>.
 
 # TODO
 # 100307 Consider moving to using reporttools and using Sweave instead
@@ -136,7 +136,7 @@ reportTreeModel <- function(model)
 
   ofile <- paste(getwd(), "model_rpart_summary_rattle.odt", sep="/")
   
-  odfWeave::odfWeave(summary, ofile, control=odfWeave::odfWeaveControl(verbose=FALSE))
+  # odfWeave::odfWeave(summary, ofile, control=odfWeave::odfWeaveControl(verbose=FALSE))
 
   if (! is.null(crv$rattleGUI)) setStatusBar(sprintf("Report written to %s.", ofile))
 }
