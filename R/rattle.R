@@ -2,9 +2,9 @@
 #
 # BASE FUNCTIONS
 #
-# Time-stamp: <2018-08-15 21:18:30 Graham.Williams@togaware.com>
+# Time-stamp: <2019-10-16 16:53:21 Graham Williams>
 #
-# Copyright (c) 2009-2018 Togaware Pty Ltd
+# Copyright (c) 2009-2019 Togaware Pty Ltd
 #
 # This files is part of Rattle.
 #
@@ -82,11 +82,11 @@ Rtxt <- function(...)
 
 RtxtNT <- Rtxt
 
-VERSION <- "5.2.0"
-DATE <- "2018-08-17"
+VERSION <- "5.3.0"
+DATE <- "2019-12-16"
 
 # 091223 Rtxt does not work until the rattle GUI has started, perhaps?
-COPYRIGHT <- paste(Rtxt("Copyright"), "(C) 2006-2018 Togaware Pty Ltd.")
+COPYRIGHT <- paste(Rtxt("Copyright"), "(C) 2006-2019 Togaware Pty Ltd.")
 
 # Acknowledgements: Frank Lu has provided much feedback and has
 # extensively tested early versions of Rattle. Many colleagues at the
@@ -213,8 +213,21 @@ toga <- function() browseURL("https://rattle.togaware.com")
 
 rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=TRUE)
 {
-  cmd <- "require(RGtk2)"
-  eval(parse(text=cmd))
+  
+  # Ensure the RGtk2 package is installed. If not fail, requesting the
+  # user to install it. Don't try installing it ourselves as there are
+  # often issues and they need to be resolved outside of Rattle!
+
+  if (package.installed("RGtk2"))
+  {
+    cmd <- "require(RGtk2)"
+    eval(parse(text=cmd))
+  } else
+  {
+    stop(Rtxt("\nThe RGtk2 package is not available but is required.",
+              "\nPlease install the package using, for example:",
+              "\n\n  install.packages(\"RGtk2\")\n\n"))
+  }
   
   # 101113 Add the useGtkBuilder argument so that a user can override
   # the automatic determination of which one to use: libglade versus
@@ -269,13 +282,6 @@ rattle <- function(csvname=NULL, dataset=NULL, useGtkBuilder=TRUE)
   # if (crv$tooltiphack) crv$load.tooltips <- TRUE
 
   crv$.gtkMain <- FALSE # Initially gtkMain is not running.
-
-  # 150712 No longer required as the package DEPENDS on RGtk2 now
-  #if (packageIsAvailable("RGtk2", Rtxt("display the Rattle GUI")))
-  #  suppressPackageStartupMessages(library("RGtk2", quietly=TRUE))
-  #else
-  #  stop(sprintf(Rtxt("The RGtk2 package is not available but is required",
-  #                    "for the %s GUI."), crv$appname))
 
   # 20161113 Test if a windowing capability is available and if not
   # fail out of rattle().
@@ -1465,7 +1471,7 @@ displayWelcomeTabMessage <- function()
                             "See Help -> About for details."),
                        "\n\n",
                        sprintf(Rtxt("Rattle Version %s.",
-                                    "Copyright 2006-2018 Togaware Pty Ltd."),
+                                    "Copyright 2006-2019 Togaware Pty Ltd."),
                                VERSION),
 #LOG_LICENSE
                        " ",

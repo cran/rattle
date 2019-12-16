@@ -474,7 +474,7 @@
   out-of-bag (OOB) predictions for each observation in the training
   dataset.</tooltip>
   <tooltip widget="rf_print_tree_button">Display a collection of rules
-  obtained from a specific tree from the random forest of
+  for a specific tree or the specific tree from the random forest of
   trees.</tooltip>
   <tooltip widget="rf_print_tree_spinbutton">Which tree to
     display.</tooltip>

@@ -1,6 +1,6 @@
 # R Data Scientist: Gtk interface to R for Data Science
 #
-# Time-stamp: <2018-07-01 22:15:47 Graham.Williams@togaware.com>
+# Time-stamp: <2018-08-25 08:45:31 Graham.Williams@togaware.com>
 #
 # Copyright (c) 2009-2018 Togaware Pty Ltd
 
@@ -230,7 +230,7 @@ on_aboutdialog_response <- function(object, ...)
   crv$rpart.cp.default        <- 0.010
   crv$rpart.minsplit.default  <- 20
   crv$rpart.minbucket.default <- 7
-  crv$rpart.maxdepth.default  <- 3
+  crv$rpart.maxdepth.default  <- 30 # Used to be 3, now 30 as default in rpart.
 
   crv$ada.ntree.default   <- 50
 

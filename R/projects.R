@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2017-09-10 10:16:48 Graham Williams>
+# Time-stamp: <2019-03-31 14:09:45 Graham Williams>
 #
 # Project functionality.
 #
@@ -333,7 +333,7 @@ loadProject <- function()
 
   # Request the rattle filename to be loaded
 
-  dialog <- RGtk2::gtkFileChooserDialog(Rtxt("Open Project"), NULL, "load",
+  dialog <- RGtk2::gtkFileChooserDialog(Rtxt("Open Project"), NULL, "open",
                                  "gtk-cancel", RGtk2::GtkResponseType["cancel"],
                                  "gtk-open", RGtk2::GtkResponseType["accept"])
 

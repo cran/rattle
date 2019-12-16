@@ -2,7 +2,7 @@
 #
 # This is a model or template "module" for rattle.
 #
-# Time-stamp: <2017-10-29 21:28:37 Graham Williams>
+# Time-stamp: <2018-09-14 15:30:51 Graham.Williams@togaware.com>
 #
 # Copyright (c) 2009-2017 Togaware Pty Ltd
 #
@@ -167,11 +167,20 @@ genResponseXgb <- function(dataset)
   res <- sprintf(paste0("lvls <- levels(as.factor(crs$dataset[[crs$target]]))\n",
                         "crs$pr <- factor(ifelse(%s > %s,\n\t\t\tlvls[2], lvls[1]))"),
                  sub("crs\\$pr <- ", "",
+
                      # 20171029 Dwight Barry Need target for xgb
                      # predict! This requires a fix in
                      # predict.xgb.formula(). FIXME
-                     sub("crs\\$input", "crs$input, crs$target",
-                         genProbabilityXgb(dataset))),
+
+#                     sub("crs\\$input", "crs$input, crs$target",
+#                         genProbabilityXgb(dataset))),
+
+                     # 20180914 Alex Abdo noted doubling up of crs$target.
+                     # I suspect another change else where has added the
+                     # extra correctly so no longer needed here???
+                     
+                     genProbabilityXgb(dataset)),
+
                  threshold)
   
   return(res)

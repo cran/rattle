@@ -1,3 +1,55 @@
+rattle 5.2.8 20191016 Graham.Williams@togaware.com
+
+  * Remove dependencies on archived packages RGtk2Extras and playwith.
+
+  * Bug fix View Data button to just call R's View() rather than a
+    glade data view or RGtk2Extras data viewer.
+
+  * Update weatherAUS dataset with most recent weather observations
+    now with 166,310 data points.
+
+rattle 5.2.7 20190407 Graham.Williams@togaware.com
+
+  * Bug fix - the export PMML file dialog stopped working - perhaps a
+    RGtk2 update. It was using glade. Instead create the dialog
+    directly in code. Reported by Julian Ochoa.
+
+rattle 5.2.6 20190331 Graham.Williams@togaware.com
+
+  * Bug fix - rattle was incorrectly specifying load instead of open
+    in a GTK file chooser which did not work on an RGtk2
+    update. Reported by Dave Arnold and Eric Mattys.
+
+rattle 5.2.5 2018-09-26 17:23:00 Graham.Williams@togaware.com
+
+  * Add labels to var imp plot for conditional forest.
+
+rattle 5.2.4 2018-09-23 10:43:12 Graham.Williams@togaware.com
+
+  * Bug fix in getCategoricVariables() when no target is defined and
+    include.target is true.
+
+  * Bug fix in kmeans stats when the data is scaled. Reported by Caleb
+    Terrel Orellana.
+
+rattle 5.2.3 2018-09-17 10:43:12 Graham.Williams@togaware.com
+
+  * Bug fix random forest Errors and OOB ROC buttons are not available
+    for conditional random forests. Reported by Cristina Acasuso.
+
+rattle 5.2.2 2018-09-14 21:12:31 Graham.Williams@togaware.com
+
+  * Bug fix xgboost response command as it is now including two target
+    columns from the previous bug fix which added target into
+    predict. Reported by Aous Alex Abdo.
+
+rattle 5.2.1 2018-08-19 20:31:55 Graham.Williams@togaware.com
+
+  * Improve handling of Missing RGtk2 message.
+
+  * Bug fix re default maxdepth in rpart tree. Reported by Eugene
+    Dubassarsky.
+
 rattle 5.2.0 2018-08-12 15:17:12 Graham.Williams@togaware.com
 
   * Remove dependency on RGtk2 and check it dynamically. Rattle has

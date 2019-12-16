@@ -1,6 +1,6 @@
 # R Data Scientist: Gtk interface to R for Data Science
 #
-# Time-stamp: <2017-09-19 08:48:07 Graham Williams>
+# Time-stamp: <2019-12-16 12:17:19 Graham Williams>
 #
 # DATA TAB
 #
@@ -1891,48 +1891,7 @@ executeDataLibrary <- function()
 viewData <- function()
 {
   startLog(Rtxt("View the dataset."))
-
-  if (packageIsAvailable("RGtk2Extras", Rtxt("view data in a spreadsheet")))
-  {
-    # 151115 We currently get the issue:
-    #
-    # Error in MakeDFEditWindow(.local, .local$theFrame, size.request, col.width) (from <text>#1) : 
-    #  could not find function "gtkTreePathNewFromString"
-    #
-    # This is a NAMESPACE issue and a workaround is to
-    # require(RGkt2Extras). Eventually need to work out the correct
-    # solution.
-
-    lib.cmd <- sprintf("library(RGtk2Extras)")
-    appendLog(packageProvides("RGtk2Extras", "dfedit"), lib.cmd)
-    eval(parse(text=lib.cmd))
-
-    view.cmd <- paste('RGtk2Extras::dfedit(crs$dataset,\n',
-                      '                  ',
-                      'dataset.name=Rtxt("Rattle Dataset"),\n',
-                      '                  ',
-                      'size=c(800, 400))')
-    appendLog(Rtxt("Please note that any edits will be ignored."), view.cmd)
-    eval(parse(text=view.cmd))
-  }
-  else
-  {
-    result <- try(etc <- file.path(path.package(package="rattle")[1], "etc"),
-                  silent=TRUE)
-    if (inherits(result, "try-error"))
-      crs$viewdataGUI <- gladeXMLNew("rattle.glade", root="viewdata_window")
-    else
-      crs$viewdataGUI <- gladeXMLNew(file.path(etc,"rattle.glade"),
-                               root="viewdata_window")
-    gladeXMLSignalAutoconnect(crs$viewdataGUI)
-    tv <- crs$viewdataGUI$getWidget("viewdata_textview")
-    tv$modifyFont(RGtk2::pangoFontDescriptionFromString(crv$textview.font))
-    op <- options(width=10000)
-    tv$getBuffer()$setText(collectOutput("print(crs$dataset)"))
-    options(op)
-    crs$viewdataGUI$getWidget("viewdata_window")$
-    setTitle(paste(crv$appname, ": ", Rtxt("Data Viewer"), sep=""))
-  }
+  View(crs$dataset, "Data Viewer")
 }
 
 editData <- function()
@@ -1950,12 +1909,6 @@ editData <- function()
 
   assign.cmd <- if (is.null(crs$dataset))
                   'crs$dataset <- edit(data.frame())'
-                else if (packageIsAvailable("RGtk2Extras"))
-                  paste('crs$dataset <- RGtk2Extras::dfedit(crs$dataset,\n',
-                        '                                 ',
-                        'dataset.name=Rtxt("Rattle Dataset"),\n',
-                        '                                 ',
-                        'size=c(800, 400))')
                 else
                   'crs$dataset <- edit(crs$dataset)'
 
@@ -3938,14 +3891,20 @@ used.variables <- function(numonly=FALSE)
     return(simplifyNumberList(setdiff(fl, ii)))
 }
 
-getCategoricVariables <- function(type="string", include.target=F )
+getCategoricVariables <- function(type="string", include.target=FALSE)
 {
   # Return a list of categoric variables from amongst those with an
   # INPUT role. If type is "names" than return the list of variable
-  # names.
+  # names. If there is a target variable and include.target is TRUE
+  # and the target variable is categoric, then include that in the
+  # returned value.
+
+  # 20180923 Don't try to include the target if there is not one!
+  
+  include.target <- ifelse(length(crs$target), include.target, FALSE)
 
   include <- NULL
-  cats <- seq(1,ncol(crs$dataset))[as.logical(sapply(crs$dataset, is.factor))]
+  cats <- seq(1, ncol(crs$dataset))[as.logical(sapply(crs$dataset, is.factor))]
   if (length(cats) > 0)
   {
 

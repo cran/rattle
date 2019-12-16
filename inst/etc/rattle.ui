@@ -11,7 +11,7 @@
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">normal</property>
     <property name="program_name">Rattle</property>
-    <property name="copyright" translatable="yes">Copyright (C) 2006-2018 Togaware
+    <property name="copyright" translatable="yes">Copyright (C) 2006-2019 Togaware
 All rights reserved.</property>
     <property name="comments" translatable="yes">The R Analytical Tool To Learn Easily
 (Data Science Built on R)</property>

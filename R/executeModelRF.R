@@ -1,6 +1,6 @@
 #' Build a random forest model: traditional or conditional.
 #' 
-#' Time-stamp: <2017-09-10 10:10:03 Graham Williams>
+#' Time-stamp: <2019-12-16 12:44:03 Graham Williams>
 #'
 executeModelRF <- function(traditional=TRUE, conditional=!traditional)
 {
@@ -330,8 +330,8 @@ executeModelRF <- function(traditional=TRUE, conditional=!traditional)
   if (traditional && binomialTarget() &&
       packageIsAvailable("pROC", Rtxt("calculate AUC confidence interval")))
   {
-    roc.cmd <- "pROC::roc(crs$rf$y, as.numeric(crs$rf$predicted))"
-    ci.cmd  <- "pROC::ci.auc(crs$rf$y, as.numeric(crs$rf$predicted))"
+    roc.cmd <- "pROC::roc(crs$rf$y, as.numeric(crs$rf$predicted), quiet=TRUE)"
+    ci.cmd  <- "pROC::ci.auc(crs$rf$y, as.numeric(crs$rf$predicted), quiet=TRUE)"
 
     appendLog(Rtxt("The `pROC' package implements various AUC functions."))
 

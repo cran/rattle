@@ -1,6 +1,6 @@
 # R Data Scientist: GNOME interface to R for Data Science
 #
-# Time-stamp: <2017-09-10 10:09:35 Graham Williams>
+# Time-stamp: <2019-12-16 12:16:08 Graham Williams>
 #
 # Implement evaluate functionality.
 #
@@ -2940,61 +2940,15 @@ executeEvaluateScore <- function(probcmd, respcmd, testset, testname, dfedit.don
 
   if (entered & ! dfedit.done)
   {
-    if (packageIsAvailable("RGtk2Extras"))
-    {
-      # 100307 Not quite ready yet - needs to know when to continue
-      # after the data has been editted. Tom is fixing this up for
-      # RGtk2Extras so I will be able to start using it then.
-#      infoDialog(Rtxt ("RGtk2Extras will be used to edit",
-#                      "a data frame called 'rattle.entered.dataset'. Once you have",
-#                      "edited the dataset and the window is closed the dataset",
-#                      "will be scored."))
-      dsname <- "rattle.entered.dataset"
-      if (exists(dsname))
-        rattle.edit.obj <- RGtk2Extras::dfedit(rattle.entered.dataset, size=c(800, 400))
-      else
-        rattle.edit.obj <- RGtk2Extras::dfedit(crs$dataset[nrow(crs$dataset),
-                                              c(crs$ident, crs$input, crs$target)],
-                                  size=c(800, 400), dataset.name=dsname)
-
-      probcmd <- lapply(probcmd, function(x) sub("crs\\$dataset", dsname, x))
-      respcmd <- lapply(respcmd, function(x) sub("crs\\$dataset", dsname, x))
-      testset <- lapply(testset, function(x) sub("crs\\$dataset", dsname, x))
-      testname <- "manually entered data"
-
-      RGtk2::gSignalConnect(rattle.edit.obj, "unrealize", data=rattle.edit.obj,
-                     function(obj, data)
-                     {
-                       #print(paste("Exited", data$getDatasetName()))
-                       #print(data$getDataFrame())
-
-                       # 121210 As of now, remove the assign to global
-                       # env - it is a bad idea and against CRAN
-                       # policy, and iritates nasty riples. No
-                       # solution for now - remove the functionality -
-                       # rather minor anyhow.
-
-                       # assign(dsname, data$getDataFrame(), envir=.GlobalEnv)
-                       executeEvaluateScore(probcmd, respcmd, testset, testname, TRUE)
-                       setStatusBar(Rtxt("Scored manually entered data."))
-                     })
-
-      setStatusBar(Rtxt("Enter the data in the editor and then close",
-                        "it to have the data scored."))
-      return()
-    }
+    if (! is.null(crs$entered))
+      crs$entered <- edit(crs$entered) # Use previously manually entered data.
     else
-    {
-      if (! is.null(crs$entered))
-        crs$entered <- edit(crs$entered) # Use previously manually entered data.
-      else
-        crs$entered <- edit(crs$dataset[nrow(crs$dataset),
+      crs$entered <- edit(crs$dataset[nrow(crs$dataset),
                                         c(crs$ident, crs$input, crs$target)])
-      probcmd <- lapply(probcmd, function(x) sub("crs\\$dataset", "crs$entered", x))
-      respcmd <- lapply(respcmd, function(x) sub("crs\\$dataset", "crs$entered", x))
-      testset <- lapply(testset, function(x) sub("crs\\$dataset", "crs$entered", x))
-      testname <- "manually entered data"
-    }
+    probcmd <- lapply(probcmd, function(x) sub("crs\\$dataset", "crs$entered", x))
+    respcmd <- lapply(respcmd, function(x) sub("crs\\$dataset", "crs$entered", x))
+    testset <- lapply(testset, function(x) sub("crs\\$dataset", "crs$entered", x))
+    testname <- "manually entered data"
   }
 
   # Obtain information from the interface: what other data is to be

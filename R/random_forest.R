@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2017-09-10 10:18:37 Graham Williams>
+# Time-stamp: <2018-09-26 15:45:13 Graham.Williams@togaware.com>
 #
 # RANDOM FOREST TAB
 #
@@ -14,6 +14,8 @@ setRFOptions <- function(mtype)
   theWidget("model_rf_sample_label")$setSensitive(mtype=="randomForest")
   theWidget("model_rf_sample_entry")$setSensitive(mtype=="randomForest")
   theWidget("model_rf_impute_checkbutton")$setSensitive(mtype=="randomForest")
+#  theWidget("rf_errors_button")$setSensitive(mtype=="randomForest")
+#  theWidget("rf_oob_roc_button")$setSensitive(mtype=="randomForest")
 }
 
 on_model_rf_traditional_radiobutton_toggled <- function(button)
@@ -100,13 +102,14 @@ showModelRFExists <- function(traditional=TRUE, conditional=!traditional)
     theWidget("rf_importance_button")$show()
     theWidget("rf_importance_button")$setSensitive(TRUE)
     theWidget("rf_errors_button")$show()
-    theWidget("rf_errors_button")$setSensitive(TRUE)
+    theWidget("rf_errors_button")$setSensitive(traditional)
     theWidget("rf_oob_roc_button")$show()
-    theWidget("rf_oob_roc_button")$setSensitive(TRUE)
+    theWidget("rf_oob_roc_button")$setSensitive(traditional)
     theWidget("rf_print_tree_button")$show()
     theWidget("rf_print_tree_button")$setSensitive(TRUE)
     theWidget("rf_print_tree_spinbutton")$show()
     theWidget("rf_print_tree_spinbutton")$setSensitive(TRUE)
+    theWidget("rf_print_tree_button")$setLabel(ifelse(traditional, "Rules", "Trees"))
   }
   else
   {
@@ -152,6 +155,9 @@ plotRandomForestImportance <- function()
                       '  ggplot2::theme(legend.position="none",',
                       '                 axis.title.x = ggplot2::element_blank(),',
                       '                 axis.title.y = ggplot2::element_blank()) +',
+                      '  ggplot2::labs(title = "Variable Importance",',
+                      '                x = "Relative Importance", y = "",',
+                      '                caption = genPlotTitleCmd(vector=TRUE)) +',
                       '  ggplot2::coord_flip()',
                       'print(p)',
                       sep="\n")

@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2017-09-10 10:10:59 Graham Williams>
+# Time-stamp: <2018-09-23 12:46:32 Graham.Williams@togaware.com>
 #
 # Implement kmeans functionality.
 #
@@ -151,6 +151,12 @@ executeClusterKMeans <- function(include)
 
   if (! useIterate)
   {
+    if(not.null(crs$xdf))
+    {
+      frml <- paste( "~", paste(crs$input, collapse=" + "))
+      kmeans.cmd <- sprintf('crs$kmeans <- rxKmeans(formula = %s, data = %s, numClusters = %i, numStarts = %i, outFile = %s, overwrite = TRUE )', frml, "crs$xdf.split[[1]]", centers, nruns, "'clusters.xdf'")
+    }
+    else {
     if (nruns > 1)
     {
       lib.cmd <- "library(fpc, quietly=TRUE)"
@@ -165,7 +171,7 @@ executeClusterKMeans <- function(include)
     {
       kmeans.cmd <- sprintf('crs$kmeans <- kmeans(%s, %s)', ds, centers)
     }
-    
+    }
     appendLog(sprintf(Rtxt("Generate a kmeans cluster of size %s%s%s."), nclust,
                       ifelse(nruns>1, Rtxt(" choosing the best from "), ""),
                       ifelse(nruns>1, nruns, "")),
@@ -385,11 +391,9 @@ genPredictKmeans <- function(dataset)
   
   # 081227 Generate a command to obtain the prediction results when
   # applying the model to new data.
-  print(not.null(crs$xdf))
-  print(crs$xdf)
   if(not.null(crs$xdf)){
     class(crs$kmeans) <- c("rxKmeans","kmeans")
-    return(sprintf("crs$pr <- predict(crs$kmeans, %s)", rxDataStep(inData = eval(parse(text = dataset)))))
+    return(sprintf("crs$pr <- predict(crs$kmeans, rxDataStep(inData = %s))", dataset))
   }
   else 
     return(sprintf("crs$pr <- predict(crs$kmeans, %s)", dataset))
@@ -507,11 +511,22 @@ displayClusterStatsKMeans <- function()
   on.exit(set.cursor("left-ptr"))
   while (RGtk2::gtkEventsPending()) RGtk2::gtkMainIteration()
 
-  stats.cmd <- sprintf(paste("cluster.stats(dist(na.omit(crs$dataset[%s, %s]%s)),",
+  # 20180923 If Re-Scale is active then better make sure we use the
+  # rescaled dataset for the stats and not the original dataset. TODO
+  # Bit wasteful doing it again but as a "quick fix...." Reported by
+  # Caleb Terrel Orellana.
+
+  ds <- sprintf("na.omit(crs$dataset[%s, %s]%s)",
+                ifelse(sampling, "crs$train", ""),
+                include,
+                ifelse(large, "[smpl,]", ""))
+
+  if (theWidget("kmeans_rescale_checkbutton")$getActive())
+    ds <- sprintf('sapply(%s, rescaler, "range")', ds)
+
+  stats.cmd <- sprintf(paste("cluster.stats(dist(%s),",
                              "crs$kmeans$cluster%s)\n"),
-                       ifelse(sampling, "crs$train", ""),
-                       include,
-                       ifelse(large, "[smpl,]", ""),
+                       ds,
                        ifelse(large, "[smpl]", ""))
   appendLog(packageProvides("fpc", "cluster.stats"), stats.cmd)
   result <- try(collectOutput(stats.cmd, use.print=TRUE))

@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2016-03-13 06:22:38 Graham Williams>
+# Time-stamp: <2019-12-16 13:07:00 Graham Williams>
 #
 # Implement functionality associated with the Export button and Menu.
 #
@@ -197,8 +197,8 @@ getWidgetOrObject <- function(dialog, name)
 
 getExportSaveName <- function(mtype)
 {
-  # 090117 Request a filename to save the model to and return the
-  # filename as a string.
+  # Request a filename to save the model to and return the filename as
+  # a string.
 
   # Require the pmml package for either exporting to PMML or C (which
   # goes via PMML).
@@ -209,62 +209,29 @@ getExportSaveName <- function(mtype)
                                             commonName(mtype)))))
       return(NULL)
   appendLog(packageProvides("pmml", "pmml"), lib.cmd)
-  # Load the package unless we already have a pmml defined (through source).
+
+  # Load the package unless pmml already defined (through source).
+
   if (! exists("pmml")) eval(parse(text=lib.cmd))
 
   # Obtain filename to write the PMML or C code to.  081218 We use the
   # glade generated filechooser rather than my original hand-coded
   # one. It is much simpler to handle the formatting. It has been
   # modified to offer a choice of Class/Score and PMML/Info to the C
-  # file.
+  # file. 20190407 I reverted to creating the dialog here. The glde
+  # defined one has started to not include the Save and Cancel
+  # buttons. Could not figure out why. I suspect something to do with
+  # updated RGtk2. Reported by Julian Ochoa.
 
-  if (crv$useGtkBuilder)
-  {
-    dialogGUI <- RGtk2::gtkBuilderNew()
-    dialogGUI$setTranslationDomain("R-rattle")
-  }
-  
-  result <- try(etc <- file.path(path.package(package="rattle")[1], "etc"),
-                silent=TRUE)
-  if (inherits(result, "try-error"))
-    if (crv$useGtkBuilder)
-        dialogGUI$addFromFile(crv$rattleUI)
-    else
-      dialogGUI <- gladeXMLNew("rattle.glade",
-                               root="export_filechooserdialog")
-  else
-      if (crv$useGtkBuilder)
-        dialogGUI$addFromFile(file.path(etc, crv$rattleUI))
-      else
-        dialogGUI <- gladeXMLNew(file.path(etc,"rattle.glade"),
-                                 root="export_filechooserdialog")
-  if (crv$useGtkBuilder)
-  {
-    dialogGUI$getObject("export_filechooserdialog")$show()
-    dialogGUI$connectSignals()
-  }
+  dialog <- RGtk2::gtkFileChooserDialog(Rtxt("Export to PMML"), NULL,
+                                        "save",
+                                        "gtk-cancel",
+                                        RGtk2::GtkResponseType["cancel"],
+                                        "gtk-save",
+                                        RGtk2::GtkResponseType["accept"])
 
-  if (! crv$export.to.c.available)
-  {
-    # 160305 export_filechooser_options_table is no longer defined in
-    # rattle.ui. Conditionally remove it here until figure out if it
-    # can be removed completely or we need to add the to_c
-    # functionality in. This looks like a deeper problem though. The
-    # filechooserdialog is incomplete. So I had to recover it from the
-    # rattle.glade file, insert into rattle.ui, change widget to
-    # object, remove the embedded response_id in button4 and add a new
-    # repsonse action widget for button4 instead. Seems to have
-    # migrated just fine.
-    
-    dialog <- getWidgetOrObject(dialogGUI, "export_filechooser_options_table")
-    if (! is.null(dialog)) dialog$hide()
-  }
-  
-  dialog <- getWidgetOrObject(dialogGUI, "export_filechooserdialog")
+  dialog$setDoOverwriteConfirmation(TRUE)
 
-  if (crv$export.to.c.available) dialog$setTitle(Rtxt("Export C or PMML"))
-  #dialog$setIcon(crv$icon)
-  
   if(not.null(crs$dataname))
     dialog$setCurrentName(paste(get.stem(crs$dataname), "_", mtype,
                                 ifelse(crv$export.to.c.available, ".c", ".xml"),
@@ -287,6 +254,8 @@ getExportSaveName <- function(mtype)
   ff$setName(Rtxt("All Files"))
   ff$addPattern("*")
   dialog$addFilter(ff)
+
+  dialogGUI = NULL # Not needed but flags for R check that dialogGUI is not local. 
 
   if (crv$export.to.c.available)
   {
