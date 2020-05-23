@@ -2,9 +2,9 @@
 #
 # BASE FUNCTIONS
 #
-# Time-stamp: <2019-10-16 16:53:21 Graham Williams>
+# Time-stamp: <2020-05-23 16:36:46 Graham Williams>
 #
-# Copyright (c) 2009-2019 Togaware Pty Ltd
+# Copyright (c) 2009-2020 Togaware Pty Ltd
 #
 # This files is part of Rattle.
 #
@@ -82,11 +82,11 @@ Rtxt <- function(...)
 
 RtxtNT <- Rtxt
 
-VERSION <- "5.3.0"
-DATE <- "2019-12-16"
+VERSION <- "5.4.0"
+DATE <- "2020-05-23"
 
 # 091223 Rtxt does not work until the rattle GUI has started, perhaps?
-COPYRIGHT <- paste(Rtxt("Copyright"), "(C) 2006-2019 Togaware Pty Ltd.")
+COPYRIGHT <- paste(Rtxt("Copyright"), "(C) 2006-2020 Togaware Pty Ltd.")
 
 # Acknowledgements: Frank Lu has provided much feedback and has
 # extensively tested early versions of Rattle. Many colleagues at the
@@ -1471,7 +1471,7 @@ displayWelcomeTabMessage <- function()
                             "See Help -> About for details."),
                        "\n\n",
                        sprintf(Rtxt("Rattle Version %s.",
-                                    "Copyright 2006-2019 Togaware Pty Ltd."),
+                                    "Copyright 2006-2020 Togaware Pty Ltd."),
                                VERSION),
 #LOG_LICENSE
                        " ",

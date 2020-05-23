@@ -1,3 +1,22 @@
+Please visit https://bitbucket.org/kayontoga/rattle/commits/ for the
+definitive list of changes. This NEWS file will only update major
+releases going forward.
+
+rattle 5.3.6 20200501 Graham.Williams@togaware.com
+
+  * Bug fixes: predict for xgboost; ignore NA in checking for binary
+    class; varImp log handling.
+  
+rattle 5.3.1 20191123 Graham.Williams@togaware.com
+
+  * Convert datasets to be tibbles, moving towards tidyverse
+    compliant. Require tibble package. Also require bitops as needed
+    when loading a tibble as an RDataset into Rattle.
+
+rattle 5.3.0 20191123 Graham.Williams@togaware.com
+
+  * Cleanup and prepare for CRAN release.
+
 rattle 5.2.8 20191016 Graham.Williams@togaware.com
 
   * Remove dependencies on archived packages RGtk2Extras and playwith.

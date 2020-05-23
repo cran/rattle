@@ -72,7 +72,10 @@ import(utils)
 import(grDevices)
 import(graphics)
 import(methods)	  # For possibleExtends() formal classes
+import(tibble)
 
 importFrom(magrittr, "%>%")
 importFrom(magrittr, "%<>%")
 importFrom(stringi, "%s+%")
+
+importFrom(bitops, cksum)

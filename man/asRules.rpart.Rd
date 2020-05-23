@@ -9,13 +9,15 @@
   
 }
 \usage{
-\method{asRules}{rpart}(model, compact=FALSE, \dots)
+\method{asRules}{rpart}(model, compact=FALSE, classes=NULL, \dots)
 }
 \arguments{
   
   \item{model}{an rpart model.}
 
-  \item{compact}{whether to list cateogricals compactly.}
+  \item{compact}{whether to list cateogricals compactly (default FALSE).}
+
+  \item{classes}{which target classes should be listed (default all).}
 
   \item{\dots}{further arguments passed to or from other methods.}
   

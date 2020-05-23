@@ -1,10 +1,10 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2019-12-16 13:07:00 Graham Williams>
+# Time-stamp: <2020-05-23 16:54:47 Graham Williams>
 #
 # Implement functionality associated with the Export button and Menu.
 #
-# Copyright (c) 2009-2013 Togaware Pty Ltd
+# Copyright (c) 2009-2020 Togaware Pty Ltd
 #
 # This files is part of Rattle.
 #
@@ -255,80 +255,84 @@ getExportSaveName <- function(mtype)
   ff$addPattern("*")
   dialog$addFilter(ff)
 
-  dialogGUI = NULL # Not needed but flags for R check that dialogGUI is not local. 
+  ## # 20200523 Export to C was ipmlemented for Information
+  ## # Builders. That code is now out of embargo and can be
+  ## # incorporated here which has not yet be done. At some stage we
+  ## # could. COmment this out for now as dialogGUI is no longer
+  ## # defined and R CHECK rightfully notices this.
+  ## 
+  ## if (crv$export.to.c.available)
+  ## {
+  ##   if (mtype %in% c("glm"))
+  ##     # 090629 The default for multinomial is class but we don't allow
+  ##     # the user to choose probablity - was that always the case?
+  ##     if (multinomialTarget())
+  ##       getWidgetOrObject(dialogGUI,
+  ##                         "export_filechooser_class_radiobutton")$setActive(TRUE)
+  ##     else
+  ##       getWidgetOrObject(dialogGUI,
+  ##                         "export_filechooser_probabilities_radiobutton")$setActive(TRUE)
 
-  if (crv$export.to.c.available)
-  {
-    if (mtype %in% c("glm"))
-      # 090629 The default for multinomial is class but we don't allow
-      # the user to choose probablity - was that always the case?
-      if (multinomialTarget())
-        getWidgetOrObject(dialogGUI,
-                          "export_filechooser_class_radiobutton")$setActive(TRUE)
-      else
-        getWidgetOrObject(dialogGUI,
-                          "export_filechooser_probabilities_radiobutton")$setActive(TRUE)
-
-    # 081218 Add glm when implemented.
+  ##   # 081218 Add glm when implemented.
     
-    if (!binomialTarget() || mtype %notin% c("rpart", "glm"))
-    {
-      getWidgetOrObject(dialogGUI,
-                        "export_filechooser_target_label")$setSensitive(FALSE)
+  ##   if (!binomialTarget() || mtype %notin% c("rpart", "glm"))
+  ##   {
+  ##     getWidgetOrObject(dialogGUI,
+  ##                       "export_filechooser_target_label")$setSensitive(FALSE)
 
-      getWidgetOrObject(dialogGUI,
-                        "export_filechooser_class_radiobutton")$setSensitive(FALSE)
+  ##     getWidgetOrObject(dialogGUI,
+  ##                       "export_filechooser_class_radiobutton")$setSensitive(FALSE)
 
-      getWidgetOrObject(dialogGUI,
-                        "export_filechooser_probabilities_radiobutton")$
-      setSensitive(FALSE)
-    }
+  ##     getWidgetOrObject(dialogGUI,
+  ##                       "export_filechooser_probabilities_radiobutton")$
+  ##     setSensitive(FALSE)
+  ##   }
 
-    if (mtype %in% c("survival"))
-    {
-      getWidgetOrObject(dialogGUI,
-                        "export_filechooser_class_radiobutton")$setLabel(Rtxt("Time"))
+  ##   if (mtype %in% c("survival"))
+  ##   {
+  ##     getWidgetOrObject(dialogGUI,
+  ##                       "export_filechooser_class_radiobutton")$setLabel(Rtxt("Time"))
 
-      getWidgetOrObject(dialogGUI,
-                        "export_filechooser_probabilities_radiobutton")$
-      setLabel(Rtxt("Risk"))
+  ##     getWidgetOrObject(dialogGUI,
+  ##                       "export_filechooser_probabilities_radiobutton")$
+  ##     setLabel(Rtxt("Risk"))
 
-      getWidgetOrObject(dialogGUI,
-                        "export_filechooser_probabilities_radiobutton")$
-      setActive(class(crs$survival) == "coxph")
+  ##     getWidgetOrObject(dialogGUI,
+  ##                       "export_filechooser_probabilities_radiobutton")$
+  ##     setActive(class(crs$survival) == "coxph")
 
-      if (class(crs$survival) == "coxph")
-      {
-        getWidgetOrObject(dialogGUI,
-                          "export_filechooser_probabilities_radiobutton")$
-        setSensitive(TRUE)
-      }
-      else
-      {
-        getWidgetOrObject(dialogGUI,
-                          "export_filechooser_class_radiobutton")$
-        setSensitive(TRUE)
-      }
-    }
-  }
+  ##     if (class(crs$survival) == "coxph")
+  ##     {
+  ##       getWidgetOrObject(dialogGUI,
+  ##                         "export_filechooser_probabilities_radiobutton")$
+  ##       setSensitive(TRUE)
+  ##     }
+  ##     else
+  ##     {
+  ##       getWidgetOrObject(dialogGUI,
+  ##                         "export_filechooser_class_radiobutton")$
+  ##       setSensitive(TRUE)
+  ##     }
+  ##   }
+  ## }
 
   if (dialog$run() == RGtk2::GtkResponseType["accept"])
   {
     save.name <- dialog$getFilename()
     save.type <- dialog$getFilter()$getName()
-    if (crv$export.to.c.available)
-    {
-      includePMML <- getWidgetOrObject(dialogGUI,
-                                       "export_filechooser_pmml_checkbutton")$getActive()
+    ## if (crv$export.to.c.available)
+    ## {
+    ##   includePMML <- getWidgetOrObject(dialogGUI,
+    ##                                    "export_filechooser_pmml_checkbutton")$getActive()
 
-      includeMetaData <- getWidgetOrObject(dialogGUI,
-                                           "export_filechooser_metadata_checkbutton")$
-      getActive()
+    ##   includeMetaData <- getWidgetOrObject(dialogGUI,
+    ##                                        "export_filechooser_metadata_checkbutton")$
+    ##   getActive()
 
-      exportClass <- getWidgetOrObject(dialogGUI,
-                                       "export_filechooser_class_radiobutton")$
-      getActive()
-    }
+    ##   exportClass <- getWidgetOrObject(dialogGUI,
+    ##                                    "export_filechooser_class_radiobutton")$
+    ##   getActive()
+    ## }
     dialog$destroy()
   }
   else
@@ -339,12 +343,12 @@ getExportSaveName <- function(mtype)
 
   ext <- tolower(get.extension(save.name))
 
-  if (crv$export.to.c.available)
-  {
-    attr(save.name, "includePMML") <- includePMML
-    attr(save.name, "includeMetaData") <- includeMetaData
-    attr(save.name, "exportClass") <- exportClass
-  }
+  ## if (crv$export.to.c.available)
+  ## {
+  ##   attr(save.name, "includePMML") <- includePMML
+  ##   attr(save.name, "includeMetaData") <- includeMetaData
+  ##   attr(save.name, "exportClass") <- exportClass
+  ## }
 
   Encoding(save.name) <- "UTF-8"
   return(save.name)

@@ -1,8 +1,8 @@
 Package: rattle
 Type: Package
 Title: Graphical User Interface for Data Science in R
-Version: 5.3.0
-Date: 2019-12-16
+Version: 5.4.0
+Date: 2020-05-23
 Authors@R: c(person("Graham", "Williams", 
 	   	    role=c("aut", "cph", "cre"),
 	            email="Graham.Williams@togaware.com"),
@@ -29,17 +29,17 @@ Authors@R: c(person("Graham", "Williams",
 	            comment="initial xgboost"),
              person("Cameron", "Chisholm", role="ctb",
 	            comment="risk plot on risk chart"))
-Depends: R (>= 3.5.0)
+Depends: R (>= 3.5.0), tibble, bitops
 Imports: stats, utils, ggplot2, grDevices, graphics, magrittr, methods,
         stringi, stringr, tidyr, dplyr, XML, rpart.plot
-Suggests: pmml (>= 1.2.13), bitops, colorspace, ada, amap, arules,
-        arulesViz, biclust, cairoDevice, cba, cluster, corrplot, descr,
-        doBy, e1071, ellipse, fBasics, foreign, fpc, gdata, ggdendro,
-        ggraptR, gplots, grid, gridExtra, gtools, gWidgetsRGtk2,
-        hmeasure, Hmisc, kernlab, Matrix, mice, nnet, party, plyr,
-        psych, randomForest, RColorBrewer, readxl, reshape, rggobi,
-        RGtk2, ROCR, RODBC, rpart, scales, SnowballC, survival,
-        timeDate, tm, verification, wskm, xgboost
+Suggests: pmml (>= 1.2.13), colorspace, ada, amap, arules, arulesViz,
+        biclust, cairoDevice, cba, cluster, corrplot, descr, doBy,
+        e1071, ellipse, fBasics, foreign, fpc, gdata, ggdendro,
+        ggraptR, gplots, grid, gridExtra, gtools, hmeasure, Hmisc,
+        kernlab, Matrix, mice, nnet, party, plyr, psych, randomForest,
+        RColorBrewer, readxl, reshape, rggobi, RGtk2, ROCR, RODBC,
+        rpart, scales, SnowballC, survival, timeDate, tm, verification,
+        wskm, xgboost
 Description: The R Analytic Tool To Learn Easily (Rattle) provides a 
   collection of utilities functions for the data scientist. A
   Gnome (RGtk2) based graphical interface is included with 
@@ -57,7 +57,7 @@ LazyLoad: yes
 LazyData: yes
 URL: https://rattle.togaware.com/
 NeedsCompilation: no
-Packaged: 2019-12-16 02:56:19 UTC; gjw
+Packaged: 2020-05-23 07:41:31 UTC; gjw
 Author: Graham Williams [aut, cph, cre],
   Mark Vere Culp [cph],
   Ed Cox [ctb],
@@ -75,4 +75,4 @@ Author: Graham Williams [aut, cph, cre],
   Cameron Chisholm [ctb] (risk plot on risk chart)
 Maintainer: Graham Williams <Graham.Williams@togaware.com>
 Repository: CRAN
-Date/Publication: 2019-12-16 06:20:03 UTC
+Date/Publication: 2020-05-23 11:20:03 UTC

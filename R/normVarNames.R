@@ -12,6 +12,10 @@ normVarNames <- function(vars, sep="_")
   vars <- gsub('\u2019', '', vars)
   vars <- gsub("'", '', vars)
   
+  # Replace % with _per_
+
+  vars <- gsub("%", "_per_", vars)
+
   # Replace any all capitals words with Initial capitals. This uses an
   # extended perl regular expression. The ?<! is a zero-width negative
   # look-behind assertion that matches any occurrence of the following

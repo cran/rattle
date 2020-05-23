@@ -2,7 +2,7 @@
 #
 # RPART RULES
 #
-# Time-stamp: <2014-09-05 21:27:43 gjw>
+# Time-stamp: <2020-05-13 11:42:26 Graham Williams>
 #
 # Copyright (c) 2009-2014 Togaware Pty Ltd
 #
@@ -23,7 +23,7 @@
 
 asRules <- function(model, compact=FALSE, ...) UseMethod("asRules")
 
-asRules.rpart <- function(model, compact=FALSE, ...)
+asRules.rpart <- function(model, compact=FALSE, classes=NULL, ...)
 {
   if (!inherits(model, "rpart")) stop(Rtxt("Not a legitimate rpart tree"))
   # if (model$method != "class")) stop("Model method needs to be class")
@@ -54,36 +54,38 @@ asRules.rpart <- function(model, compact=FALSE, ...)
         yval <- frm[i,]$yval
       else
         yval <- ylevels[frm[i,]$yval]
-      cover <- frm[i,]$n
-      pcover <- round(100*cover/ds.size)
-      if (! rtree) prob <- frm[i,]$yval2[,5]
-      cat("\n")
-      pth <- rpart::path.rpart(model, nodes=as.numeric(names[i]), print.it=FALSE)
-      pth <- unlist(pth)[-1]
-      if (! length(pth)) pth <- "True"
-      if (compact)
+      if (is.null(classes) || yval %in% classes)
       {
-        cat(sprintf("R%03s ", names[i]))
-        if (rtree)
-          cat(sprintf("[%2.0f%%,%0.2f]", pcover, prob))
+        cover <- frm[i,]$n
+        pcover <- round(100*cover/ds.size)
+        if (! rtree) prob <- frm[i,]$yval2[,5]
+        cat("\n")
+        pth <- rpart::path.rpart(model, nodes=as.numeric(names[i]), print.it=FALSE)
+        pth <- unlist(pth)[-1]
+        if (! length(pth)) pth <- "True"
+        if (compact)
+        {
+          cat(sprintf("R%03s ", names[i]))
+          if (rtree)
+            cat(sprintf("[%2.0f%%,%0.2f]", pcover, prob))
+          else
+            cat(sprintf("[%2.0f%%,%0.2f]", pcover, prob))
+          cat(sprintf(" %s", pth), sep="")
+        }
         else
-          cat(sprintf("[%2.0f%%,%0.2f]", pcover, prob))
-        cat(sprintf(" %s", pth), sep="")
-      }
-      else
-      {
-        cat(sprintf(Rtxt(" Rule number: %s "), names[i]))
-        if (rtree)
-          cat(sprintf("[%s=%s cover=%d (%.0f%%)]\n",
-                      target, yval, cover, pcover))
-        else
-          cat(sprintf("[%s=%s cover=%d (%.0f%%) prob=%0.2f]\n",
-                      target, yval, cover, pcover, prob))
-        cat(sprintf("   %s\n", pth), sep="")
+        {
+          cat(sprintf(Rtxt(" Rule number: %s "), names[i]))
+          if (rtree)
+            cat(sprintf("[%s=%s cover=%d (%.0f%%)]\n",
+                        target, yval, cover, pcover))
+          else
+            cat(sprintf("[%s=%s cover=%d (%.0f%%) prob=%0.2f]\n",
+                        target, yval, cover, pcover, prob))
+          cat(sprintf("   %s\n", pth), sep="")
+        }
       }
     }
   }
   cat("\n")
   invisible(ordered)
 }
-

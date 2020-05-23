@@ -1,6 +1,6 @@
 # R Data Scientist: Gtk interface to R for Data Science
 #
-# Time-stamp: <2019-12-16 12:17:19 Graham Williams>
+# Time-stamp: <2020-05-22 15:25:55 Graham Williams>
 #
 # DATA TAB
 #
@@ -1891,7 +1891,36 @@ executeDataLibrary <- function()
 viewData <- function()
 {
   startLog(Rtxt("View the dataset."))
-  View(crs$dataset, "Data Viewer")
+
+  ## if (FALSE && packageIsAvailable("RGtk2Extras", Rtxt("view data in a spreadsheet")))
+  ## {
+  ##   # 20191016 RGtk2Extras was removed from the CRAN repositoryand
+  ##   # archived on 2019-04-22 as check errors were not corrected
+  ##   # depsite reminders.
+  ##   #
+  ##   # 20151115 We currently get the issue:
+  ##   #
+  ##   # Error in MakeDFEditWindow(.local, .local$theFrame, size.request, col.width) (from <text>#1) : 
+  ##   #  could not find function "gtkTreePathNewFromString"
+  ##   #
+  ##   # This is a NAMESPACE issue and a workaround is to
+  ##   # require(RGkt2Extras). Eventually need to work out the correct
+  ##   # solution.
+
+  ##   lib.cmd <- sprintf("library(RGtk2Extras)")
+  ##   appendLog(packageProvides("RGtk2Extras", "dfedit"), lib.cmd)
+  ##   eval(parse(text=lib.cmd))
+
+  ##   view.cmd <- paste('RGtk2Extras::dfedit(crs$dataset,\n',
+  ##                     '                  ',
+  ##                     'dataset.name=Rtxt("Rattle Dataset"),\n',
+  ##                     '                  ',
+  ##                     'size=c(800, 400))')
+  ##   appendLog(Rtxt("Please note that any edits will be ignored."), view.cmd)
+  ##   eval(parse(text=view.cmd))
+  ## }
+  ## else
+    View(crs$dataset, "Data Viewer")
 }
 
 editData <- function()
@@ -1909,6 +1938,15 @@ editData <- function()
 
   assign.cmd <- if (is.null(crs$dataset))
                   'crs$dataset <- edit(data.frame())'
+                ## else if (FALSE && packageIsAvailable("RGtk2Extras"))
+                ##   # 20191016 RGtk2Extras was removed from the CRAN repositoryand
+                ##   # archived on 2019-04-22 as check errors were not corrected
+                ##   # depsite reminders.
+                ##   paste('crs$dataset <- RGtk2Extras::dfedit(crs$dataset,\n',
+                ##         '                                 ',
+                ##         'dataset.name=Rtxt("Rattle Dataset"),\n',
+                ##         '                                 ',
+                ##         'size=c(800, 400))')
                 else
                   'crs$dataset <- edit(crs$dataset)'
 

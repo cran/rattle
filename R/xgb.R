@@ -2,7 +2,7 @@
 #
 # This is a model or template "module" for rattle.
 #
-# Time-stamp: <2018-09-14 15:30:51 Graham.Williams@togaware.com>
+# Time-stamp: <2020-03-06 14:16:10 Graham Williams>
 #
 # Copyright (c) 2009-2017 Togaware Pty Ltd
 #
@@ -145,17 +145,15 @@ genProbabilityXgb <- function(dataset)
 {
   # Generate a command to obtain the probability when applying the
   # model to new data.
+
+  # Check if crs$target is included and if not add it in. It's
+  # required. See notes with genResponseXgb() below.
   
+  if (! grepl(", crs\\$target", dataset))
+      dataset <- sub("crs\\$input", "crs$input, crs$target", dataset)
+
   return(sprintf("crs$pr <- predict(crs$ada, %s)", dataset))
 }
-
-#genProbabilityXgb <- function(dataset)
-#{
-  # Generate a command to obtain the probability when applying the
-  # model to new data.
-  
-#  return(genProbabilityXgb(dataset))
-#}
 
 genResponseXgb <- function(dataset)
 {
@@ -164,23 +162,27 @@ genResponseXgb <- function(dataset)
   
   threshold <- 0.5
 
+  # Generate the command to calulate the probability.
+  #
+  # 20171029 Dwight Barry Need target for xgb predict! This requires a
+  # fix in predict.xgb.formula(). FIXME
+  #                     
+  # 20180914 Alex Abdo noted doubling up of crs$target.  I suspect
+  # another change else where has added the extra correctly so no
+  # longer needed here???
+  #
+  # 20200303 Raji Zreik was getting just crs$input and not
+  # crs$input,crs$target thus causing the target variable missing. Put
+  # it back in - but need to track down the root cause.
+  #
+  # Until then, check if it is already there, and if not add it in.
+  #
+  # 20200306 Moved the check into genProbabilityXgb()
+  
+  prob <- genProbabilityXgb(dataset)
   res <- sprintf(paste0("lvls <- levels(as.factor(crs$dataset[[crs$target]]))\n",
                         "crs$pr <- factor(ifelse(%s > %s,\n\t\t\tlvls[2], lvls[1]))"),
-                 sub("crs\\$pr <- ", "",
-
-                     # 20171029 Dwight Barry Need target for xgb
-                     # predict! This requires a fix in
-                     # predict.xgb.formula(). FIXME
-
-#                     sub("crs\\$input", "crs$input, crs$target",
-#                         genProbabilityXgb(dataset))),
-
-                     # 20180914 Alex Abdo noted doubling up of crs$target.
-                     # I suspect another change else where has added the
-                     # extra correctly so no longer needed here???
-                     
-                     genProbabilityXgb(dataset)),
-
+                 sub("crs\\$pr <- ", "", prob),
                  threshold)
   
   return(res)

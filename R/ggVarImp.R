@@ -24,13 +24,17 @@ ggVarImpPlot <- function(ds,
                   y       = label,
                   x       = "",
                   caption = caption) +
-    ggplot2::scale_y_continuous(labels=scales::comma) +
     ggplot2::coord_flip() +
-    ggplot2::theme(axis.text.x     = ggplot2::element_text(angle=45, hjust=1),
+    ggplot2::theme(axis.ticks.x = ggplot2::element_blank(),
+                   axis.text.x  = ggplot2::element_blank(),
+                   axis.title.x = ggplot2::element_blank(),
                    legend.position = "none") ->
   p
 
-  if (log) p <- p + ggplot2::scale_y_log10()
+  if (log)
+    p <- p + ggplot2::scale_y_continuous(trans="log10")
+  else
+    p <- p + ggplot2::scale_y_continuous(labels=scales::comma)
 
   return(p)
 }
@@ -40,15 +44,15 @@ ggVarImp.randomForest <- function(model,
                                   ...)
 {
   # By default randomForest() only returns the MeanDecreaseGini. With
-  # importance=TRUE we also get MeanDecreaseAccuracy and importance
-  # relative to the target levels.
+  # importance=TRUE at model build time we also get
+  # MeanDecreaseAccuracy and importance relative to the target levels.
   
   randomForest::importance(model) %>%
     data.frame() %>%
     dplyr::mutate(Variable=row.names(.)) %>%
-#    dplyr::arrange(desc(MeanDecreaseGini)) %>%
     tidyr::gather(Measure, Importance, -Variable) %>%
-#    dplyr::mutate(Variable=factor(Variable, levels=rev(unique(Variable)))) %>%
+    dplyr::group_by(Measure) %>%
+    dplyr::mutate(Importance=(max(Importance)-Importance)/(max(Importance)-min(Importance))) %>%
     ggVarImpPlot(title, ...) +
     ggplot2::facet_wrap(~ Measure)
 }

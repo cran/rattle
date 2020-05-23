@@ -23,9 +23,12 @@
   The \code{locationsAUS} dataset records the location of each weather
   station.
   
-  The source dataset is Copyright by the Australian Commonwealth Bureau
-  of Meteorology and is used with permission.
-
+  The source dataset comes from the Australian Commonwealth Bureau of
+  Meteorology. The Bureau provided permission to use the data with the
+  Bureau of Meteorology acknowledged as the source of the data, as per
+  email from Cathy Toby (C.Toby@bom.gov.au) of the Climate Information
+  Services of the National CLimate Centre, 17 Dec 2008.
+  
   A CSV version of this dataset is available as
   \url{https://rattle.togaware.com/weatherAUS.csv}.
 

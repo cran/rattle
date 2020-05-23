@@ -1,8 +1,8 @@
 # R Data Scientist: Gtk interface to R for Data Science
 #
-# Time-stamp: <2018-08-25 08:45:31 Graham.Williams@togaware.com>
+# Time-stamp: <2020-05-23 16:38:53 Graham Williams>
 #
-# Copyright (c) 2009-2018 Togaware Pty Ltd
+# Copyright (c) 2009-2020 Togaware Pty Ltd
 
 # These could be in rattle.R
 
@@ -121,7 +121,7 @@ on_aboutdialog_response <- function(object, ...)
   crv$rattleUI <- "rattle.ui"
   # if (Sys.info()["sysname"] == "Darwin") crv$rattleUI <- "rattle_macosx.ui"
 
-  crv$log.intro <- paste0("# Rattle is Copyright (c) 2006-2018 Togaware Pty Ltd.",
+  crv$log.intro <- paste0("# Rattle is Copyright (c) 2006-2020 Togaware Pty Ltd.",
                           "\n# It is free (as in libre) open source software.",
                           "\n# It is licensed under the GNU General Public License,",
                           "\n# Version 2. Rattle comes with ABSOLUTELY NO WARRANTY.",
@@ -259,7 +259,7 @@ on_aboutdialog_response <- function(object, ...)
   # 091221 The Rtxt does not seem to work from the rattle.R file, so
   # do it here again.
   
-  COPYRIGHT <- sprintf(Rtxt("Copyright (c) 2006-2018 %s."), "Togaware Pty Ltd")
+  COPYRIGHT <- sprintf(Rtxt("Copyright (c) 2006-2020 %s."), "Togaware Pty Ltd")
 
   msg <- paste(Rtxt("Rattle: A free graphical interface",
                     "for data science with R."), "\n",
