@@ -8,7 +8,7 @@
 
   Rattle uses an artificial dataset for demonstration purposes. This
   function retrieves the source data
-  \url{ftp://ftp.ics.uci.edu/pub/machine-learning-databases/adult/adult.data}
+  \url{https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data}
   and then transforms the data in a variety of ways.
   
 }

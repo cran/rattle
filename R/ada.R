@@ -2,7 +2,7 @@
 #
 # This is a model or template "module" for rattle.
 #
-# Time-stamp: <2017-09-10 10:07:11 Graham Williams>
+# Time-stamp: <Friday 2021-08-27 15:53:30 AEST Graham Williams>
 #
 # Copyright (c) 2009-2015 Togaware Pty Ltd
 #

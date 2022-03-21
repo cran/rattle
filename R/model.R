@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2017-09-10 10:11:07 Graham Williams>
+# Time-stamp: <Friday 2021-08-27 16:00:41 AEST Graham Williams>
 #
 # MODEL TAB
 #
@@ -285,8 +285,13 @@ commonName <- function(mtype)
     # "ada" should really be "boost" eventually. Check the actual
     # model class and return the apporiate common name
     
-    ada=ifelse(!is.null(crs$ada) || "xgb.Booster" %in% class(crs$ada),
-               Rtxt("Extreme Boost"), Rtxt("Ada Boost")),
+    ada=Rtxt("Ada Boost"),
+
+    # 20210827 gjw remove the following logic so that we get the
+    # correct attribution on Build Log and in Evaluate.
+    
+    # ifelse(!is.null(crs$ada) && "xgb.Booster" %in% class(crs$ada),
+    #           Rtxt("Extreme Boost"), Rtxt("Ada Boost")),
 
     arules=Rtxt("Association Rules"),
     biclust=Rtxt("BiCluster"),

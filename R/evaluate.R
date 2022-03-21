@@ -1,6 +1,6 @@
 # R Data Scientist: GNOME interface to R for Data Science
 #
-# Time-stamp: <2020-05-22 15:26:58 Graham Williams>
+# Time-stamp: <Sunday 2022-03-13 12:03:41 +1100 Graham Williams>
 #
 # Implement evaluate functionality.
 #
@@ -584,7 +584,18 @@ executeEvaluateTab <- function()
 
   #included <- getIncludedVariables(target=FALSE)
   if (theWidget("evaluate_score_radiobutton")$getActive())
-    included <- "c(crs$input)" # 20110102 getIncludedVariables(target=FALSE)
+  {
+    # 20210821 gjw TODO BUG If crs$input (as will be used in testset0)
+    # is a single variable then the '[' will drop to a list of values
+    # rather than a column, and thereby the predict() will fail with
+    # unknown variable. We should migrate to the tidyverse but for
+    # now, simply add drop=FALSE. Reported by Grant Cooper.
+
+    if (length(crs$input) > 1)
+      included <- "c(crs$input)" # 20110102 getIncludedVariables(target=FALSE)
+    else
+      included <- "c(crs$input), drop=FALSE" # 20210821 gjw bug fix
+  } 
   else
     included <- "c(crs$input, crs$target)" # 20110102 getIncludedVariables()
 
@@ -704,8 +715,11 @@ executeEvaluateTab <- function()
       nastring <- ', na.strings=c(".", "NA", "", "?")'
       sep = theWidget("data_separator_entry")$getText()
       hdr = theWidget("data_header_checkbutton")$getActive()
+      # 20200825 stringsAsFactors has changed by default. Revert here
+      # for now but eventually re-engineer for a tidyverse implementation.
       read.cmd <- sprintf(paste('crs$testset <- read.csv("%s"%s, header=%s,',
-                                'sep="%s", encoding="%s", strip.white=TRUE)'),
+                                'sep="%s", encoding="%s", strip.white=TRUE,',
+                                'stringsAsFactors=TRUE)'),
                           filename, nastring,
                           ifelse(hdr, "TRUE", "FALSE"),
                           sep, crv$csv_encoding)
@@ -1124,7 +1138,7 @@ executeEvaluateTab <- function()
 
     cond.rf <- "RandomForest" %in% class(crs$rf) # party conditional rf
     if (! length(cond.rf)) cond.rf <- FALSE
-	
+
     testset[[crv$RF]] <- testset0
     # 20090301 testset[[crv$RF]] <- testset0
     
@@ -3692,13 +3706,20 @@ executeEvaluateHand <- function(probcmd, testset, testname)
     if (is.factor(obs)) obs <- as.numeric(obs)-1
 
     # 130119 Use the now released package rather than David's original
-    # code.
+    # code. Wrap up as a string command as it is dependent on the
+    # availability of the hmeasure package.
 
-    result <- hmeasure::HMeasure(obs, pr)
-    hmeasure::plotROC(result, which=1)
-    hmeasure::plotROC(result, which=2)
-    hmeasure::plotROC(result, which=3)
-    hmeasure::plotROC(result, which=4)
+    result.cmd = "hmeasure::HMeasure(obs, pr)"
+    result <- eval(parse(text=result.cmd))
+    
+    plot.cmd <- "hmeasure::plotROC(result, which=1)"
+    eval(parse(text=plot.cmd))
+    plot.cmd <- "hmeasure::plotROC(result, which=2)"
+    eval(parse(text=plot.cmd))
+    plot.cmd <- "hmeasure::plotROC(result, which=3)"
+    eval(parse(text=plot.cmd))
+    plot.cmd <- "hmeasure::plotROC(result, which=4)"
+    eval(parse(text=plot.cmd))
 
     with(result$metric,
          cat(sprintf("%s: H=%f,  Gini=%f, AUC=%f,AUCH=%f, KS=%f\n",

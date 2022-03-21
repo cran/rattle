@@ -1,6 +1,6 @@
 # Rattle: A GUI for Data Mining in R
 #
-# Time-stamp: <2018-08-12 15:16:19 Graham.Williams@togaware.com>
+# Time-stamp: <Saturday 2020-08-15 14:58:31 AEST Graham Williams>
 #
 # Copyright (c) 2009-2014 Togaware Pty Ltd
 #
@@ -150,8 +150,7 @@ fancyRpartPlot <- function(model,
                   fallen.leaves=TRUE,
                   branch.lty=3,
                   roundint=roundint,
+                  main=main,
+                  sub=sub,
                   ...)
-  
-  title(main=main, sub=sub)
 }
-

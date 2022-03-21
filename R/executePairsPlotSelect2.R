@@ -1,6 +1,6 @@
 #' Perform the required operations for displaying a pairs plot.
 #' 
-#' Time-stamp: <2016-09-19 15:58:14 Graham Williams>
+#' Time-stamp: <Wednesday 2020-08-19 19:53:03 AEST Graham Williams>
 #' 
 executePairsPlotSelect2 <- function(dataset, vars, target, targets, stratify, sampling, pmax)
 {
@@ -16,7 +16,7 @@ executePairsPlotSelect2 <- function(dataset, vars, target, targets, stratify, sa
   }
   else
   {
-    colorStr<-sprintf('mapping=ggplot2::aes(colour=%s, alpha=0.5),',v1)
+    colorStr<-sprintf('mapping=ggplot2::aes(colour=%s, alpha=0.5, shape=%s),', v1, v1)
   }
 
   plot.cmd <- paste0(dataset, ' %>%\n',
@@ -24,15 +24,20 @@ executePairsPlotSelect2 <- function(dataset, vars, target, targets, stratify, sa
                      '  GGally::ggpairs(columns=c(',
                      paste(varsi, collapse=','), '),\n', 
                      if (colorStr!="") paste0('        ', colorStr, "\n"),
-                     '                diag=list(continuous="density",\n',
-                     '                          discrete="bar"),\n',
+                     '                diag=list(continuous="densityDiag",\n',
+                     '                          discrete="barDiag"),\n',
                      '                upper=list(continuous="cor",\n',
                      '                           combo="box",\n',
                      '                           discrete="ratio"),\n',
                      '                lower=list(continuous="points",\n',
                      '                           combo="denstrip",\n',
-                     '                           discrete="facetbar"))',
-                     ' +\n  ggplot2::theme(panel.grid.major=ggplot2::element_blank())')
+                     '                           discrete="facetbar"),\n',
+                     '                legend=3)',
+                     ' +\n  ggplot2::theme(panel.grid.major=ggplot2::element_blank(), ',
+                     'legend.position="bottom")',
+                     ' +\n  ggplot2::scale_alpha_continuous(guide=FALSE)',
+                     ' +\n  ggplot2::scale_fill_brewer(palette=rattlePalette)',
+                     ' +\n  ggplot2::scale_colour_brewer(palette=rattlePalette)')
   # When this next blank theme is included we get bad plots???? Some
   # problem with colour.
   #

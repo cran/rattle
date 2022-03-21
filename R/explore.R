@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2018-07-01 20:18:18 Graham.Williams@togaware.com>
+# Time-stamp: <Wednesday 2020-08-19 19:52:10 AEST Graham Williams>
 #
 # Implement EXPLORE functionality.
 #
@@ -569,15 +569,22 @@ plotDigitFreq <- function(ds)
   dsm <- reshape::melt(ds, id.vars="digit")
   len <- nchar(as.character(ds[1,1]))
   
-  p <- ggplot2::ggplot(dsm, ggplot2::aes_string(x="digit", y="value", colour="variable"))
+  p <- ggplot2::ggplot(dsm, ggplot2::aes_string(x="digit",
+                                                y="value",
+                                                colour="variable",
+                                                shape="variable"))
   p <- p + ggplot2::geom_line()
   if (len < 3) p <- p + ggplot2::geom_point()
   if (substr(as.character(ds[1,1]), 1, 1)=="1")
     p <- p + ggplot2::scale_x_continuous(breaks=seq(10^(len-1), (10^len)-1, 10^(len-1)))
   else
     p <- p + ggplot2::scale_x_continuous(breaks=seq(0, 9, 1))
-  p <- p + ggplot2::ylab("Frequency") + ggplot2::xlab("Digits")
-  p <- p + ggplot2::theme(legend.title=ggplot2::element_blank())
+  p <- p +
+    ggplot2::ylab("Frequency") + ggplot2::xlab("Digits") +
+    ggplot2::theme(legend.title=ggplot2::element_blank()) +
+    ggplot2::scale_fill_brewer(palette=rattlePalette) +
+    ggplot2::scale_colour_brewer(palette=rattlePalette)
+  
   return(p)
 }
 

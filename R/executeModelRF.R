@@ -1,6 +1,6 @@
 #' Build a random forest model: traditional or conditional.
 #' 
-#' Time-stamp: <2017-09-10 10:10:03 Graham Williams>
+#' Time-stamp: <Saturday 2021-08-21 11:25:05 AEST Graham Williams>
 #'
 executeModelRF <- function(traditional=TRUE, conditional=!traditional)
 {
@@ -336,8 +336,18 @@ executeModelRF <- function(traditional=TRUE, conditional=!traditional)
     appendLog(Rtxt("The `pROC' package implements various AUC functions."))
 
     appendLog("Calculate the Area Under the Curve (AUC).", roc.cmd)
-    appendLog("Calculate the AUC Confidence Interval.", ci.cmd, include.libs=FALSE)
-    
+    appendLog("Calculate the AUC Confidence Interval.", ci.cmd)
+
+    # 20210821 gjw The pROC commands print to stderr the following:
+    #
+    # Setting levels: control = No, case = Yes
+    # Setting direction: controls < cases
+    #
+    # Thus they will appear on the user's console. That is
+    # unfortunate. There may be a way to orchestrate to collect the
+    # stderr as well as stdout but can not see it with
+    # collect.output() and type="message" versus type="output".
+
     addTextview(TV,
                 "\n\nAnalysis of the Area Under the Curve (AUC)",
                 "  \n==========================================\n",

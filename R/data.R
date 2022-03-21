@@ -1,6 +1,6 @@
 # R Data Scientist: Gtk interface to R for Data Science
 #
-# Time-stamp: <2020-05-22 15:25:55 Graham Williams>
+# Time-stamp: <Friday 2021-08-20 11:43:07 AEST Graham Williams>
 #
 # DATA TAB
 #
@@ -1116,9 +1116,15 @@ executeDataCSV <- function(filename=NULL)
   {
     if (! packageIsAvailable("readxl", Rtxt("read .xls or .xlsx files"))) return(FALSE)
 
-    # 100114 A quick hack to allow reading MS/Excel files. 150517
+    # 20100114 A quick hack to allow reading MS/Excel files. 20150517
     # Notice the use of library() rather than require(). We really
     # need to attach the package not try to attach the package.
+    # 20200922 On windows '//pdata.gov.au/water/darling.xlsx' for
+    # example becomes '/pdata.gov.au/water/darling.xlsx' and can not
+    # be loaded. TODO How to deal with this. Note that
+    # '/water/darling.xlsx' would be a valid path on the current drive
+    # but '//water/darling.xlsx' is not the same thing (it's a share).
+
     read.cmd <- sprintf(paste("library(readxl, quietly=TRUE)\n\n",
                               'crs$dataset <- read_excel("%s", guess_max=1e4)\n\n',
                               # Make sure we return the actual dataset
@@ -1867,7 +1873,7 @@ executeDataLibrary <- function()
   appendLog(Rtxt("Load an R dataset."), assign.cmd)
   resetRattle()
   eval(parse(text=assign.cmd))
-  if (class(crs$dataset) != "data.frame")
+  if (! "data.frame" %in% class(crs$dataset))
   {
     errorDialog(sprintf(Rtxt("The selected dataset, '%s', from the '%s' package",
                              "is not of class data frame (the data type).",
@@ -3033,7 +3039,8 @@ getSelectedVariables <- function(role, named=TRUE)
   # 091130 Apparently Gtk always returns UTF-8 strings (Acken
   # Sakakibara). Thus we convert to the locale of the system.
 
-  variables <- iconv(variables, "UTF-8", localeToCharset()[1])
+  if (! is.na(localeToCharset()))
+    variables <- iconv(variables, "UTF-8", localeToCharset()[1])
 
   return(variables)
 }
@@ -3698,14 +3705,17 @@ createVariablesModel <- function(variables, input=NULL, target=NULL,
 
       dtype <- paste("A ", cl, " variable")
       if (cl == "integer")
-        dtype <- sprintf(Rtxt("Numeric [%d to %d; unique=%d; mean=%d; median=%d%s%s]"),
+        dtype <- sprintf(Rtxt("Numeric [%d to %d; unique=%d; mean=%.2f; median=%.2f%s%s]"),
                          min(crs$dataset[[variables[i]]], na.rm=TRUE), # 160831 XDF TODO
                          max(crs$dataset[[variables[i]]], na.rm=TRUE), # 160831 XDF TODO
                          unique.count,
-                         as.integer(mean(crs$dataset[[variables[i]]], # 160831 XDF TODO
-                                         na.rm=TRUE)),
-                         as.integer(median(crs$dataset[[variables[i]]], # 160831 XDF TODO
-                                         na.rm=TRUE)),
+                         # 20210820 gjw Why where these converted to
+                         # integer. Perhaps keep them as real, even if
+                         # the variable is an integer.
+                         mean(crs$dataset[[variables[i]]], # 160831 XDF TODO
+                                         na.rm=TRUE),
+                         median(crs$dataset[[variables[i]]], # 160831 XDF TODO
+                                         na.rm=TRUE),
                          ifelse(sum(is.na(crs$dataset[[variables[i]]])), # 160831 XDF TODO
                                 sprintf(Rtxt("; miss=%d"),
                                         sum(is.na(crs$dataset[[variables[i]]]))), # 160831 XDF TODO

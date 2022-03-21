@@ -1,13 +1,18 @@
 # R Data Scientist: Gtk interface to R for Data Science
 #
-# Time-stamp: <2020-05-23 16:38:53 Graham Williams>
+# Time-stamp: <Friday 2021-08-20 15:57:50 AEST Graham Williams>
 #
-# Copyright (c) 2009-2020 Togaware Pty Ltd
+# Copyright (c) 2009-2021 Togaware Pty Ltd
 
 # These could be in rattle.R
 
 crs <- new.env() # Current Rattle State
 crv <- new.env() # Current Rattle Variables
+
+rattlePalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442",
+                   "#0072B2", "#D55E00", "#CC79A7", "#000000")
+
+rattlePalette <- "Set1"
 
 if (! exists("RATTLE.DATA")) RATTLE.DATA <- NULL
 if (! exists("RATTLE.SCORE.IN")) RATTLE.SCORE.IN <- NULL
@@ -121,7 +126,7 @@ on_aboutdialog_response <- function(object, ...)
   crv$rattleUI <- "rattle.ui"
   # if (Sys.info()["sysname"] == "Darwin") crv$rattleUI <- "rattle_macosx.ui"
 
-  crv$log.intro <- paste0("# Rattle is Copyright (c) 2006-2020 Togaware Pty Ltd.",
+  crv$log.intro <- paste0("# Rattle is Copyright (c) 2006-2021 Togaware Pty Ltd.",
                           "\n# It is free (as in libre) open source software.",
                           "\n# It is licensed under the GNU General Public License,",
                           "\n# Version 2. Rattle comes with ABSOLUTELY NO WARRANTY.",
@@ -259,7 +264,7 @@ on_aboutdialog_response <- function(object, ...)
   # 091221 The Rtxt does not seem to work from the rattle.R file, so
   # do it here again.
   
-  COPYRIGHT <- sprintf(Rtxt("Copyright (c) 2006-2020 %s."), "Togaware Pty Ltd")
+  COPYRIGHT <- sprintf(Rtxt("Copyright (c) 2006-2021 %s."), "Togaware Pty Ltd")
 
   msg <- paste(Rtxt("Rattle: A free graphical interface",
                     "for data science with R."), "\n",

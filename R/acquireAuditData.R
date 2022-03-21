@@ -2,7 +2,7 @@
 #
 # AUDIT DATASET
 #
-# Time-stamp: <2014-09-05 21:28:19 gjw>
+# Time-stamp: <Wednesday 2021-04-21 13:17:11 AEST Graham Williams>
 #
 # Copyright (c) 2009-2014 Togaware Pty Ltd
 #
@@ -30,7 +30,7 @@ acquireAuditData <- function(write.to.file=FALSE)
 {
   if (!file.exists('survey.csv'))
   {
-    UCI <- "ftp://ftp.ics.uci.edu/pub"
+    UCI <- "https://archive.ics.uci.edu/ml"
     REPOS <- "machine-learning-databases"
     survey.url <- sprintf("%s/%s/adult/adult.data", UCI, REPOS)
     download.file(survey.url, "survey.data")

@@ -1,6 +1,6 @@
 # Gnome R Data Science: GNOME interface to R for Data Science
 #
-# Time-stamp: <2018-05-22 06:15:16 Graham.Williams@togaware.com>
+# Time-stamp: <Saturday 2022-03-05 21:27:08 +1100 Graham Williams>
 #
 # Implement hclust functionality.
 #
@@ -318,7 +318,7 @@ centers.hclust <- function(x, object, nclust=10, use.median=FALSE)
   
   if (!inherits(object, "hclust")) { stop(Rtxt("Not a legitimate hclust object")) }
     
-  if (class(x) != "matrix") { x <- as.matrix(x) }
+  if (! "matrix" %in% class(x)) { x <- as.matrix(x) }
   
   if (use.median)
   {
