@@ -1,6 +1,6 @@
 #' Display boxplots using ggplot2.
 #' 
-#' Time-stamp: <2016-09-19 19:28:44 Graham Williams>
+#' Time-stamp: <Tuesday 2022-08-30 09:55:54 +1000 Graham Williams>
 #' 
 executeBoxPlot2 <- function(dataset, vars, target, targets, stratify, sampling, pmax)
 {
@@ -36,14 +36,14 @@ executeBoxPlot2 <- function(dataset, vars, target, targets, stratify, sampling, 
                                '  ggplot2::geom_boxplot(ggplot2::aes(x="All"), ',
                                'notch=TRUE, fill="grey") +\n',
                                '  ggplot2::stat_summary(ggplot2::aes(x="All"), ',
-                               'fun.y=mean, geom="point", shape=8) +\n',
+                               'fun=mean, geom="point", shape=8) +\n',
                                if (length(target))
                                  stringr::str_c('  ggplot2::geom_boxplot(',
                                                 'ggplot2::aes(x=', target, ', ',
                                                 'fill=', target, '), notch=TRUE) +\n',
                                                 '  ggplot2::stat_summary(',
                                                 'ggplot2::aes(x=', target, '), ',
-                                                'fun.y=mean, geom="point", ',
+                                                'fun=mean, geom="point", ',
                                                 'shape=8) +\n'),
                                '  ggplot2::xlab("',
                                if (length(target))

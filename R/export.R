@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2020-05-23 16:54:47 Graham Williams>
+# Time-stamp: <Sunday 2026-02-08 14:46:51 +1100 Graham Williams>
 #
 # Implement functionality associated with the Export button and Menu.
 #
@@ -25,7 +25,7 @@ on_export_button_clicked <- function(action, window)
 {
   # Wrap the actual call with a "try" so that the watch cursor turns
   # off even on error.
-  
+
   setStatusBar()
   set.cursor("watch")
   on.exit(set.cursor())
@@ -40,7 +40,7 @@ dispatchExportButton <- function()
   ct <- getCurrentPageLabel(crv$NOTEBOOK)
 
   if (ct == crv$NOTEBOOK.CLUSTER.NAME)
-  {  
+  {
     exportClusterTab()
   }
   else if (ct == crv$NOTEBOOK.MODEL.NAME)
@@ -56,14 +56,14 @@ dispatchExportButton <- function()
   {
     # For any of the DATA, SELECT, or TRANSFORM tabs, the logical
     # thing to EXPORT is the dataset.
-    
+
     exportDataTab()
   }
 ##   else if (ct == crv$NOTEBOOK.EVALUATE.NAME)
 ##   {
 ##     exportEvaluateTab()
 ##   }
-  else  if (ct == crv$NOTEBOOK.LOG.NAME) 
+  else  if (ct == crv$NOTEBOOK.LOG.NAME)
   {
     exportLogTab()
   }
@@ -132,28 +132,6 @@ dispatchExportButton <- function()
 ##   # Obtain a filename to save to. Ideally, this would also prompt for
 ##   # the device to export, and the fontsize, etc.
 
-##   dialog <- gtkFileChooserDialog("Export Graphics (pdf, png, jpg)",
-##                                  NULL, "save",
-##                                  "gtk-cancel", RGtk2::GtkResponseType["cancel"],
-##                                  "gtk-save", RGtk2::GtkResponseType["accept"])
-
-##   if(not.null(crs$dataname))
-##     dialog$setCurrentName(paste(get.stem(crs$dataname),
-##                                 "_", type, ".pdf", sep=""))
-
-##   ff <- gtkFileFilterNew()
-##   ff$setName("Graphics Files")
-##   ff$addPattern("*.pdf")
-##   ff$addPattern("*.png")
-##   ff$addPattern("*.jpg")
-##   dialog$addFilter(ff)
-
-##   ff <- gtkFileFilterNew()
-##   ff$setName("All Files")
-##   ff$addPattern("*")
-##   dialog$addFilter(ff)
-  
-##   if (dialog$run() == RGtk2::GtkResponseType["accept"])
 ##   {
 ##     save.name <- dialog$getFilename()
 ##     dialog$destroy()
@@ -165,13 +143,13 @@ dispatchExportButton <- function()
 ##   }
 
 ##   if (get.extension(save.name) == "") save.name <- sprintf("%s.pdf", save.name)
-    
+
 ##   if (file.exists(save.name))
 ##     if ( ! questionDialog("A Graphics file of the name", save.name,
 ##                                 "already exists. Do you want to overwrite",
 ##                                 "this file?"))
 ##       return()
-  
+
 ##   cur <- dev.cur()
 ##   ext <- get.extension(save.name)
 ##   if (ext == "pdf")
@@ -182,7 +160,7 @@ dispatchExportButton <- function()
 ##     dev.copy(jpeg, file=save.name, width=700, height=700)
 ##   dev.off()
 ##   dev.set(cur)
-  
+
 ##   infoDialog(sprintf("R Graphics: Device %d (ACTIVE)", cur),
 ##              "has been exported to", save.name)
 ## }
@@ -197,161 +175,6 @@ getWidgetOrObject <- function(dialog, name)
 
 getExportSaveName <- function(mtype)
 {
-  # Request a filename to save the model to and return the filename as
-  # a string.
-
-  # Require the pmml package for either exporting to PMML or C (which
-  # goes via PMML).
-  
-  lib.cmd <- "library(pmml, quietly=TRUE)"
-  if (! (exists("pmml") ||
-         packageIsAvailable("pmml", sprintf(Rtxt("export a %s model"),
-                                            commonName(mtype)))))
-      return(NULL)
-  appendLog(packageProvides("pmml", "pmml"), lib.cmd)
-
-  # Load the package unless pmml already defined (through source).
-
-  if (! exists("pmml")) eval(parse(text=lib.cmd))
-
-  # Obtain filename to write the PMML or C code to.  081218 We use the
-  # glade generated filechooser rather than my original hand-coded
-  # one. It is much simpler to handle the formatting. It has been
-  # modified to offer a choice of Class/Score and PMML/Info to the C
-  # file. 20190407 I reverted to creating the dialog here. The glde
-  # defined one has started to not include the Save and Cancel
-  # buttons. Could not figure out why. I suspect something to do with
-  # updated RGtk2. Reported by Julian Ochoa.
-
-  dialog <- RGtk2::gtkFileChooserDialog(Rtxt("Export to PMML"), NULL,
-                                        "save",
-                                        "gtk-cancel",
-                                        RGtk2::GtkResponseType["cancel"],
-                                        "gtk-save",
-                                        RGtk2::GtkResponseType["accept"])
-
-  dialog$setDoOverwriteConfirmation(TRUE)
-
-  if(not.null(crs$dataname))
-    dialog$setCurrentName(paste(get.stem(crs$dataname), "_", mtype,
-                                ifelse(crv$export.to.c.available, ".c", ".xml"),
-                                sep=""))
-
-  if (crv$export.to.c.available)
-  {
-    ff <- RGtk2::gtkFileFilterNew()
-    ff$setName(Rtxt("C Files"))
-    ff$addPattern("*.c")
-    dialog$addFilter(ff)
-  }
-
-  ff <- RGtk2::gtkFileFilterNew()
-  ff$setName(Rtxt("PMML Files"))
-  ff$addPattern("*.xml")
-  dialog$addFilter(ff)
-
-  ff <- RGtk2::gtkFileFilterNew()
-  ff$setName(Rtxt("All Files"))
-  ff$addPattern("*")
-  dialog$addFilter(ff)
-
-  ## # 20200523 Export to C was ipmlemented for Information
-  ## # Builders. That code is now out of embargo and can be
-  ## # incorporated here which has not yet be done. At some stage we
-  ## # could. COmment this out for now as dialogGUI is no longer
-  ## # defined and R CHECK rightfully notices this.
-  ## 
-  ## if (crv$export.to.c.available)
-  ## {
-  ##   if (mtype %in% c("glm"))
-  ##     # 090629 The default for multinomial is class but we don't allow
-  ##     # the user to choose probablity - was that always the case?
-  ##     if (multinomialTarget())
-  ##       getWidgetOrObject(dialogGUI,
-  ##                         "export_filechooser_class_radiobutton")$setActive(TRUE)
-  ##     else
-  ##       getWidgetOrObject(dialogGUI,
-  ##                         "export_filechooser_probabilities_radiobutton")$setActive(TRUE)
-
-  ##   # 081218 Add glm when implemented.
-    
-  ##   if (!binomialTarget() || mtype %notin% c("rpart", "glm"))
-  ##   {
-  ##     getWidgetOrObject(dialogGUI,
-  ##                       "export_filechooser_target_label")$setSensitive(FALSE)
-
-  ##     getWidgetOrObject(dialogGUI,
-  ##                       "export_filechooser_class_radiobutton")$setSensitive(FALSE)
-
-  ##     getWidgetOrObject(dialogGUI,
-  ##                       "export_filechooser_probabilities_radiobutton")$
-  ##     setSensitive(FALSE)
-  ##   }
-
-  ##   if (mtype %in% c("survival"))
-  ##   {
-  ##     getWidgetOrObject(dialogGUI,
-  ##                       "export_filechooser_class_radiobutton")$setLabel(Rtxt("Time"))
-
-  ##     getWidgetOrObject(dialogGUI,
-  ##                       "export_filechooser_probabilities_radiobutton")$
-  ##     setLabel(Rtxt("Risk"))
-
-  ##     getWidgetOrObject(dialogGUI,
-  ##                       "export_filechooser_probabilities_radiobutton")$
-  ##     setActive(class(crs$survival) == "coxph")
-
-  ##     if (class(crs$survival) == "coxph")
-  ##     {
-  ##       getWidgetOrObject(dialogGUI,
-  ##                         "export_filechooser_probabilities_radiobutton")$
-  ##       setSensitive(TRUE)
-  ##     }
-  ##     else
-  ##     {
-  ##       getWidgetOrObject(dialogGUI,
-  ##                         "export_filechooser_class_radiobutton")$
-  ##       setSensitive(TRUE)
-  ##     }
-  ##   }
-  ## }
-
-  if (dialog$run() == RGtk2::GtkResponseType["accept"])
-  {
-    save.name <- dialog$getFilename()
-    save.type <- dialog$getFilter()$getName()
-    ## if (crv$export.to.c.available)
-    ## {
-    ##   includePMML <- getWidgetOrObject(dialogGUI,
-    ##                                    "export_filechooser_pmml_checkbutton")$getActive()
-
-    ##   includeMetaData <- getWidgetOrObject(dialogGUI,
-    ##                                        "export_filechooser_metadata_checkbutton")$
-    ##   getActive()
-
-    ##   exportClass <- getWidgetOrObject(dialogGUI,
-    ##                                    "export_filechooser_class_radiobutton")$
-    ##   getActive()
-    ## }
-    dialog$destroy()
-  }
-  else
-  {
-    dialog$destroy()
-    return(NULL)
-  }
-
-  ext <- tolower(get.extension(save.name))
-
-  ## if (crv$export.to.c.available)
-  ## {
-  ##   attr(save.name, "includePMML") <- includePMML
-  ##   attr(save.name, "includeMetaData") <- includeMetaData
-  ##   attr(save.name, "exportClass") <- exportClass
-  ## }
-
-  Encoding(save.name) <- "UTF-8"
-  return(save.name)
 }
 
 generateExportPMMLtoC <- function(model.name, save.name, TV)
@@ -378,7 +201,7 @@ generateExportPMMLtoC <- function(model.name, save.name, TV)
   # encoding (the encoding used in much earlier versions of Mac OS)."
 
   #110122 IBI suggest the C code be SJIS for now.
-  
+
   export.cmd <- paste('con <- file("%s", open="w")', # 110122, encoding="UTF8")',
                       "\ncat(pmmltoc(%s%s%s,",
                       '\n            name="%s",',

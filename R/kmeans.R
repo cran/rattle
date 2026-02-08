@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2018-09-23 12:46:32 Graham.Williams@togaware.com>
+# Time-stamp: <Sunday 2026-02-08 14:39:36 +1100 Graham Williams>
 #
 # Implement kmeans functionality.
 #
@@ -56,7 +56,7 @@ on_kmeans_hclust_centers_checkbutton_toggled <- function(button)
     theWidget("kmeans_runs_spinbutton")$setSensitive(TRUE)
     theWidget("kmeans_runs_label")$setSensitive(TRUE)
   }
-}    
+}
 
 on_kmeans_iterate_checkbutton_toggled <- function(button)
 {
@@ -74,7 +74,7 @@ on_kmeans_iterate_checkbutton_toggled <- function(button)
     theWidget("kmeans_runs_spinbutton")$setSensitive(TRUE)
     theWidget("kmeans_runs_label")$setSensitive(TRUE)
   }
-}    
+}
 
 on_kmeans_seed_button_clicked <- function(button)
 {
@@ -106,14 +106,14 @@ executeClusterKMeans <- function(include)
   sampling  <- not.null(crs$train)
 
   # Obtain interface information.
-  
+
   nclust <- theWidget("kmeans_clusters_spinbutton")$getValue()
   seed <- theWidget("kmeans_seed_spinbutton")$getValue()
   if (seed == crv$seed) seed <- "crv$seed"
   nruns <- theWidget("kmeans_runs_spinbutton")$getValue()
   usehclust <- theWidget("kmeans_hclust_centers_checkbutton")$getActive()
   useIterate <- theWidget("kmeans_iterate_checkbutton")$getActive()
-  
+
   startLog(commonName(crv$KMEANS))
 
   # Set the seed so we can repeat.
@@ -136,17 +136,17 @@ executeClusterKMeans <- function(include)
     if (! packageIsAvailable("reshape", Rtxt("rescale for kmeans"))) return(FALSE)
     appendLog(packageProvides('reshape', 'rescaler'), lib.cmd)
     eval(parse(text=lib.cmd))
-    
+
     ds <- sprintf('sapply(%s, rescaler, "range")', ds)
   }
-  
+
   # Calculate the centers
 
   if (usehclust)
     centers <- sprintf("centers.hclust(%s, crs$hclust, %d)", ds, nclust)
   else
     centers <- nclust
-  
+
   # KMEANS: Log the R command and execute.
 
   if (! useIterate)
@@ -199,7 +199,7 @@ executeClusterKMeans <- function(include)
     means.cmd <- sprintf("colMeans(%s)", ds)
     centres.cmd <- "crs$kmeans$centers"
     withinss.cmd <- "crs$kmeans$withinss"
-    
+
     startLog(Rtxt("Report on the cluster characteristics."))
     appendLog(Rtxt("Cluster sizes:"), size.cmd)
     appendLog(Rtxt("Data means:"), means.cmd)
@@ -266,7 +266,7 @@ showModelKMeansExists <- function(state=!is.null(crs$kmeans))
 {
   # If a kmeans model exists then make available the Stats, Data Plot,
   # and Discriminate Plot buttons on the Descriptive tab.
-  
+
   theWidget("kmeans_stats_button")$setSensitive(state)
   theWidget("kmeans_data_plot_button")$setSensitive(state)
   theWidget("kmeans_discriminant_plot_button")$setSensitive(state)
@@ -274,10 +274,10 @@ showModelKMeansExists <- function(state=!is.null(crs$kmeans))
   # 110911 TODO Might want to move this into a showModelEwkmExists and
   # perhaps even save the textview and swap between kmeans and ewkm in
   # the textview.
-  
+
   theWidget("kmeans_weights_plot_button")$setSensitive(state &&
                                                        theWidget("ewkm_radiobutton")$getActive())
-  
+
 }
 
 ########################################################################
@@ -290,7 +290,7 @@ exportKMeansTab <- function()
   if (noModelAvailable(crs$kmeans, crv$KMEANS)) return(FALSE)
 
   startLog(paste(Rtxt("Export"), commonName(crv$KMEANS)))
-  
+
   save.name <- getExportSaveName(crv$KMEANS)
   if (is.null(save.name)) return(FALSE)
   ext <- tolower(get.extension(save.name))
@@ -320,18 +320,18 @@ exportKMeansTab <- function()
     # blatantly wrong. Maybe only needed for MS/Widnows
 
     if (isWindows()) save.name <- tolower(save.name)
-    
+
     model.name <- sub("\\.c", "", basename(save.name))
 
     export.cmd <- generateExportPMMLtoC(model.name, save.name, "kmeans_textview")
-    
+
     appendLog(sprintf(Rtxt("Export %s as a C routine."), commonName(crv$KMEANS)),
               sprintf('pmml.cmd <- "%s"\n\n', pmml.cmd),
               export.cmd)
 
     eval(parse(text=export.cmd))
   }
-  
+
   setStatusBar(sprintf(Rtxt("The model has been exported to '%s'."), save.name))
 
 }
@@ -347,7 +347,7 @@ predict.kmeans <- function(object, data, ...)
   # to use the Rattle modelling code on kmeans. TODO Currently, no
   # support for alternative distance measures. This will be needed
   # eventually
-  
+
   #num.clusters <- nrow(object$centers)
   cluster.names <- rownames(object$centers)
   cluster.vars <- colnames(object$centers)
@@ -364,11 +364,11 @@ predict.kmeans <- function(object, data, ...)
   ## REMOVE 090808
   ## # 081228 Simply calculate the distance between all points - this is
   ## # simpler to code, but perhaps less efficient?
-  
+
   ## d <- as.matrix(dist(rbind(data[cluster.vars], object$centers)))
   ## d <- d[-cluster.row.nums,cluster.row.nums]
   ## colnames(d) <- cluster.names
-  
+
   ## out <- apply(d, 1, which.min)
   ## miss <- attr(na.omit(data[cluster.vars]), "na.action")
   ## out[miss] <- NA
@@ -388,14 +388,14 @@ predict.kmeans <- function(object, data, ...)
 
 genPredictKmeans <- function(dataset)
 {
-  
+
   # 081227 Generate a command to obtain the prediction results when
   # applying the model to new data.
   if(not.null(crs$xdf)){
     class(crs$kmeans) <- c("rxKmeans","kmeans")
     return(sprintf("crs$pr <- predict(crs$kmeans, rxDataStep(inData = %s))", dataset))
   }
-  else 
+  else
     return(sprintf("crs$pr <- predict(crs$kmeans, %s)", dataset))
 }
 
@@ -403,7 +403,7 @@ genResponseKmeans <- function(dataset)
 {
   # 081227 Generate a command to obtain the response when applying the
   # model to new data.
-  
+
   return(genPredictKmeans(dataset))
 }
 
@@ -414,7 +414,7 @@ genProbabilityKmeans <- function(dataset)
   # using the cluster label as the output, since it won't be a
   # probability or even look like it. Let's do it for now though -
   # should be okay.
-  
+
   return(genPredictKmeans(dataset))
 }
 
@@ -424,7 +424,7 @@ genProbabilityKmeans <- function(dataset)
 displayClusterStatsKMeans <- function()
 {
   # Make sure there is a cluster first.
-  
+
   if (is.null(crs$kmeans))
   {
     errorDialog("E124: Should not be here.", crv$support.msg)
@@ -435,7 +435,7 @@ displayClusterStatsKMeans <- function()
 
   # LIBRARY: Ensure the appropriate package is available for the
   # plot, and log the R command and execute.
-  
+
   if (!packageIsAvailable("fpc", Rtxt("plot a cluster"))) return()
   lib.cmd <- "library(fpc, quietly=TRUE)"
   appendLog(packageProvides("fpc", "cluster.stats"), lib.cmd)
@@ -449,7 +449,7 @@ displayClusterStatsKMeans <- function()
 
   # 091219 Why would we check this here - the cluster is already
   # built?
-  
+
   include <- "crs$numeric" # 20110102 getNumericVariables()
   if (length(include) == 0)
   {
@@ -465,7 +465,7 @@ displayClusterStatsKMeans <- function()
   # memory. Pop up a warning.
 
   large <- length(crs$kmeans$cluster) > crv$cluster.report.max.obs
-  
+
   ## if (large &&
   ##     ! questionDialog("The dataset has a large number of observations.",
   ##                      "This may be too large to calculate the",
@@ -479,7 +479,7 @@ displayClusterStatsKMeans <- function()
   ##                      "Consider saving your project before proceeding.",
   ##                      "\n\nDo you wish to continue anyhow?"))
   ##   return(FALSE)
-  
+
   if (large &&
       ! questionDialog(sprintf(Rtxt("The dataset contains many observations.",
                                     "The statistics are based on a",
@@ -491,7 +491,7 @@ displayClusterStatsKMeans <- function()
                                     "\n\nWould you like to continue with auto sampling?"),
                                crv$appname, crv$cluster.report.max.obs)))
       return(FALSE)
-  
+
   # STATS: Log the R command and execute. 080521 TODO Fix a bug by
   # adding the na.omit here (since by default that is done in building
   # the clusters). Not sure if this is generally correct.
@@ -500,16 +500,15 @@ displayClusterStatsKMeans <- function()
   {
     large.sample.cmd <- paste(sprintf("set.seed(%s)", crv$seed),
                               sprintf("smpl <<- sample(length(crs$kmeans$cluster), %d)",
-                                      crv$cluster.report.max.obs),    
+                                      crv$cluster.report.max.obs),
                               sep="\n")
     appendLog(Rtxt("Select a sample from the dataset to calculate the statistics."),
               sub("<<", "<", large.sample.cmd))
     eval(parse(text=large.sample.cmd))
   }
-  
+
   set.cursor("watch", Rtxt("Determining the cluster statistics...."))
   on.exit(set.cursor("left-ptr"))
-  while (RGtk2::gtkEventsPending()) RGtk2::gtkMainIteration()
 
   # 20180923 If Re-Scale is active then better make sure we use the
   # rescaled dataset for the stats and not the original dataset. TODO
@@ -555,7 +554,7 @@ displayClusterStatsKMeans <- function()
 
 dataPlotKMeans <- function()
 {
-  
+
   # Make sure there is a cluster first.
 
   if (is.null(crs$kmeans))
@@ -575,7 +574,7 @@ dataPlotKMeans <- function()
   incvars <- eval(parse(text=include))
 
   # We can only plot if there is more than a single variable.
-  
+
   if (length(incvars) == 1)
   {
     infoDialog(Rtxt("A data plot of the clusters can not be constructed",
@@ -585,7 +584,7 @@ dataPlotKMeans <- function()
   }
 
   # 091219 Check for very large data, and if so use auto sampling.
-  
+
   large <- length(crs$kmeans$cluster) > crv$cluster.report.max.obs
   manyvars <- length(incvars) > crv$scatter.max.vars
 
@@ -633,7 +632,7 @@ dataPlotKMeans <- function()
                                  crv$scatter.max.vars, crv$scatter.max.vars)))
       return(FALSE)
   }
-    
+
   if (large)
   {
     large.sample.cmd <- paste(sprintf("set.seed(%s)", crv$seed),
@@ -653,7 +652,7 @@ dataPlotKMeans <- function()
               sub("<<", "<", top.vars.cmd))
     eval(parse(text=top.vars.cmd))
   }
-  
+
   # PLOT: Log the R command and execute. 080521 TODO I've added in
   # na.omit here, since when we cluster the audit data, with missing
   # values for Age we need to ensure the data points correspond to the
@@ -716,7 +715,7 @@ discriminantPlotKMeans <- function()
   }
 
   # We can only plot if there is more than a single variable.
-  
+
   if (length(incvars) == 1)
   {
     infoDialog(Rtxt("A discriminant coordinates plot can not be constructed",

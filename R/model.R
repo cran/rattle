@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <Friday 2021-08-27 16:00:41 AEST Graham Williams>
+# Time-stamp: <Sunday 2026-02-08 14:41:22 +1100 Graham Williams>
 #
 # MODEL TAB
 #
@@ -163,7 +163,7 @@ setTreeOptions <- function(mtype)
   theWidget("model_tree_include_missing_checkbutton")$
   setSensitive(mtype=="rpart")
 }
-  
+
 
 on_model_tree_rpart_radiobutton_toggled <- function(button)
 {
@@ -281,15 +281,15 @@ on_evaluate_model_checkbutton_toggled <- function(button)
 commonName <- function(mtype)
 {
   name.map <- data.frame(
-    
+
     # "ada" should really be "boost" eventually. Check the actual
     # model class and return the apporiate common name
-    
+
     ada=Rtxt("Ada Boost"),
 
     # 20210827 gjw remove the following logic so that we get the
     # correct attribution on Build Log and in Evaluate.
-    
+
     # ifelse(!is.null(crs$ada) && "xgb.Booster" %in% class(crs$ada),
     #           Rtxt("Extreme Boost"), Rtxt("Ada Boost")),
 
@@ -315,7 +315,7 @@ commonName <- function(mtype)
     nnet=Rtxt("Neural Net"),
     survival=Rtxt("Survival"),
     xgb=Rtxt("Extreme Boost"))
-  
+
   return(as.character(name.map[[mtype]]))
 }
 
@@ -326,11 +326,11 @@ numericTarget <- function()
 
   # 091206 Move to not using the auto radio button.091223 Gerry and
   # Rado want it back
-  
+
   else if (theWidget("data_target_auto_radiobutton")$getActive())
 
     # 080505 TODO we should put 10 as a global CONST
-    
+
     return(is.numeric(crs$dataset[[crs$target]]) &&
            length(levels(as.factor(crs$dataset[[crs$target]]))) > 10)
 
@@ -340,14 +340,14 @@ numericTarget <- function()
     return(TRUE)
   else
     return(FALSE)
-  
+
 }
 
 countTarget <- function()
 {
   # 080913 Return TRUE if the target is numeric, and is or looks like
   # an integer (i.e., no decimal points), and is all positive.
-  
+
   return(numericTarget()
          && (is.integer(crs$dataset[[crs$target]])
              || ! any(grep("\\.", crs$dataset[[crs$target]])))
@@ -361,9 +361,9 @@ categoricTarget <- function()
 
   # 091206 Move to not using the auto radio button. 091223 Gerry and
   # Rado want it back
-  
+
   else if (theWidget("data_target_auto_radiobutton")$getActive())
-    
+
     # 080505 TODO we should put 10 as a global CONST
 
     return(is.factor(crs$dataset[[crs$target]]) ||
@@ -438,7 +438,7 @@ noModelAvailable <- function(model, model.class)
 executeModelTab <- function()
 {
   # Perform the actions requested from the Model tab.
-  
+
   # Check for prerequisites: Can not build a model without a dataset.
 
   if (noDatasetLoaded()) return()
@@ -466,7 +466,7 @@ executeModelTab <- function()
                         crs$weights, theWidget("weight_entry")$getText()))
     return()
   }
-    
+
   # Retrieve the target and make sure there is one.
 
   if (length(crs$target) == 0)
@@ -481,7 +481,7 @@ executeModelTab <- function()
   # Check if sampling needs executing.
 
   if (sampleNeedsExecute()) return()
-    
+
   # If the target is a categorical and has more than 2 levels then
   # disable the ROCR and Risk plots, and place a message on the first
   # textview of the Evaluate tab. We make this word wrap here and then
@@ -518,9 +518,9 @@ executeModelTab <- function()
 
   #091112 resetEvaluateTab("all_inactive")
   #resetEvaluateTab(desensitise=FALSE)
-  
+
   # The following work for ada, do they work for the rest?
-  
+
   formula <- paste(crs$target, "~ .")
   included <- "c(crs$input, crs$target)" # 20110102 getIncludedVariables()
   sampling <- not.null(crs$train)
@@ -533,7 +533,7 @@ executeModelTab <- function()
                    if (including) included,
                    if (subsetting) "]",
                    sep="")
-  
+
   # This order of execution should correspond to the order in the
   # GUI as this makes most logical sense to the user.
 
@@ -542,7 +542,7 @@ executeModelTab <- function()
   #-- DECISION TREE MODEL -------------------------------------------------
 
   # TODO: Tidy the logic as with the BOOST code.
-  
+
   if (currentModelTab() == crv$RPART || build.all)
   {
     if (theWidget("rpart_build_radiobutton")$getActive())
@@ -593,36 +593,36 @@ executeModelTab <- function()
                        "one of build/tune/best. This should not be possible."),
                   crv$support.msg)
       return(FALSE)
-      
+
     }
   }
 
   #-- BOOSTED MODEL -------------------------------------------------------
-  
+
   if (currentModelTab() == crv$ADA || (binomialTarget() && build.all))
   {
     # Boosted Model Selected
-    
+
     mname <- commonName(crv$BOOST) # Model name.
-    
+
     setStatusBar(sprintf(Rtxt("Building %s model ..."), mname))
-      
+
     if (not.null(crs$xdf))
     {
       # Microsoft R Boosted Trees
-      
+
       executeModelRxBTrees()
     }
     else if (theWidget("model_boost_ada_radiobutton")$getActive())
     {
       # Adaptive Boosting
-      
+
       executeModelAda(dataset, formula)
     }
     else if (theWidget("model_boost_xgb_radiobutton")$getActive())
     {
       # Extreme Gradient Boosting
-      
+
       executeModelXGB(dataset, formula)
     }
 
@@ -630,7 +630,7 @@ executeModelTab <- function()
     {
       # Model build succeeded so set the status and enable the
       # appropriate buttons in the Model -> Boost tab.
-      
+
       setStatusBar(sprintf(Rtxt("%s model build completed."), mname))
       showModelAdaExists()
       theWidget("evaluate_ada_checkbutton")$setActive(TRUE)
@@ -638,15 +638,15 @@ executeModelTab <- function()
     else
     {
       # Model build failed so simply report this in the status bar.
-      
+
       setStatusBar(sprintf(Rtxt("Building %s model ... failed."), mname))
     }
   }
- 
+
   #-- RANDOM FOREST MODEL -------------------------------------------------
-  
+
   # TODO: Tidy the logic as with the BOOST code.
-  
+
   if (build.all || currentModelTab() == crv$RF)
   {
     setStatusBar(sprintf(Rtxt("Building %s model ..."), commonName(crv$RF)))
@@ -666,7 +666,7 @@ executeModelTab <- function()
     else
       setStatusBar(sprintf(Rtxt("Building %s model ... failed."), commonName(crv$RF)))
   }
-  
+
   if ((categoricTarget() && build.all)
       || currentModelTab() %in% c(crv$SVM, crv$KSVM))
   {
@@ -679,7 +679,7 @@ executeModelTab <- function()
   }
   if (build.all || currentModelTab() == crv$GLM)
   {
-    setStatusBar(sprintf(Rtxt("Building %s model ..."), commonName(crv$GLM)))    
+    setStatusBar(sprintf(Rtxt("Building %s model ..."), commonName(crv$GLM)))
     if (not.null(crs$xdf))
     {
       if (executeModelRxGlm())
@@ -736,7 +736,7 @@ executeModelTab <- function()
       setStatusBar(sprintf(Rtxt("Building %s model ... failed."),
                            commonName(crv$SURVIVAL)))
   }
-  
+
   if (build.all)
   {
     time.taken <- Sys.time()-start.time
@@ -746,7 +746,7 @@ executeModelTab <- function()
   }
 }
 
-rattle.print.summary.multinom <- function (x, digits = x$digits, ...) 
+rattle.print.summary.multinom <- function (x, digits = x$digits, ...)
 {
   # All I want is to add "n=XXX" here!!!
   if (!is.null(cl <- x$call)) {
@@ -756,7 +756,7 @@ rattle.print.summary.multinom <- function (x, digits = x$digits, ...)
     cat(sprintf("\nn=%d\n", nrow(x$weights)))
     cat("\nCoefficients:\n")
     if (x$is.binomial) {
-        print(cbind(Values = x$coefficients, "Std. Err." = x$standard.errors, 
+        print(cbind(Values = x$coefficients, "Std. Err." = x$standard.errors,
             "Value/SE" = x$Wald.ratios), digits = digits)
     }
     else {
@@ -796,12 +796,12 @@ exportRegressionModel <- function()
   ext <- tolower(get.extension(save.name))
 
   # Generate appropriate code.
-  
+
   if (not.null(crs$weights))
     wt <- gsub("^\\(|\\)$", "",
                gsub("crs\\$dataset\\$|\\[.*\\]", "",
                     capture.output(print(crs$weights))))
-  
+
   pmml.cmd <- sprintf("pmml(crs$glm%s%s)",
                       ifelse(length(crs$transforms) > 0,
                              ", transforms=crs$transforms", ""),
@@ -820,20 +820,20 @@ exportRegressionModel <- function()
 
     # 090223 Why is this tolower being used? Under GNU/Linux it is
     # blatantly wrong. Maybe only needed for MS/Widnows
-    
+
     if (isWindows()) save.name <- tolower(save.name)
-    
+
     model.name <- sub("\\.c", "", basename(save.name))
-    
+
     export.cmd <- generateExportPMMLtoC(model.name, save.name, "glm_textview")
-    
+
     appendLog(sprintf(Rtxt("Export %s as a C routine."), commonName(crv$GLM)),
               sprintf('pmml.cmd <- "%s"\n\n', pmml.cmd),
               export.cmd)
 
     eval(parse(text=export.cmd))
   }
-  
+
   setStatusBar(sprintf(Rtxt("The %s file '%s' has been written."),
                        toupper(ext), save.name))
 }
@@ -891,11 +891,11 @@ executeModelSVM <- function()
   # issues around the handling of NAs in kernlab a problem, but
   # essentially I think it is an issue with svm using all variables,
   # so I had to clean up my handling of NAs.
-  
+
   useKernlab <- theWidget("kernlab_radiobutton")$getActive()
 
   TV <- ifelse(useKernlab, "ksvm_textview", "esvm_textview")
-  
+
   startLog(Rtxt("Support vector machine."))
 
   ## Library.
@@ -939,16 +939,16 @@ executeModelSVM <- function()
   krnl <- gsub(").*$", "", gsub("^.*\\(", "",  krnl))
 
   opts <- theWidget("model_svm_options_entry")$getText()
-  
+
   if (krnl == "polydot")
     degree <- theWidget("svm_poly_degree_spinbutton")$getValue()
-  
+
   cweights <- theWidget("svm_classweights_entry")$getText()
-  
+
   ## Included variables.
 
   included <- "c(crs$input, crs$target)" # 20110102 getIncludedVariables()
-  
+
   ## Convenience booleans.
 
   sampling   <- not.null(crs$train)
@@ -978,7 +978,7 @@ executeModelSVM <- function()
                    sep="")
 
   # Replicate rows according to the integer weights variable.
-  
+
   if(not.null(crs$weights))
     dataset <- paste(dataset,
                      "[rep(row.names(",
@@ -988,8 +988,8 @@ executeModelSVM <- function()
                      'as.integer(eval(parse(text = "', crs$weights,
                      '"))[crs$train])),]',
                      sep="")
-  
-  
+
+
   # Build the model.
 
   if (useKernlab)
@@ -1011,7 +1011,7 @@ executeModelSVM <- function()
 
   seed.cmd <- "set.seed(crv$seed)"
   svmCmd <- paste(seed.cmd, svmCmd, sep="\n")
-  
+
   start.time <- Sys.time()
   appendLog(Rtxt("Build a Support Vector Machine model."), svmCmd)
   result <- try(eval(parse(text=svmCmd)), silent=TRUE)
@@ -1063,72 +1063,6 @@ executeModelSVM <- function()
 
 exportSVMModel <- function()
 {
-  # Make sure we have a model first!
-  
-  if (is.null(crs$ksvm))
-  {
-    errorDialog(Rtxt("No SVM model is available. Be sure to build",
-                     "the model before trying to export it! You will need",
-                     "to press the Execute button (F2) in order to build the",
-                     "model."))
-    return()
-  }
-
-  # Require the pmml package
-  
-  lib.cmd <- "library(pmml, quietly=TRUE)"
-  if (! packageIsAvailable("pmml", Rtxt("export SVM model"))) return(FALSE)
-  appendLog(Rtxt("Load the PMML package to export a SVM model."), lib.cmd)
-  # Load the package unless we already have a pmml defined (through source).
-  if (! exists("pmml")) eval(parse(text=lib.cmd))
-  
-  # Obtain filename to write the PMML to.
-  
-  dialog <- RGtk2::gtkFileChooserDialog(Rtxt("Export PMML"), NULL, "save",
-                                 "gtk-cancel", RGtk2::GtkResponseType["cancel"],
-                                 "gtk-save", RGtk2::GtkResponseType["accept"])
-  dialog$setDoOverwriteConfirmation(TRUE)
-
-  if(not.null(crs$dataname))
-    dialog$setCurrentName(paste(get.stem(crs$dataname), "_ksvm.xml", sep=""))
-
-  ff <- RGtk2::gtkFileFilterNew()
-  ff$setName(Rtxt("PMML Files"))
-  ff$addPattern("*.xml")
-  dialog$addFilter(ff)
-
-  ff <- RGtk2::gtkFileFilterNew()
-  ff$setName(Rtxt("All Files"))
-  ff$addPattern("*")
-  dialog$addFilter(ff)
-  
-  if (dialog$run() == RGtk2::GtkResponseType["accept"])
-  {
-    save.name <- dialog$getFilename()
-    dialog$destroy()
-  }
-  else
-  {
-    dialog$destroy()
-    return()
-  }
-
-#  if (get.extension(save.name) == "") save.name <- sprintf("%s.xml", save.name)
-
-  if (not.null(crs$weights))
-    wt <- gsub("^\\(|\\)$", "",
-               gsub("crs\\$dataset\\$|\\[.*\\]", "",
-                    capture.output(print(crs$weights))))
-  
-  pmml.cmd <- paste('pmml(crs$ksvm, dataset=crs$dataset',
-                    if (not.null(crs$weights))
-                    paste(', weights=', wt, sep=""),
-                    ')', sep="")
-  appendLog(Rtxt("Export a SVM model as PMML."),
-            sprintf('saveXML(%s, "%s")', pmml.cmd, save.name))
-  XML::saveXML(eval(parse(text=pmml.cmd)), save.name)
-
-  setStatusBar(sprintf(Rtxt("The PMML file '%s' has been written."), save.name))
 }
 
 ##----------------------------------------------------------------------
@@ -1192,7 +1126,7 @@ exportModelTab <- function()
   # 090812 The Export button has been clicked whilst the Model tab is
   # active. Export the active Model as appropriate (either PMML or C
   # code, if C code export is available.)
-  
+
   if (noDatasetLoaded()) return()
 
   # 090518 Test if each of the variables is exportable. If not (i.e.,
@@ -1216,7 +1150,7 @@ exportModelTab <- function()
   ##                       Rtxt("Do you wish to continue?")))
   ##     return()
   ## }
-  
+
   if (theWidget("rpart_radiobutton")$getActive())
   {
     exportRpartModel()

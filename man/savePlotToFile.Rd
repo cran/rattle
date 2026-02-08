@@ -26,6 +26,6 @@ printPlot(dev.num=dev.cur())
   \item{dev.num}{A device number indicating which device to save.}
 
 }
-\references{Package home page: \url{https://rattle.togaware.com}}
+\references{Package home page: \url{https://togaware.com/projects/rattle/}}
 \author{\email{Graham.Williams@togaware.com}}
 \keyword{hplot}

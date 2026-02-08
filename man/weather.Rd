@@ -9,13 +9,13 @@
   airport in Australia was obtained from the Australian Commonwealth
   Bureau of Meteorology and processed to create this sample dataset for
   illustrating data mining using R and Rattle.
-  
+
   The data has been processed to provide a target variable
   \code{RainTomorrow} (whether there is rain on the following day -
   No/Yes) and a risk variable \code{RISK_MM} (how much rain recorded in
   millimetres). Various transformations were performed on the source
   data. The dataset is quite small and is useful only for repeatable
-  demonstration of various data science operations. 
+  demonstration of various data science operations.
 
   The source dataset is Copyright by the Australian Commonwealth Bureau
   of Meteorology and is provided as part of the rattle package with
@@ -40,12 +40,12 @@
     \item{\code{MaxTemp}}{The maximum temperature in degrees celsius. }
 
     \item{\code{Rainfall}}{The amount of rainfall recorded for the day in mm. }
-    
+
     \item{\code{Evaporation}}{The so-called Class A pan evaporation (mm)
     in the 24 hours to 9am.}
 
     \item{\code{Sunshine}}{The number of hours of bright sunshine in the day.}
-    
+
     \item{\code{WindGustDir}}{The direction of the strongest wind gust
     in the 24 hours to midnight.}
 
@@ -137,20 +137,17 @@
 }
 \source{
 
-  The daily observations are available from
-  \url{https://www.bom.gov.au/climate/data}.  Copyright Commonwealth of
-  Australia 2010, Bureau of Meteorology.
+  The daily observations are available from www.bom.gov.au.  Copyright
+  Commonwealth of Australia 2010, Bureau of Meteorology.
 
-  Definitions adapted from
-  \url{https://www.bom.gov.au/climate/dwo/IDCJDW0000.shtml}
-  
+  Definitions adapted from www.bom.gov.au.
+
 }
 
 \references{
 
-  Package home page: \url{https://rattle.togaware.com}. Data source:
-  \url{https://www.bom.gov.au/climate/dwo/} and
-  \url{https://www.bom.gov.au/climate/data}.
+  Package home page: \url{https://togaware.com/projects/rattle/}. Data source:
+  www.bom.gov.au.
 
 }
 

@@ -1,12 +1,18 @@
-Please visit https://bitbucket.org/kayontoga/rattle/commits/ for the
+Please visit https://github.com/gjwgit/rattlev5/commits/ for the
 definitive list of changes. This NEWS file will only update major
 releases going forward.
+
+rattle 5.5.3 20260207 Graham.Williams@togaware.com
+
+  * Required CRAN lint fixes.
+
+  * Add V6 support functions.
 
 rattle 5.3.6 20200501 Graham.Williams@togaware.com
 
   * Bug fixes: predict for xgboost; ignore NA in checking for binary
     class; varImp log handling.
-  
+
 rattle 5.3.1 20191123 Graham.Williams@togaware.com
 
   * Convert datasets to be tibbles, moving towards tidyverse
@@ -92,7 +98,7 @@ rattle 5.1.5 2018-07-01 17:31:22 Graham.Williams@togaware.com
 
   * Remove Report button until updated to newer
     functionality. Reported by Bob Muenchen.
-  
+
 rattle 5.1.4 2018-05-22 07:05:18 Graham.Williams@togaware.com
 
   * Bug fix: Remove na.omit from the calls to generate stats for a
@@ -175,7 +181,7 @@ rattle 5.0.11 2017-05-26 17:43:01 Graham.Williams@togaware.com
 
   * RGtk2 version 2.20.33 released and caused some issues with
     Rattle. Heuristic test of libglade/GtkBuilder began failing
-    and retval no longer used for obtaining returned values. 
+    and retval no longer used for obtaining returned values.
 
 rattle 5.0.10 2017-04-30 13:57:16 Graham.Williams@togaware.com
 
@@ -210,7 +216,7 @@ rattle 5.0.5 Graham.Williams@togaware.com 2017-02-15 07:22:43 Graham Williams
 
   * Bug fix for sample XDF dataset - if smaller the
     crv$xdf_preview then load the whole dataset into memory.
-       
+
   * ggVarImp now has n= option for the top n variables. Also
     supports xgb.Booster models from xgboost.
 
@@ -240,7 +246,7 @@ rattle 5.0.2 Graham.Williams@togaware.com 2016-10-02 15:06:52
   * Add a subtitle to riskchart().
 
 rattle 5.0.1 Graham.Williams@togaware.com
-       
+
   * Begin exposing :: prefix in the log tab. It's educational and
     self documenting.
 
@@ -267,7 +273,7 @@ rattle 4.1.8 Graham.Williams@togaware.com 2016-06-24 20:36:51
        * Add transparency to ggpairs plot. Reported by Eugene
          Dubossarsky.
 
-rattle 4.1.7 Graham.Williams@togaware.com 2016-06-21 21:02:13 
+rattle 4.1.7 Graham.Williams@togaware.com 2016-06-21 21:02:13
 
        * Bug fix for Benfords when the target is numeric. An empty
          Group By will use the target variable to stratify. Reported
@@ -322,7 +328,7 @@ rattle 4.1.0 Graham.Williams@togaware.com 2016-01-26 11:12:01
        * Remove grid from ggpairs plot and fine tune for presentation.
 
 rattle 4.0.0 Graham.Williams@togaware.com 2015-09-21 06:00:49
-       
+
        * Migrate hosting of the package to Bitbucket:
          https://bitbucket.org/kayontoga/rattle.
 
@@ -1131,7 +1137,7 @@ rattle (2.5.41) unstable; urgency=low
 rattle (2.5.40) unstable; urgency=low
 
   * Conditionalise useGtkBuilder:
-    if windows and R before 2.12.0 then libglade 
+    if windows and R before 2.12.0 then libglade
     if unix and R 2.12.0 then libglade for now (RGtk2 update needed?)
     all else use GtkBuilder
 

@@ -26,6 +26,6 @@ rattle.print.summary.multinom(x, digits = x$digits, ...)
   the print.summary.multinom function to add the number of entities!
 
 }
-\references{Package home page: \url{https://rattle.togaware.com}}
+\references{Package home page: \url{https://togaware.com/projects/rattle/}}
 \author{\email{Graham.Williams@togaware.com}}
 

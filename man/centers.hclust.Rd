@@ -29,6 +29,6 @@ centers.hclust(x, object, nclust=10, use.median=FALSE)
   median) of each resulting cluster.
 
 }
-\references{Package home page: \url{https://rattle.togaware.com}}
+\references{Package home page: \url{https://togaware.com/projects/rattle/}}
 \author{Daniele Medri and \email{Graham.Williams@togaware.com}}
 \keyword{cluster}

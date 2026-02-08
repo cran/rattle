@@ -307,6 +307,6 @@
 \title{Interal Rattle user interface callbacks.}
 \description{These are exported from the package so that the GUI can
   access the callbacks. They should otherwise be ignored.}
-\references{Package home page: \url{https://rattle.togaware.com}}
+\references{Package home page: \url{https://togaware.com/projects/rattle/}}
 \author{\email{Graham.Williams@togaware.com}}
 \keyword{internal}

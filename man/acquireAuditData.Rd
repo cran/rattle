@@ -10,7 +10,7 @@
   function retrieves the source data
   \url{https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data}
   and then transforms the data in a variety of ways.
-  
+
 }
 
 \usage{
@@ -21,7 +21,7 @@ acquireAuditData(write.to.file=FALSE)
 
   \item{write.to.file}{Whether to generate a colleciton of files based
     on the data. The files generated include: audit.csv, audit.Rdata,
-    audit.arf, and audit\_missing.csv}
+    audit.arf, and audit_missing.csv}
 
 }
 
@@ -40,7 +40,7 @@ acquireAuditData(write.to.file=FALSE)
 
 }
 
-\references{Package home page: \url{https://rattle.togaware.com}}
+\references{Package home page: \url{https://togaware.com/projects/rattle/}}
 
 \author{\email{Graham.Williams@togaware.com}}
 

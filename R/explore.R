@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <Wednesday 2020-08-19 19:52:10 AEST Graham Williams>
+# Time-stamp: <Sunday 2026-02-08 14:37:25 +1100 Graham Williams>
 #
 # Implement EXPLORE functionality.
 #
@@ -25,11 +25,11 @@ resetExploreTab <- function(new.dataset=TRUE)
 {
   cbox1 <- theWidget("pairs_color_combobox")
   cbox1$setSensitive(TRUE)
-  
+
   if (new.dataset)
   {
     vl <- getCategoricVariables(type="names", include.target=TRUE)
-    
+
     if (length(vl))
     {
       cbox1$getModel()$clear()
@@ -39,14 +39,14 @@ resetExploreTab <- function(new.dataset=TRUE)
         cbox1$setActive(length(vl)) # by construction we know is the last one
     }
   }
-}  
+}
 
 ########################################################################
 # EXECUTION
 
 executeExploreTab <- function()
 {
-  
+
   # Can not explore the data if there is no dataset.
 
   if (noDatasetLoaded()) return()
@@ -54,7 +54,7 @@ executeExploreTab <- function()
   # 080315 Don't proceed if the variable selections have changed. For
   # example, two targets might have been selected, resulting in a
   # popup, but not yet resolved, and so many of the plots will fail.
-  
+
   if (variablesHaveChanged(Rtxt("building a model"))) return()
 
   # Ensure Sample does not require executing.
@@ -80,13 +80,13 @@ executeExploreTab <- function()
 
   avdataset <- sprintf("%s[%s,]", "crs$dataset",
                      ifelse(sampling, "crs$train", ""))
-  
+
   vars <- "crs$numeric" # 20110102 getIncludedVariables(numonly=TRUE)
-  
-  
+
+
   # TODO 060606 The question here is whether NULL means all variables
   # or means none found?
-  
+
   #if (is.null(vars))
   #  ndataset <- NULL
   #else
@@ -100,9 +100,9 @@ executeExploreTab <- function()
   nidataset <- sprintf("%s[%s, %s]", "crs$dataset",
                        ifelse(sampling, "crs$train", ""),
                        ifelse(is.null(vars),"",vars))
-  
+
   # Dispatch
-  
+
   if (theWidget("summary_radiobutton")$getActive())
     executeExploreSummary(dataset)
   else if (theWidget("explore_distr_radiobutton")$getActive())
@@ -147,7 +147,7 @@ executeExploreSummary <- function(dataset)
   TV <- "summary_textview"
 
   # Get the current state of the relevant buttons.
-  
+
   use.sample  <- theWidget("data_sample_checkbutton")$getActive()
   do.summary  <- theWidget("summary_checkbutton")$getActive()
   do.describe <- theWidget("describe_checkbutton")$getActive()
@@ -158,7 +158,7 @@ executeExploreSummary <- function(dataset)
   do.crosstab <- theWidget("explore_crosstab_checkbutton")$getActive()
 
   # Make sure something has been selected.
-  
+
   if (! (do.summary || do.describe || do.basics ||
          do.kurtosis || do.skewness || do.missing ||
          do.crosstab))
@@ -167,11 +167,11 @@ executeExploreSummary <- function(dataset)
                     "Please click at least one checkbox."))
     return()
   }
-    
+
   # Other useful information:
   #   is there a sample
   #   list of numeric variables
-  
+
   sampling  <- not.null(crs$train)
 
   numeric.cmd <- sprintf(paste("seq(1,ncol(%s))",
@@ -180,7 +180,7 @@ executeExploreSummary <- function(dataset)
   nvars <- simplifyNumberList(eval(parse(text=numeric.cmd)))
 
   # Start the trace to the log.
-  
+
   startLog()
   theWidget(TV)$setWrapMode("none")
   resetTextview(TV)
@@ -191,11 +191,11 @@ executeExploreSummary <- function(dataset)
   {
     # Find the number of observations with any missing value for the
     # non-ignored variables.
-    
+
     missing.cmd <- sprintf('length(attr((na.omit(%s)), "na.action"))', dataset)
     result <- try(missing <- eval(parse(text=missing.cmd)), silent=TRUE)
     if (inherits(result, "try-error")) missing <- 0
-    
+
     # Use Hmisc's contents to summarise the data frame, if Hmisc is
     # available.
 
@@ -212,7 +212,7 @@ executeExploreSummary <- function(dataset)
       summary.cmd <- sprintf("summary(%s)", "crs$xdf.split[[1]]")
     else
       summary.cmd <- sprintf("summary(%s)", dataset)
-    
+
     appendLog(Rtxt("Obtain a summary of the dataset."), contents.cmd, "\n", summary.cmd)
     appendTextview(TV,
                    Rtxt("Below we summarise the dataset."), "\n",
@@ -239,13 +239,13 @@ executeExploreSummary <- function(dataset)
   if (do.describe)
   {
     ## A different summary, using Hmisc's describe.
-  
+
     if (packageIsAvailable("Hmisc", Rtxt("describe the data")))
     {
       lib.cmd <- "library(Hmisc, quietly=TRUE)"
       appendLog(packageProvides("Hmisc", "describe"), lib.cmd)
       eval(parse(text=lib.cmd))
-      
+
       describe.cmd <- sprintf("describe(%s)", dataset)
       appendLog(Rtxt("Generate a description of the dataset."), describe.cmd)
       appendTextview(TV,
@@ -260,11 +260,11 @@ executeExploreSummary <- function(dataset)
   if (do.basics || do.kurtosis || do.skewness)
   {
     ## These all require the fBasics library, so check only once.
-    
+
     if (packageIsAvailable("fBasics", Rtxt("calculate basic stats, skew and kurtosis")))
     {
       lib.cmd <- "library(fBasics, quietly=TRUE)"
-      
+
       if (do.basics)
       {
         appendLog(packageProvides("basicStats", "fBasics"), lib.cmd)
@@ -278,7 +278,7 @@ executeExploreSummary <- function(dataset)
                        "\n\n",
                        collectOutput(basics.cmd, TRUE))
       }
-      
+
       if (do.kurtosis)
       {
         appendLog(packageProvides("kurtosis", "fBasics"), lib.cmd)
@@ -313,11 +313,11 @@ executeExploreSummary <- function(dataset)
       }
     }
   }
-      
+
   if (do.missing)
   {
     ## Add in a summary of the missing values.
-  
+
     if (packageIsAvailable("mice", Rtxt("summarise missing values")))
     {
       ## Load the mice package into the library
@@ -325,14 +325,14 @@ executeExploreSummary <- function(dataset)
       lib.cmd <- "library(mice, quietly=TRUE)"
       appendLog(packageProvides("mice", "md.pattern"), lib.cmd)
       eval(parse(text=lib.cmd))
-      
+
       ## Variables to be included, as a string of indicies.
-  
+
       included <- "c(crs$input, crs$target)" # 20110102 getIncludedVariables()
       including <- not.null(included)
 
       ## Add radio buttons to choose: Full, Train, Test dataset to summarise.
-  
+
       ## Build the summary command
 
       summary.cmd <- paste("md.pattern(crs$dataset[,",
@@ -371,12 +371,12 @@ executeExploreSummary <- function(dataset)
                      Rtxt("Cross tabulations:"),
                      "\n\n",
                      collectOutput(crosstab.cmd, TRUE))
-      
+
     }
   }
-  
+
   # Report completion to the user through the Status Bar.
-  
+
   setStatusBar(Rtxt("Data summary generated."))
 }
 
@@ -413,10 +413,10 @@ calcInitialDigitDistr <- function(l,
   # Ignore all zeros.
 
   l <- l[l!=0]
-  
+
   # If we don't have any numbers in the distrbution, return a list of
   # zeros.
-  
+
   if (length(l) == 0)
   {
     if (digit == 1)
@@ -434,16 +434,16 @@ calcInitialDigitDistr <- function(l,
 
   # Note that we remove decimal points (i.e., the decimal dot itself,
   # not any digits) from real numbers.
-  
+
   ds <- data.frame(digit=as.numeric(substr(gsub("\\.", "",
                      as.character(abs(l))), digit, digit+len-1)),
                    value=1)
 #[071201  ds <- data.frame(digit=as.numeric(gsub("(.).*", "\\1",
 #                     as.character(abs(l)))),
 #                   value=1)
-  
+
   # Ignore any zeros
-  
+
   if (digit == 1) ds <- ds[ds$digit!=0,]
 
   # Add in any mising digits as value=0
@@ -473,16 +473,16 @@ calcInitialDigitDistr <- function(l,
 ## {
 ##   if (! packageIsAvailable("gplots", Rtxt("plot Benford's law"))) return()
 ##   library(gplots, quietly=TRUE)
-  
+
 ##   actual <- calcInitialDigitDistr(l)
-  
+
 ##   x  <- 1:9
 ##   expect <- log10(1 + 1/x)
-  
+
 ##   nds <- t(as.matrix(data.frame(expect=expect, actual=actual)))
 
 ##   ttl <- genPlotTitleCmd(Rtxt("Benford's Law"), vector=TRUE)
-  
+
 ##   barplot2(nds, beside=TRUE, main=ttl[1], sub=ttl[2],
 ##            xlab=Rtxt("Initial Digit"), ylab=Rtxt("Probability"))
 ## }
@@ -499,12 +499,12 @@ digitDistr <- function(x, digit=1, len=1, name="freq")
   # number of digits to analyse.
 
   # Ignore zeros.
-  
+
   x <- x[x!=0]
-  
+
   # If we don't have any numbers in the distrbution, return a list of
   # zeros.
-  
+
   if (!length(x))
   {
     if (digit == 1)
@@ -515,13 +515,13 @@ digitDistr <- function(x, digit=1, len=1, name="freq")
   else
   {
     # Remove decimal points, retaining only digits.
-  
+
     x <- data.frame(digit=as.numeric(substr(gsub("\\.", "",
                       as.character(abs(x))), digit, digit+len-1)),
                     value=1)
-    
+
     # Add in any mising digits as value=0
-    
+
     if (len == 1)
       missing <- setdiff(ifelse(digit>1,0,1):9, unique(x[,1]))
     else
@@ -529,10 +529,10 @@ digitDistr <- function(x, digit=1, len=1, name="freq")
                                             rep(0:9, ifelse(digit>1, 10, 9)),
                                             sep="")),
                          as.character(unique(x[,1])))
-    
+
     if (length(missing) > 0)
       x <- rbind(x, data.frame(digit=missing, value=0))
-    
+
     x <- plyr::ddply(x, plyr::.(digit), function(y) sum(y$value))
     x$V1 <- x$V1/sum(x$V1)
   }
@@ -545,7 +545,7 @@ benfordDistr <- function(digit, len=1)
 {
   if (digit != 1 && len != 1)
     stop("len must be 1 for other than first digit")
-  
+
   if (digit == 1)
   {
     digits <- seq(10^(len-1), (10^len)-1)
@@ -553,13 +553,13 @@ benfordDistr <- function(digit, len=1)
   }
   else
   {
-    digits <- 0:9    
+    digits <- 0:9
     expect <- unlist(lapply(digits, function(x)
                             sum(log10(1 + 1/(10*(seq(10^(digit-2),
                                                      (10^(digit-1))-1))
                                              + x)))))
   }
-  
+
   result <- data.frame(digit=digits, Benford=expect)
   return(result)
 }
@@ -568,7 +568,7 @@ plotDigitFreq <- function(ds)
 {
   dsm <- reshape::melt(ds, id.vars="digit")
   len <- nchar(as.character(ds[1,1]))
-  
+
   p <- ggplot2::ggplot(dsm, ggplot2::aes_string(x="digit",
                                                 y="value",
                                                 colour="variable",
@@ -584,17 +584,17 @@ plotDigitFreq <- function(ds)
     ggplot2::theme(legend.title=ggplot2::element_blank()) +
     ggplot2::scale_fill_brewer(palette=rattlePalette) +
     ggplot2::scale_colour_brewer(palette=rattlePalette)
-  
+
   return(p)
 }
 
 executeBenfordPlot2 <- function(dname, benplots, target, targets, stratify, sampling, pmax)
 {
   # Ceck prerequisite packages.
-  
+
   if (! packageIsAvailable("ggplot2", Rtxt("plot a Benford's distribution"))) return(FALSE)
   if (! packageIsAvailable("reshape", Rtxt("arrange data for Benford's distribution"))) return(FALSE)
-  
+
   startLog("Benford's Law")
 
   lib.cmd <- "library(ggplot2, quietly=TRUE)"
@@ -618,11 +618,11 @@ executeBenfordPlot2 <- function(dname, benplots, target, targets, stratify, samp
                      "please choose 1 as the starting digit."))
     return()
   }
-  
+
   for (var in benplots)
   {
     newPlot()
-    
+
     # We don't actually eval this command - just for information in
     # the Log.
     initialise.cmd <- paste(ifelse(length(target),
@@ -654,9 +654,9 @@ executeBenfordPlot2 <- function(dname, benplots, target, targets, stratify, samp
                       'print(p)', sep="")
     appendLog("Plot the digital distribution", plot.cmd)
     eval(parse(text=plot.cmd))
-  }    
+  }
 }
-  
+
 
 if (FALSE)
 {
@@ -720,12 +720,12 @@ executeExplorePlot <- function(dataset,
 
   # 150916 Move to allowing the stratification to be specified here
   # rather than relying on going back to the data tab to change.
-    
+
   target <- theWidget("pairs_color_combobox")$getActiveText()
 
   # 160919 If the target is " " then perhaps we are saying no group
   # by?
-    
+
   if (length(target) && target == " ") target <- NULL # crs$target
 
   # Has the advanced graphics (ggplot2) option be enabled?
@@ -747,10 +747,10 @@ executeExplorePlot <- function(dataset,
     errorDialog(Rtxt("The pairs plot requires at least two variables."))
     return()
   }
-  
+
   total.plots <- nboxplots + nhisplots + length(cumplots) +
     nbenplots + nbarplots + ndotplots + nmosplots + npaiplots
-  
+
   pmax <- theWidget("plots_per_page_spinbutton")$getValue()
   pcnt <- 0
 
@@ -773,13 +773,13 @@ executeExplorePlot <- function(dataset,
 
   # For now, let's plot always, since I was wondering why the Benford
   # plot was not showing all the targets!
-  
+
 ##   if (length(targets) > 10)
 ##   {
 ##     target <- NULL
 ##     targets <- NULL
 ##   }
-  
+
   # 091011 Check if there are mosaic plots requested but there is not
   # target - notify that the mosaic plots will not be plotted.
 
@@ -794,9 +794,9 @@ executeExplorePlot <- function(dataset,
 
   # Don't waste real estate if we are plotting less than number
   # allowed per page.
-  
+
   if (total.plots < pmax) pmax <- total.plots
-  
+
   # Check for sampling.
 
   if (is.null(sampling))
@@ -808,7 +808,7 @@ executeExplorePlot <- function(dataset,
   # Record other options.
 
   annotate <- theWidget("explot_annotate_checkbutton")$getActive()
-  
+
   # Split the data, first for all values.
 
   bind.cmd <- sprintf('rbind(data.frame(dat=%s[,"%%s"], grp="All")', dataset)
@@ -817,15 +817,15 @@ executeExplorePlot <- function(dataset,
   {
     bind.cmd <- sprintf("%s,\n            data.frame(dat=%s",
                         bind.cmd, dataset)
-    
+
     bind.cmd <- sprintf('%s[crs$dataset%s$%s=="%s","%%s"], grp="%s")',
                         bind.cmd,
                         ifelse(sampling, "[crs$train,]", ""),
                         target, targets[i], targets[i])
   }
-  
+
   # Finish off the command to create the dataset for plotting.
-  
+
   bind.cmd <- sprintf("%s)", bind.cmd)
 
   # Build a list of generic datasets. This describes how to get the
@@ -838,7 +838,7 @@ executeExplorePlot <- function(dataset,
   #
   # or if sampling is enabled:
   #
-  # All = crs$dataset[crs$train,]$%s  
+  # All = crs$dataset[crs$train,]$%s
   #
   # For each level:
   #
@@ -869,7 +869,7 @@ executeExplorePlot <- function(dataset,
   # looking code.
 
   new.dataset <- gsub("crs\\$", "", dataset)
-  
+
   # Generate a plot for each variable. If there are too many
   # variables, ask the user if we want to continue.
 
@@ -886,7 +886,7 @@ executeExplorePlot <- function(dataset,
   #---------------------------------------------------------------------
   # 091005 If no plots are specified then generate a matrix of scatter
   # plots following the example in the pairs function.
-  
+
   if (total.plots == 0)
     if (advanced.graphics)
       displayPairsPlot2(dataset)
@@ -920,12 +920,12 @@ executeExplorePlot <- function(dataset,
       # https://epub.wu-wien.ac.at/dyn/virlib/wp/eng/showentry?ID=epub-wu-01_c87
       # and
       # https://statmath.wu.ac.at/~zeileis/papers/Zeileis+Hornik+Murrell-2009.pdf
-    
+
     if (packageIsAvailable("colorspace"))
       cols <- "col=colorspace::rainbow_hcl(%d)," # 090524, start = 270, end = 150),"
     else
       cols <- "col=rainbow(%d),"
-    
+
     plot.cmd <- paste('bp <<- boxplot(formula=dat ~ grp, data=ds,',
                       sprintf(cols, length(targets)+1),
                       ifelse(is.null(targets), "",
@@ -935,7 +935,7 @@ executeExplorePlot <- function(dataset,
                       'notch=TRUE)')
 
     # Based on an example from Jim Holtman on r-help 070406.
-    
+
     annotate.cmd <- paste("for (i in seq(ncol(bp$stats)))",
                           "{text(x=i,",
                           "y=bp$stats[,i] - 0.02*(max(ds$dat, na.rm=TRUE)",
@@ -943,9 +943,9 @@ executeExplorePlot <- function(dataset,
                           "labels=bp$stats[,i])}",
                           "\nif (length(bp$out))",
                           "text(x=bp$group+0.1, y=bp$out, labels=bp$out, cex=0.5)")
-    
+
     lib.cmd <- "library(doBy, quietly=TRUE)"
-    
+
     # TODO: Try using "by" instead of needing another package to
     # provide summaryBy. Also, the new version of doBy (061006) seems
     # to be outputting extra status information that makes the R
@@ -953,17 +953,17 @@ executeExplorePlot <- function(dataset,
     # disappear again - it looks like debugging information!
     #
     # status:
-    # lhsvar     : dat 
-    # rhsvar     : grp 
-    # idvar      :  
-    # fun.names  : mean 
-    # varPrefix  : mean 
-    # newNames   : mean.dat 
+    # lhsvar     : dat
+    # rhsvar     : grp
+    # idvar      :
+    # fun.names  : mean
+    # varPrefix  : mean
+    # newNames   : mean.dat
 
     # Only use summaryBy if there is a target, because it fails if
     # there is actually only one group in the data. Might be a new
     # bug in the doBy package.
-    
+
     if (length(targets) > 1)
       mean.cmd <- paste(sprintf("points(1:%d,", length(targets)+1),
                         "summaryBy(dat ~ grp, data=ds,",
@@ -973,7 +973,7 @@ executeExplorePlot <- function(dataset,
       mean.cmd <- paste(sprintf("points(1:%d,", length(targets)+1),
                         "mean(ds$dat, na.rm=TRUE),",
                         "pch=8)")
-    
+
     for (s in seq_len(nboxplots))
     {
 
@@ -999,7 +999,7 @@ executeExplorePlot <- function(dataset,
       eval(parse(text=this.plot.cmd))
 
       # Add a value for the mean to each boxplot.
-      
+
       if (packageIsAvailable("doBy", Rtxt("add means to box plots")))
       {
         appendLog(packageProvides("doBy", "summaryBy"), lib.cmd)
@@ -1008,20 +1008,20 @@ executeExplorePlot <- function(dataset,
         appendLog(Rtxt("Calculate the group means."), mean.cmd)
         eval(parse(text=mean.cmd))
       }
-        
+
       # Optionally include annotations.
 
       if (annotate)
       {
         appendLog(Rtxt("Add annotations to the plot."), annotate.cmd)
         eval(parse(text=annotate.cmd))
-      }        
-      
+      }
+
       # Add a title to the plot.
-      
+
       title.cmd <- genPlotTitleCmd(generateTitleText(boxplots[s], target, sampling,
                                                      stratify && length(targets)))
-      
+
       appendLog(Rtxt("Add a title to the plot."), title.cmd)
       eval(parse(text=title.cmd))
     }
@@ -1029,7 +1029,7 @@ executeExplorePlot <- function(dataset,
   }
 
   ##--------------------------------------------------------------------
-  
+
   if (nhisplots > 0)
   {
     # Plot a histogram for numeric data. 090523 Bob Muenchen suggested
@@ -1039,7 +1039,7 @@ executeExplorePlot <- function(dataset,
     # ensured the y limits are calcuated in case the density plot is
     # higher than the histogram. The current colours are not yet right
     # though. For binary data the distinction between the blue and
-    # green is very difficult to see for thin lines. 
+    # green is very difficult to see for thin lines.
 
     if (advanced.graphics &&
         packageIsAvailable("ggplot2", Rtxt("plot using ggplot2")) &&
@@ -1049,7 +1049,7 @@ executeExplorePlot <- function(dataset,
     }
     else
     {
-    
+
     if (packageIsAvailable("colorspace")) # 090524 Why vcd? comes from colorspace....
       # cols <- "col=rainbow_hcl(%s, start = 270, end = 150)"
       cols <- "col=colorspace::rainbow_hcl(%s)"# 090524, start = 0, end = 150)"
@@ -1082,7 +1082,7 @@ executeExplorePlot <- function(dataset,
     ## rs <- max(hs$counts)/max(dens$y)
     ## maxy <- max(dens$y*rs)
     ## print(maxy)
-    
+
     ## if (length(targets))
     ##   for (i in 1:length(targets))
     ##   {
@@ -1101,7 +1101,7 @@ executeExplorePlot <- function(dataset,
     # does not work for large n. Also see
     # https://www.math.leidenuniv.nl/~gill/teaching/statistics/histogram.pdf
     # So let's use the Freedman and Diaconis approach.
-    
+
     plot.cmd <- paste('hs <- hist(ds[ds$grp=="All",1], main="", xlab="%s", ',
                       sprintf('ylab="%s", ', Rtxt("Frequency")),
                       # cols,
@@ -1134,7 +1134,7 @@ executeExplorePlot <- function(dataset,
 
     # 110213 Remove colour from the rug plot as it is misleading when
     # values are identical and there is a lot of overplotting.
-    
+
 #    if (stratify && length(targets))
 #    {
 #      rug.cmd <- paste(sprintf('rug(ds[ds$grp=="%s", 1], %s[%s])', targets,
@@ -1168,7 +1168,7 @@ executeExplorePlot <- function(dataset,
     for (s in seq_len(nhisplots))
     {
       startLog(Rtxt("Plot a Histogram"))
-      
+
       cmd <- paste("sprintf(bind.cmd,",
                    paste(paste('"', rep(hisplots[s], length(targets)+1), '"',
                                sep=""),
@@ -1182,12 +1182,12 @@ executeExplorePlot <- function(dataset,
       ds <- eval(parse(text=cmd))
 
       # 090524 Perform the max y calculation here for each plot
-      
+
       hs <- hist(ds[ds$grp=="All",1], breaks="fd", plot=FALSE)
       dens <- density(ds[ds$grp=="All",1], na.rm=TRUE)
       rs <- max(hs$counts)/max(dens$y)
       maxy <- max(dens$y*rs)
-      
+
       if (length(targets))
         for (i in 1:length(targets))
         {
@@ -1197,7 +1197,7 @@ executeExplorePlot <- function(dataset,
 
       if (newplot && pcnt %% pmax == 0) newPlot(pmax)
       pcnt <- pcnt + 1
-      
+
       # Determine whether to plot a histogram of the numeric data or
       # as a factor (is.integer and unique <= 20).
 
@@ -1207,7 +1207,7 @@ executeExplorePlot <- function(dataset,
 
       # 080925 Determine the likely number of bars for the plot. This
       # does not always seem to get it correct.
-      
+
       nbars <- nclass.FD(na.omit(ds[ds$grp=="All",1]))
 
       if (length(dsuni) <= 20 && dsmax - dsmin <= 20)
@@ -1249,7 +1249,7 @@ executeExplorePlot <- function(dataset,
           eval(parse(text=legend.cmd))
         }
       }
-      
+
       title.cmd <- genPlotTitleCmd(generateTitleText(hisplots[s], target, sampling,
                                                      stratify && length(targets)))
       appendLog(Rtxt("Add a title to the plot."), title.cmd)
@@ -1257,9 +1257,9 @@ executeExplorePlot <- function(dataset,
     }
   }
   }
-  
+
   #---------------------------------------------------------------------
-  
+
   if (not.null(cumplots))
   {
     # Cumulative plot for numeric data.
@@ -1267,7 +1267,7 @@ executeExplorePlot <- function(dataset,
     nplots <- length(cumplots)
 
     lib.cmd <- "library(Hmisc, quietly=TRUE)"
-    
+
     for (s in seq_len(nplots))
     {
       startLog()
@@ -1276,7 +1276,7 @@ executeExplorePlot <- function(dataset,
         col <- colorspace::rainbow_hcl(length(targets)+1) #, start = 30, end = 300)
       else
         col <- rainbow(length(targets)+1)
-      
+
       plot.cmd <- paste('Ecdf(ds[ds$grp=="All",1],',
                         sprintf('col="%s",', col[1]),
                         'xlab="%s", lwd=2,',
@@ -1304,7 +1304,7 @@ executeExplorePlot <- function(dataset,
                              paste(sprintf('"%s"', c("All", targets)),
                                    collapse=","),
                              length(targets)+1, length(targets)+1)
-        
+
       cmd <- paste("sprintf(bind.cmd,",
                     paste(paste('"', rep(cumplots[s], length(targets)+1), '"',
                                sep=""),
@@ -1354,7 +1354,7 @@ executeExplorePlot <- function(dataset,
     }
     else
     {
-      
+
     barbutton <- theWidget("benford_bars_checkbutton")$getActive()
     absbutton <- theWidget("benford_abs_radiobutton")$getActive()
     posbutton <- theWidget("benford_pos_radiobutton")$getActive()
@@ -1368,15 +1368,15 @@ executeExplorePlot <- function(dataset,
                        "Try Advanced Graphics option under Settings."))
       return()
     }
-    
-    
+
+
     benopts <- sprintf(', sp="%s", digit=%d',
                        ifelse(absbutton, "none",
                               ifelse(posbutton, "positive", "negative")),
                        digspin)
-    
+
     # Using barplot2 from gplots
-    
+
     lib.cmd <- "library(gplots, quietly=TRUE)"
 
     if (packageIsAvailable("colorspace"))
@@ -1392,7 +1392,7 @@ executeExplorePlot <- function(dataset,
       else
         expect.cmd <- paste('unlist(lapply(10:99, function(x) log10(1 + 1/x)))')
     # see https://www.mathpages.com/home/kmath302/kmath302.htm
-    else if (digspin > 1) 
+    else if (digspin > 1)
       expect.cmd <- sprintf(paste('unlist(lapply(0:9, function(x) {sum(log10',
                                   '(1 + 1/(10*(seq(10^(%d-2), ',
                                   '(10^(%d-1))-1)) + x)))}))'),
@@ -1445,10 +1445,10 @@ executeExplorePlot <- function(dataset,
     if (packageIsAvailable("gplots", Rtxt("plot a bar chart for Benford's Law")))
     {
       startLog("Benford's Law")
-      
+
       appendLog(packageProvides("gplots", "barplot2"), lib.cmd)
       eval(parse(text=lib.cmd))
-      
+
       appendLog(Rtxt("Generate the expected distribution for Benford's Law."),
                paste("expect <-", expect.cmd))
       expect <- eval(parse(text=expect.cmd))
@@ -1471,7 +1471,7 @@ executeExplorePlot <- function(dataset,
                          sep="")
         for (s in seq_len(nbenplots))
         {
-          new.bind.cmd <- paste(new.bind.cmd, 
+          new.bind.cmd <- paste(new.bind.cmd,
                            sprintf(bc, benplots[s], benplots[s]),
                            ",\n     ",
                            sep="")
@@ -1511,7 +1511,7 @@ executeExplorePlot <- function(dataset,
         pcnt <- pcnt + 1
 
         par(xpd=TRUE)
-        
+
         appendLog(Rtxt("Display the plot."), plot.cmd)
         eval(parse(text=plot.cmd))
 
@@ -1528,7 +1528,7 @@ executeExplorePlot <- function(dataset,
             title.txt <- sprintf(Rtxt("Benford's Law\nby %s"), target)
           else
             title.txt <- Rtxt("Benford's Law")
-          
+
         title.cmd <- genPlotTitleCmd(title.txt)
 
         appendLog(Rtxt("Add a title to the plot."), title.cmd)
@@ -1538,7 +1538,7 @@ executeExplorePlot <- function(dataset,
       {
         # Plot multiple graphs since we have a target, and will split
         # each graph according to the target values.
-        
+
         for (s in seq_len(nbenplots))
         {
           #
@@ -1546,11 +1546,11 @@ executeExplorePlot <- function(dataset,
           #
           sizes.cmd <- paste('sizes <<- (function(x)(paste(names(x), " (",',
                              ' x, ")", sep="")))(by(ds, ds$grp, nrow))')
-          
+
           data.cmd <- paste('t(as.matrix(data.frame(expect=expect,\n    ',
                            'All=calcInitialDigitDistr(ds[ds$grp=="All", 1]',
                             benopts, ')')
-        
+
           if (not.null(targets))
             for (t in seq_along(targets))
               data.cmd <- paste(data.cmd, ",\n     ",
@@ -1586,13 +1586,13 @@ executeExplorePlot <- function(dataset,
               legend.cmd <- paste('legend("topright", c("', Rtxt("Benford"),
                                   '", "', Rtxt("All"), '"), bty="n", ',
                                   'fill=', sprintf(cols, 2), sep="")
-          
+
           cmd <- paste("sprintf(bind.cmd,",
                        paste(paste('"', rep(benplots[s], length(targets)+1),
                                    '"', sep=""), collapse=","),
                        ")")
           cmd <- eval(parse(text=cmd))
-          
+
           appendLog(sprintf(Rtxt("Generate the data for the plot of the variable '%s'."),
                             benplots[s]),
                    paste("ds <-", cmd))
@@ -1601,7 +1601,7 @@ executeExplorePlot <- function(dataset,
           appendLog(Rtxt("Generate legend entries with subset sizes."),
                     gsub("<<-", "<-", sizes.cmd))
           eval(parse(text=sizes.cmd))
-          
+
           appendLog(Rtxt("Generate the frequency of the initial digits."),
                    paste("ds <-", data.cmd))
           ds <- eval(parse(text=data.cmd))
@@ -1609,21 +1609,21 @@ executeExplorePlot <- function(dataset,
           nan.cmd <- "ds[is.nan(ds)] <- 0"
           appendLog(Rtxt("Ensure rows with no digits are treated as zeros."), nan.cmd)
           ds[is.nan(ds)] <- 0
-          
+
           if (newplot && pcnt %% pmax == 0) newPlot(pmax)
           pcnt <- pcnt + 1
 
           par(xpd=TRUE)
-          
+
           appendLog(Rtxt("Display the plot."), plot.cmd)
           eval(parse(text=plot.cmd))
-          
+
           appendLog(Rtxt("Add a legend to the plot."), legend.cmd)
           eval(parse(text=legend.cmd))
 
           # 100312 This is messy because we need the full strings for
           # translations.
-          
+
           if (sampling)
             if (posbutton)
               if (length(targets))
@@ -1668,10 +1668,10 @@ executeExplorePlot <- function(dataset,
               else
                 title.txt <- sprintf(Rtxt("Benford's Law: %s"),
                                      benplots[s])
-            
-          
+
+
           title.cmd <- genPlotTitleCmd(title.txt)
-          
+
           appendLog(Rtxt("Add a title to the plot."), title.cmd)
           eval(parse(text=title.cmd))
         }
@@ -1679,8 +1679,8 @@ executeExplorePlot <- function(dataset,
     }
   }
   }
-  
-  
+
+
 
   #---------------------------------------------------------------------
 
@@ -1689,7 +1689,7 @@ executeExplorePlot <- function(dataset,
     # Plot a frequency plot for a categoric variable.
 
     # Use barplot2 from gplots.
-    
+
     lib.cmd <- "library(gplots, quietly=TRUE)"
 
     # Construct a generic data command built using the genericDataSet
@@ -1708,7 +1708,7 @@ executeExplorePlot <- function(dataset,
 
     # If the gplots package is available then generate a plot for each
     # chosen vairable.
-    
+
     if (packageIsAvailable("gplots", Rtxt("plot a bar chart")))
     {
       startLog()
@@ -1730,12 +1730,12 @@ executeExplorePlot <- function(dataset,
         appendLog(Rtxt("Generate the summary data for plotting."),
                  paste("ds <-", ds.cmd))
         ds <- eval(parse(text=ds.cmd))
-        
+
         ## Construct and evaluate the command to plot the
         ## distribution.  Determine maxium value so that the y axis
         ## can extend to it. We save the output from barplot2 in order
         ## to add numbers to the plot.
-    
+
         if (newplot && pcnt %% pmax == 0) newPlot(pmax)
         pcnt <- pcnt + 1
 
@@ -1749,8 +1749,8 @@ executeExplorePlot <- function(dataset,
         cols <- sprintf(ifelse(packageIsAvailable("colorspace"),
                                "colorspace::rainbow_hcl(%s)", # 090524, start = 270, end = 150)",
                                "rainbow(%s)"),
-                       length(targets)+1) 
-        
+                       length(targets)+1)
+
         maxFreq <- max(ds)
         plot.cmd <- sprintf(paste('barplot2(ds[,ord], beside=TRUE, ',
                                   'ylab="', Rtxt("Frequency"), '", xlab="%s", ',
@@ -1775,7 +1775,7 @@ executeExplorePlot <- function(dataset,
         ## Construct and evaluate a command to add a legend to the
         ## plot, but only if there is a target, optherwise it is
         ## obvious.
-        
+
         if (not.null(targets))
         {
           legend.cmd <- sprintf(paste('legend("topright", bty="n", c(%s), ',
@@ -1786,10 +1786,10 @@ executeExplorePlot <- function(dataset,
           appendLog(Rtxt("Add a legend to the plot."), legend.cmd)
           eval(parse(text=legend.cmd))
         }
-        
+
         # Construct and evaluate a command to add the title to the
         # plot.
-        
+
         title.cmd <- genPlotTitleCmd(generateTitleText(barplots[s], target,
                                                        sampling, length(targets)))
 
@@ -1798,7 +1798,7 @@ executeExplorePlot <- function(dataset,
       }
     }
   }
-  
+
 ########################################################################
 #
 #   Pairs plot
@@ -1815,7 +1815,7 @@ executeExplorePlot <- function(dataset,
 
   if (ndotplots > 0)
   {
-    
+
     # Construct a generic data command built using the genericDataSet
     # values. To generate a barplot we use the output of the summary
     # command on each element in the genericDataSet, and bring them
@@ -1862,12 +1862,12 @@ executeExplorePlot <- function(dataset,
       appendLog(Rtxt("Sort the entries."),
                paste("ord <-", ord.cmd))
       ord <- eval(parse(text=ord.cmd))
-        
+
       # Construct and evaluate the command to plot the distribution.
-    
+
       if (newplot && pcnt %% pmax == 0) newPlot(pmax)
       pcnt <- pcnt + 1
-      
+
       titles <- genPlotTitleCmd(generateTitleText(dotplots[s], target,
                                                   sampling, length(targets)),
                                 vector=TRUE)
@@ -1875,7 +1875,7 @@ executeExplorePlot <- function(dataset,
       cols <- sprintf(ifelse(packageIsAvailable("colorspace"),
                              "colorspace::rainbow_hcl(%s)", # 090524, start = 270, end = 150)",
                              "rainbow(%s)"),
-                      length(targets)+1) 
+                      length(targets)+1)
 
       plot.cmd <- sprintf(paste('dotchart(%s, main="%s", sub="%s", ',
                                 'col=rev(%s),%s ',
@@ -1939,10 +1939,10 @@ executeExplorePlot <- function(dataset,
         ord.cmd <- "order(apply(ds, 1, sum), decreasing=TRUE)"
     appendLog(Rtxt("Sort the entries."), paste("ord <-", ord.cmd))
     ord <- eval(parse(text=ord.cmd))
-    
+
     # Construct and evaluate the command to plot the
     # distribution.
-    
+
     if (newplot && pcnt %% pmax == 0) newPlot(pmax)
     pcnt <- pcnt + 1
 
@@ -1974,9 +1974,9 @@ executeExplorePlot <- function(dataset,
     appendLog(Rtxt("Plot the data."), plot.cmd)
     eval(parse(text=plot.cmd))
   }
-  
+
   # Update the status bar.
-  
+
   if (total.plots > 1)
     setStatusBar(sprintf(Rtxt("All %d plots have been generated."), total.plots))
   else if (total.plots ==  1)
@@ -2032,10 +2032,10 @@ executeExplorePlot2 <- function(dataset,
   {
     infoDialog(Rtxt("The Pairs plot requires at least two variables."))
   }
-  
+
   total.plots <- nboxplots + nhisplots + length(cumplots) +
     nbenplots + nbarplots + ndotplots + nmosplots + npaiplots
-  
+
   pmax <- theWidget("plots_per_page_spinbutton")$getValue()
   pcnt <- 0
 
@@ -2058,13 +2058,13 @@ executeExplorePlot2 <- function(dataset,
 
   # For now, let's plot always, since I was wondering why the Benford
   # plot was not showing all the targets!
-  
+
 ##   if (length(targets) > 10)
 ##   {
 ##     target <- NULL
 ##     targets <- NULL
 ##   }
-  
+
   # 091011 Check if there are mosaic plots requested but there is not
   # target - notify that the mosaic plots will not be plotted.
 
@@ -2079,9 +2079,9 @@ executeExplorePlot2 <- function(dataset,
 
   # Don't waste real estate if we are plotting less than number
   # allowed per page.
-  
+
   if (total.plots < pmax) pmax <- total.plots
-  
+
   # Check for sampling.
 
   if (is.null(sampling))
@@ -2093,7 +2093,7 @@ executeExplorePlot2 <- function(dataset,
   # Record other options.
 
   annotate <- theWidget("explot_annotate_checkbutton")$getActive()
-  
+
   # Split the data, first for all values.
 
   bind.cmd <- sprintf('rbind(data.frame(%%s=%s[,"%%s"], %s="All")', dataset, target)
@@ -2102,15 +2102,15 @@ executeExplorePlot2 <- function(dataset,
   {
     bind.cmd <- sprintf("%s,\n            data.frame(%%s=%s",
                         bind.cmd, dataset)
-    
+
     bind.cmd <- sprintf('%s[crs$dataset%s$%s=="%s","%%s"], %s="%s")',
                         bind.cmd,
                         ifelse(sampling, "[crs$train,]", ""),
                         target, targets[i], target, targets[i])
   }
-  
+
   # Finish off the command to create the dataset for plotting.
-  
+
   bind.cmd <- sprintf("%s)", bind.cmd)
 
   # Build a list of generic datasets. This describes how to get the
@@ -2123,7 +2123,7 @@ executeExplorePlot2 <- function(dataset,
   #
   # or if sampling is enabled:
   #
-  # All = crs$dataset[crs$train,]$%s  
+  # All = crs$dataset[crs$train,]$%s
   #
   # For each level:
   #
@@ -2165,10 +2165,10 @@ executeExplorePlot2 <- function(dataset,
   #---------------------------------------------------------------------
   # 091005 If no plots are specified then generate a matrix of scatter
   # plots following the example in the pairs function.
-  
+
   if (total.plots == 0)
     displayPairsPlot(dataset)
-    
+
 
   #---------------------------------------------------------------------
 
@@ -2185,7 +2185,7 @@ executeExplorePlot2 <- function(dataset,
     # 080918 Use the colorspace package to get a better colour map. See
     # https://epub.wu-wien.ac.at/dyn/virlib/wp/eng/showentry?ID=epub-wu-01_c87 and
     # https://statmath.wu.ac.at/~zeileis/papers/Zeileis+Hornik+Murrell-2009.pdf
-    
+
     if (packageIsAvailable("colorspace"))
       cols <- "fill=colorspace::rainbow_hcl(%d)," # 090524, start = 270, end = 150),"
     else
@@ -2195,13 +2195,13 @@ executeExplorePlot2 <- function(dataset,
     # togther. The specific variable name ends up being a %s, ready
     # for substitution within the loop over the variables selected for
     # a box plot.
-    
+
     ggplot.cmd  <- sprintf("ggplot(ds, aes(%s, %%s))", target)
     boxplot.cmd <- sprintf("geom_boxplot(%s)",
                            sprintf(cols, length(targets)+1))
 
     title.txt <- generateTitleText("%%s", target, sampling, stratify && length(targets))
-    
+
     title.cmd <- sprintf(paste('ggtitle("%s")', title.txt))
 
     sub.cmd <- sprintf('labs(x="%s\\n\\n%%s")', target)
@@ -2210,17 +2210,17 @@ executeExplorePlot2 <- function(dataset,
                         boxplot.cmd, title.cmd, sub.cmd)
 
     ## 091214 I don't see how to add annotations yet. So skip all this for now.
-    
+
     ## # Based on an example from Jim Holtman on r-help 070406.
-    
+
     ## annotate.cmd <- paste("for (i in seq(ncol(bp$stats)))",
     ##                       "{text(i,",
     ##                       "bp$stats[,i] - 0.02*(max(ds$dat, na.rm=TRUE)",
     ##                       "- min(ds$dat, na.rm=TRUE)),",
     ##                       "labels=bp$stats[,i])}")
-    
+
     ## lib.cmd <- "library(doBy, quietly=TRUE)"
-    
+
     ## # TODO: Try using "by" instead of needing another package to
     ## # provide summaryBy. Also, the new version of doBy (061006) seems
     ## # to be outputting extra status information that makes the R
@@ -2228,17 +2228,17 @@ executeExplorePlot2 <- function(dataset,
     ## # disappear again - it looks like debugging information!
     ## #
     ## # status:
-    ## # lhsvar     : dat 
-    ## # rhsvar     : grp 
-    ## # idvar      :  
-    ## # fun.names  : mean 
-    ## # varPrefix  : mean 
-    ## # newNames   : mean.dat 
+    ## # lhsvar     : dat
+    ## # rhsvar     : grp
+    ## # idvar      :
+    ## # fun.names  : mean
+    ## # varPrefix  : mean
+    ## # newNames   : mean.dat
 
     ## # Only use summaryBy if there is a target, because it fails if
     ## # there is actually only one group in the data. Might be a new
     ## # bug in the doBy package.
-    
+
     ## if (length(targets) > 1)
     ##   mean.cmd <- paste(sprintf("points(1:%d,", length(targets)+1),
     ##                     "summaryBy(dat ~ grp, data=ds,",
@@ -2248,7 +2248,7 @@ executeExplorePlot2 <- function(dataset,
     ##   mean.cmd <- paste(sprintf("points(1:%d,", length(targets)+1),
     ##                     "mean(ds$dat, na.rm=TRUE),",
     ##                     "pch=8)")
-    
+
     for (s in seq_len(nboxplots))
     {
 
@@ -2272,14 +2272,14 @@ executeExplorePlot2 <- function(dataset,
 
       this.plot <- sprintf(plot.cmd, boxplots[s], boxplots[s],
                            genPlotTitleCmd("", vector=TRUE)[2])
-      
+
       appendLog(Rtxt("Display the plot."), this.plot)
       eval(parse(text=this.plot))
 
       ## 091214 Annotations are not yet supported.
-      
+
       ## # Add a value for the mean to each boxplot.
-      
+
       ## if (packageIsAvailable("doBy", "add means to box plots"))
       ## {
       ##   appendLog("Use the doBy package to group the data for means.",
@@ -2289,22 +2289,22 @@ executeExplorePlot2 <- function(dataset,
       ##   appendLog("Calculate the group means.", mean.cmd)
       ##   eval(parse(text=mean.cmd))
       ## }
-        
+
       ## # Optionally include annotations.
 
       ## if (annotate)
       ## {
       ##   appendLog("Add annotations to the plot.", annotate.cmd)
       ##   eval(parse(text=annotate.cmd))
-      ## }        
-      
+      ## }
+
     }
   }
 #  }
-  
+
 
   ##--------------------------------------------------------------------
-  
+
   if (nhisplots > 0)
   {
     # Plot a histogram for numeric data. 090523 Bob Muenchen suggested
@@ -2351,7 +2351,7 @@ executeExplorePlot2 <- function(dataset,
     ## rs <- max(hs$counts)/max(dens$y)
     ## maxy <- max(dens$y*rs)
     ## print(maxy)
-    
+
     ## if (length(targets))
     ##   for (i in 1:length(targets))
     ##   {
@@ -2370,7 +2370,7 @@ executeExplorePlot2 <- function(dataset,
     # does not work for large n. Also see
     # https://www.math.leidenuniv.nl/~gill/teaching/statistics/histogram.pdf
     # So let's use the Freedman and Diaconis approach.
-    
+
     plot.cmd <- paste('hs <- hist(ds[ds$grp=="All",1], main="", xlab="%s", ',
                       # cols,
                       'col="grey90"',
@@ -2433,7 +2433,7 @@ executeExplorePlot2 <- function(dataset,
     for (s in seq_len(nhisplots))
     {
       startLog(Rtxt("Plot a Histogram"))
-      
+
       cmd <- paste("sprintf(bind.cmd,",
                    paste(paste('"', rep(hisplots[s], length(targets)+1), '"',
                                sep=""),
@@ -2447,12 +2447,12 @@ executeExplorePlot2 <- function(dataset,
       ds <- eval(parse(text=cmd))
 
       # 090524 Perform the max y calculation here for each plot
-      
+
       hs <- hist(ds[ds$grp=="All",1], breaks="fd", plot=FALSE)
       dens <- density(ds[ds$grp=="All",1], na.rm=TRUE)
       rs <- max(hs$counts)/max(dens$y)
       maxy <- max(dens$y*rs)
-      
+
       if (length(targets))
         for (i in 1:length(targets))
         {
@@ -2462,7 +2462,7 @@ executeExplorePlot2 <- function(dataset,
 
       if (pcnt %% pmax == 0) newPlot(pmax)
       pcnt <- pcnt + 1
-      
+
       # Determine whether to plot a histogram of the numeric data or
       # as a factor (is.integer and unique <= 20).
 
@@ -2472,7 +2472,7 @@ executeExplorePlot2 <- function(dataset,
 
       # 080925 Determine the likely number of bars for the plot. This
       # does not always seem to get it correct.
-      
+
       nbars <- nclass.FD(na.omit(ds[ds$grp=="All",1]))
 
       if (length(dsuni) <= 20 && dsmax - dsmin <= 20)
@@ -2525,7 +2525,7 @@ executeExplorePlot2 <- function(dataset,
           title.msg <- sprintf(Rtxt("Distribution of %s\nby %s"), hisplots[s], target)
         else
           title.msg <- sprintf(Rtxt("Distribution of %s"), hisplots[s])
-      
+
       title.cmd <- genPlotTitleCmd(title.msg)
       appendLog(Rtxt("Add a title to the plot."), title.cmd)
       eval(parse(text=title.cmd))
@@ -2533,7 +2533,7 @@ executeExplorePlot2 <- function(dataset,
   }
 
   #---------------------------------------------------------------------
-  
+
   if (not.null(cumplots))
   {
     # Cumulative plot for numeric data.
@@ -2541,7 +2541,7 @@ executeExplorePlot2 <- function(dataset,
     nplots <- length(cumplots)
 
     lib.cmd <- "library(Hmisc, quietly=TRUE)"
-    
+
     for (s in seq_len(nplots))
     {
       startLog()
@@ -2550,7 +2550,7 @@ executeExplorePlot2 <- function(dataset,
         col <- colorspace::rainbow_hcl(length(targets)+1) #, start = 30, end = 300)
       else
         col <- rainbow(length(targets)+1)
-      
+
       plot.cmd <- paste('Ecdf(ds[ds$grp=="All",1],',
                         sprintf('col="%s",', col[1]),
                         'xlab="%s",',
@@ -2578,7 +2578,7 @@ executeExplorePlot2 <- function(dataset,
                              paste(sprintf('"%s"', c(Rtxt("All"), targets)),
                                    collapse=","),
                              length(targets)+1, length(targets)+1)
-        
+
       cmd <- paste("sprintf(bind.cmd,",
                     paste(paste('"', rep(cumplots[s], length(targets)+1), '"',
                                sep=""),
@@ -2613,7 +2613,7 @@ executeExplorePlot2 <- function(dataset,
           title.msg <- sprintf(Rtxt("Cummulative %s\nby %s"), cumplots[s], target)
         else
           title.msg <- sprintf(Rtxt("Cummulative %s"), cumplots[s])
-      
+
       title.cmd <- genPlotTitleCmd(title.msg)
 
       if (not.null(targets))
@@ -2643,9 +2643,9 @@ executeExplorePlot2 <- function(dataset,
                        ifelse(absbutton, "none",
                               ifelse(posbutton, "positive", "negative")),
                        digspin)
-    
+
     # Using barplot2 from gplots
-    
+
     lib.cmd <- "library(gplots, quietly=TRUE)"
 
     if (packageIsAvailable("colorspace"))
@@ -2658,7 +2658,7 @@ executeExplorePlot2 <- function(dataset,
     if (digspin == 1)
       expect.cmd <- paste('unlist(lapply(1:9, function(x) log10(1 + 1/x)))')
     # see https://www.mathpages.com/home/kmath302/kmath302.htm
-    else if (digspin > 1) 
+    else if (digspin > 1)
       expect.cmd <- sprintf(paste('unlist(lapply(0:9, function(x) {sum(log10',
                                   '(1 + 1/(10*(seq(10^(%d-2), ',
                                   '(10^(%d-1))-1)) + x)))}))'),
@@ -2710,10 +2710,10 @@ executeExplorePlot2 <- function(dataset,
     if (packageIsAvailable("gplots", Rtxt("plot a bar chart for Benford's Law")))
     {
       startLog(Rtxt("Benford's Law"))
-      
+
       appendLog(packageProvides("gplots", "barplot2"), lib.cmd)
       eval(parse(text=lib.cmd))
-      
+
       appendLog(Rtxt("Generate the expected distribution for Benford's Law."),
                paste("expect <-", expect.cmd))
       expect <- eval(parse(text=expect.cmd))
@@ -2737,7 +2737,7 @@ executeExplorePlot2 <- function(dataset,
                          sep="")
         for (s in seq_len(nbenplots))
         {
-          new.bind.cmd <- paste(new.bind.cmd, 
+          new.bind.cmd <- paste(new.bind.cmd,
                            sprintf(bc, benplots[s], benplots[s]),
                            ",\n     ",
                            sep="")
@@ -2777,13 +2777,13 @@ executeExplorePlot2 <- function(dataset,
         pcnt <- pcnt + 1
 
         par(xpd=TRUE)
-        
+
         appendLog(Rtxt("Display the plot."), plot.cmd)
         eval(parse(text=plot.cmd))
 
         appendLog(Rtxt("Add a legend to the plot."), legend.cmd)
         eval(parse(text=legend.cmd))
-        
+
         if (sampling)
           title.cmd <- genPlotTitleCmd(sprintf("Benford's Law (sample)%s",
                                                ifelse(length(targets),
@@ -2801,7 +2801,7 @@ executeExplorePlot2 <- function(dataset,
       {
         # Plot multiple graphs since we have a target, and will split
         # each graph according to the target values.
-        
+
         for (s in seq_len(nbenplots))
         {
           startLog()
@@ -2810,11 +2810,11 @@ executeExplorePlot2 <- function(dataset,
           #
           sizes.cmd <- paste('sizes <<- (function(x)(paste(names(x), " (",',
                              ' x, ")", sep="")))(by(ds, ds$grp, nrow))')
-          
+
           data.cmd <- paste('t(as.matrix(data.frame(expect=expect,\n    ',
                            'All=calcInitialDigitDistr(ds[ds$grp=="All", 1]',
                             benopts, ')')
-        
+
           if (not.null(targets))
             for (t in seq_along(targets))
               data.cmd <- paste(data.cmd, ",\n     ",
@@ -2848,13 +2848,13 @@ executeExplorePlot2 <- function(dataset,
             else
               legend.cmd <- paste('legend("topright", c("Benford", "All"), bty="n", ',
                                   'fill=', sprintf(cols, 2), sep="")
-          
+
           cmd <- paste("sprintf(bind.cmd,",
                        paste(paste('"', rep(benplots[s], length(targets)+1),
                                    '"', sep=""), collapse=","),
                        ")")
           cmd <- eval(parse(text=cmd))
-          
+
           appendLog(sprintf(Rtxt("Generate the data for the plot of the variable '%s'."),
                             benplots[s]),
                    paste("ds <-", cmd))
@@ -2863,7 +2863,7 @@ executeExplorePlot2 <- function(dataset,
           appendLog(Rtxt("Generate legend entries with subset sizes."),
                     gsub("<<-", "<-", sizes.cmd))
           eval(parse(text=sizes.cmd))
-          
+
           appendLog(Rtxt("Generate the frequency of the initial digits."),
                    paste("ds <-", data.cmd))
           ds <- eval(parse(text=data.cmd))
@@ -2871,18 +2871,18 @@ executeExplorePlot2 <- function(dataset,
           nan.cmd <- "ds[is.nan(ds)] <- 0"
           appendLog(Rtxt("Ensure rows with no digits are treated as zeros."), nan.cmd)
           ds[is.nan(ds)] <- 0
-          
+
           if (pcnt %% pmax == 0) newPlot(pmax)
           pcnt <- pcnt + 1
 
           par(xpd=TRUE)
-          
+
           appendLog(Rtxt("Display the plot."), plot.cmd)
           eval(parse(text=plot.cmd))
-          
+
           appendLog(Rtxt("Add a legend to the plot."), legend.cmd)
           eval(parse(text=legend.cmd))
-          
+
           if (sampling)
             title.cmd <- genPlotTitleCmd(sprintf(paste("Benford's Law:",
                                                        "%s (sample)%s%s"),
@@ -2912,7 +2912,7 @@ executeExplorePlot2 <- function(dataset,
     # Plot a frequency plot for a categoric variable.
 
     # Use barplot2 from gplots.
-    
+
     lib.cmd <- "library(gplots, quietly=TRUE)"
 
     # Construct a generic data command built using the genericDataSet
@@ -2931,7 +2931,7 @@ executeExplorePlot2 <- function(dataset,
 
     # If the gplots package is available then generate a plot for each
     # chosen vairable.
-    
+
     if (packageIsAvailable("gplots", Rtxt("plot a bar chart")))
     {
       startLog()
@@ -2953,12 +2953,12 @@ executeExplorePlot2 <- function(dataset,
         appendLog(Rtxt("Generate the summary data for plotting."),
                  paste("ds <-", ds.cmd))
         ds <- eval(parse(text=ds.cmd))
-        
+
         ## Construct and evaluate the command to plot the
         ## distribution.  Determine maxium value so that the y axis
         ## can extend to it. We save the output from barplot2 in order
         ## to add numbers to the plot.
-    
+
         if (pcnt %% pmax == 0) newPlot(pmax)
         pcnt <- pcnt + 1
 
@@ -2972,8 +2972,8 @@ executeExplorePlot2 <- function(dataset,
         cols <- sprintf(ifelse(packageIsAvailable("colorspace"),
                                "colorspace::rainbow_hcl(%s)", # 090524, start = 270, end = 150)",
                                "rainbow(%s)"),
-                       length(targets)+1) 
-        
+                       length(targets)+1)
+
         maxFreq <- max(ds)
         plot.cmd <- sprintf(paste('barplot2(ds[,ord], beside=TRUE,',
                                   'ylab="', Rtxt("Frequency"), '", xlab="%s",',
@@ -2998,7 +2998,7 @@ executeExplorePlot2 <- function(dataset,
         ## Construct and evaluate a command to add a legend to the
         ## plot, but only if there is a target, optherwise it is
         ## obvious.
-        
+
         if (not.null(targets))
         {
           legend.cmd <- sprintf(paste('legend("topright", bty="n", c(%s), ',
@@ -3009,10 +3009,10 @@ executeExplorePlot2 <- function(dataset,
           appendLog("Add a legend to the plot.", legend.cmd)
           eval(parse(text=legend.cmd))
         }
-        
+
         ## Construct and evaluate a command to add the title to the
         ## plot.
-        
+
         title.cmd <- genPlotTitleCmd(sprintf("Distribution of %s%s%s",
                                              barplots[s],
                                              ifelse(sampling," (sample)",""),
@@ -3033,7 +3033,7 @@ executeExplorePlot2 <- function(dataset,
 ###     # ggplots.
 
 ###     lib.cmd <- "library(lattice, quietly=TRUE)"
-    
+
 ###     # Construct a generic data command built using the genericDataSet
 ###     # values. To generate a barplot we use the output of the summary
 ###     # command on each element in the genericDataSet, and bring them
@@ -3050,7 +3050,7 @@ executeExplorePlot2 <- function(dataset,
 
 ###     # If the lattice package is available then generate a plot for
 ###     # each chosen vairable.
-    
+
 ###     if (packageIsAvailable("lattice", "display a bar chart"))
 ###     {
 ###       startLog()
@@ -3084,7 +3084,7 @@ executeExplorePlot2 <- function(dataset,
 ###         # We don't have multiple plots on the one plot implemented yet
 ###         # - should we? I would guess there is a simple way to do this
 ###         # with lattice.
-        
+
 ###         #if (pcnt %% pmax == 0) newPlot(pmax)
 ###         #pcnt <- pcnt + 1
 ###         newPlot(pmax)
@@ -3109,7 +3109,7 @@ executeExplorePlot2 <- function(dataset,
 ###                             ifelse(length(targets)==0, "", "-1"),
 ###                             barplots[s],
 ###                             ifelse(sampling," (sample)",""))
-                            
+
 ###         appendLog("Plot the data.", plot.cmd)
 ###         eval(parse(text=plot.cmd))
 
@@ -3122,7 +3122,7 @@ executeExplorePlot2 <- function(dataset,
 ### REMOVE 080925 - Until work out multiple plots on one device issue.
 ###   if (ndotplots > 0)
 ###   {
-    
+
 ###     # 080817 Use dotplot(lattice) instead of dotchart. 080925 But not
 ###     # yet since it uses a different mechanism to get multiple plots on
 ###     # one device and I've not set that up yet.
@@ -3145,7 +3145,7 @@ executeExplorePlot2 <- function(dataset,
 
 ###     # If the lattice package is available then generate a plot for
 ###     # each chosen vairable.
-    
+
 ###     if (packageIsAvailable("lattice", "display a dot plot"))
 ###     {
 ###       startLog()
@@ -3185,11 +3185,11 @@ executeExplorePlot2 <- function(dataset,
 ###         ord <- eval(parse(text=ord.cmd))
 
 ###         # Construct and evaluate the command to plot the distribution.
-    
+
 ###         #if (pcnt %% pmax == 0) newPlot(pmax)
 ###         #pcnt <- pcnt + 1
 ###         newPlot(pmax)
-      
+
 ###         plot.cmd <- sprintf(paste('print(dotplot(ds[ord,%s]',
 ###                                   'xlab="Frequency"',
 ###                                   'type=c("p", "h", "a")',
@@ -3211,7 +3211,7 @@ executeExplorePlot2 <- function(dataset,
 
   if (ndotplots > 0)
   {
-    
+
     # Construct a generic data command built using the genericDataSet
     # values. To generate a barplot we use the output of the summary
     # command on each element in the genericDataSet, and bring them
@@ -3258,12 +3258,12 @@ executeExplorePlot2 <- function(dataset,
       appendLog(Rtxt("Sort the entries."),
                paste("ord <-", ord.cmd))
       ord <- eval(parse(text=ord.cmd))
-        
+
       # Construct and evaluate the command to plot the distribution.
-    
+
       if (pcnt %% pmax == 0) newPlot(pmax)
       pcnt <- pcnt + 1
-      
+
       titles <- genPlotTitleCmd(sprintf("Distribution of %s%s%s",
                                         dotplots[s],
                                         ifelse(sampling," (sample)",""),
@@ -3274,7 +3274,7 @@ executeExplorePlot2 <- function(dataset,
       cols <- sprintf(ifelse(packageIsAvailable("colorspace"),
                              "colorspace::rainbow_hcl(%s)", # 090524, start = 270, end = 150)",
                              "rainbow(%s)"),
-                      length(targets)+1) 
+                      length(targets)+1)
 
       plot.cmd <- sprintf(paste('dotchart(%s, main="%s", sub="%s",',
                                'col=rev(%s),%s',
@@ -3335,10 +3335,10 @@ executeExplorePlot2 <- function(dataset,
         ord.cmd <- "order(apply(ds, 1, sum), decreasing=TRUE)"
     appendLog(Rtxt("Sort the entries."), paste("ord <-", ord.cmd))
     ord <- eval(parse(text=ord.cmd))
-    
+
     # Construct and evaluate the command to plot the
     # distribution.
-    
+
     if (pcnt %% pmax == 0) newPlot(pmax)
     pcnt <- pcnt + 1
 
@@ -3369,9 +3369,9 @@ executeExplorePlot2 <- function(dataset,
     appendLog(Rtxt("Plot the data."), plot.cmd)
     eval(parse(text=plot.cmd))
   }
-  
+
   # Update the status bar.
-  
+
   if (total.plots > 1)
     setStatusBar(sprintf(Rtxt("All %d plots have been generated."), total.plots))
   else if (total.plots ==  1)
@@ -3394,9 +3394,9 @@ displayPairsPlot <- function(dataset)
   # 100131 Try out the pairs.panels function from the psych package.
 
   newPlot(1)
-  
+
   # We use a couple of helper functions from the pairs help page.
-  
+
   pre.cmd <- 'panel.hist <- function(x, ...)
 {
    usr <- par("usr"); on.exit(par(usr))
@@ -3439,7 +3439,7 @@ panel.cor <- function(x, y, digits=2, prefix="", cex.cor, ...)
     lib.cmd <- "library(psych, quietly=TRUE)"
     appendLog(packageProvides("psych", "pairs.panels"), lib.cmd)
     eval(parse(text=lib.cmd))
-  
+
     plot.cmd <- paste(sprintf("pairs.panels(%s[%s],", dataset, vars), "scale=TRUE)")
   }
   else
@@ -3468,7 +3468,7 @@ displayPairsPlot2 <- function(dataset)
   # matrix and the upper panel showing correlations.
 
   newPlot(1)
-  
+
   # Determine the variables to display. 110409 We can only display
   # numeric variables.
 
@@ -3487,7 +3487,7 @@ displayPairsPlot2 <- function(dataset)
     vars <- simplifyNumberList(sort(sample(vars, 6)))
 
   # Inform the log that we will now produce a scatter plot.
-  
+
   startLog(Rtxt("Scatter or Pairs Plot (Plot a Correlation Matrix)"))
 
   if (! packageIsAvailable("Deducer", Rtxt("plot correlations"))) return()
@@ -3507,7 +3507,7 @@ displayPairsPlot2 <- function(dataset)
 
   eval(parse(text=sprintf("print(%s)", plot.cmd)))
 }
-  
+
 executeExploreGGobi <- function(dataset, name=NULL)
 {
   # Based on code from Marco Lo
@@ -3519,8 +3519,8 @@ executeExploreGGobi <- function(dataset, name=NULL)
   #
   # Note also the embed=TRUE option of the ggobi display
   # function. This allows the display to be embedded within a RGtk
-  # window, and hence seemlessly become part of Rattle.  
-  
+  # window, and hence seemlessly become part of Rattle.
+
   # Construct the commands.
 
   lib.cmd <- "library(rggobi, quietly=TRUE)"
@@ -3529,7 +3529,7 @@ executeExploreGGobi <- function(dataset, name=NULL)
                      ')')
 
   # Start logging and executing the R code.
-  
+
   if (! packageIsAvailable("rggobi", Rtxt("explore the data using GGobi"))) return()
 
   startLog(Rtxt("GGobi Data Exploration"))
@@ -3538,7 +3538,7 @@ executeExploreGGobi <- function(dataset, name=NULL)
   appendLog(Rtxt("Launch the GGobi data visualization application."),
             gsub("<<-", "<-", ggobi.cmd))
   eval(parse(text=ggobi.cmd))
-  
+
   setStatusBar(Rtxt("GGobi executed."))
 }
 
@@ -3563,7 +3563,7 @@ executeExploreCorrelation <- function(dataset, newplot=TRUE)
   # getActiveText here is returning garbage. So tried using getActive
   # to get the index instead, but then found that Encoding is the
   # right approach.
-  
+
   method <- theWidget("explore_correlation_method_combobox")$getActiveText()
   Encoding(method) <- "UTF-8"
   ##method <- theWidget("explore_correlation_method_combobox")$getActive() + 1
@@ -3578,7 +3578,7 @@ executeExploreCorrelation <- function(dataset, newplot=TRUE)
 
   # Warn if there are too many variables. An alternative is to offer
   # to just plot the variables with the highest amount of correlation.
-  
+
   nvars <- eval(parse(text=sprintf("ncol(%s)", dataset)))
   if (nvars > crv$max.vars.correlation &&
       ! questionDialog(sprintf(Rtxt("You have requested a Correlation plot.",
@@ -3590,11 +3590,11 @@ executeExploreCorrelation <- function(dataset, newplot=TRUE)
                                     "Would you like to continue anyhow?"),
                                nvars, crv$max.vars.correlation)))
     return(FALSE)
-  
+
   # Construct the commands.
 
   # Deal with showing the missing values plot.
-  
+
   nas <- theWidget("explore_correlation_na_checkbutton")$getActive()
   if (nas)
   {
@@ -3636,7 +3636,7 @@ executeExploreCorrelation <- function(dataset, newplot=TRUE)
     crsord.cmd  <- paste("crs$ord <- order(crs$cor[1,])",
                          "crs$cor <- crs$cor[crs$ord, crs$ord]",
                          sep="\n")
-    
+
   print.cmd   <- "print(crs$cor)"
   if (nas)
   {
@@ -3649,7 +3649,7 @@ executeExploreCorrelation <- function(dataset, newplot=TRUE)
                                      "2,sum)/nrow(%s))"),
                                dataset, dataset),
                        sep="")
-    
+
   }
   MAXCORVARS <- 15
   par.cmd <- ifelse(nrow(crs$cor) > MAXCORVARS, "opar <- par(cex=0.5)\n", "")
@@ -3659,13 +3659,13 @@ executeExploreCorrelation <- function(dataset, newplot=TRUE)
   # error from the sprintf.
 
   Encoding(method.orig) <- "unknown"
-  
+
   if (nas)
     title.txt <- sprintf(Rtxt("Correlation of Missing Values\\n%s using %s"),
                          crs$dataname, method.orig)
   else
     title.txt <- sprintf(Rtxt("Correlation %s using %s"), crs$dataname, method.orig)
-                       
+
   plot.cmd    <- paste(par.cmd,
                        ifelse(advanced.graphics,
                               "corrplot(crs$cor, mar=c(0,0,1,0))\n",
@@ -3675,12 +3675,12 @@ executeExploreCorrelation <- function(dataset, newplot=TRUE)
                        genPlotTitleCmd(title.txt),
                        opar.cmd,
                        sep="")
-  
+
   # Start logging and executing the R code.
 
   if (! packageIsAvailable(ifelse(advanced.graphics, "corrplot", "ellipse"),
                            Rtxt("display a correlation plot"))) return()
-     
+
   startLog(Rtxt("Generate a correlation plot for the variables."))
   resetTextview(TV)
 
@@ -3715,9 +3715,9 @@ executeExploreCorrelation <- function(dataset, newplot=TRUE)
                if (ordered) crsord.cmd,
                plot.cmd,
                sep="\n")))
-  
+
   ## Report completion to the user through the Status Bar.
-  
+
   setStatusBar(Rtxt("Correlation plot and summary generated."))
 }
 
@@ -3744,7 +3744,7 @@ executeExploreHiercor <- function(dataset)
   method.rtxt <- strsplit(method.rtxt, "\n")[[1]]
   method.orig <- method.rtxt[method]
   method <-tolower(method.opts[method])
-  
+
   # Check that we have sufficient data
 
   ncols <- eval(parse(text=sprintf("NCOL(%s)", dataset)))
@@ -3755,12 +3755,12 @@ executeExploreHiercor <- function(dataset)
                      "\n\nYou may want to select more numeric variables or",
                      "use the transform tab to transform",
                      "your categoric variables into numeric variables."))
-    
+
     return()
   }
-    
+
   # Construct the commands.
-  
+
   cor.cmd    <- sprintf('cc <- cor(%s, use="pairwise", method="%s")', dataset, method)
   hclust.cmd <- 'hc <- hclust(dist(cc), method="average")'
   dend.cmd   <- "dn <- as.dendrogram(hc)"
@@ -3769,7 +3769,7 @@ executeExploreHiercor <- function(dataset)
 
   fontsize <- .75
   if (ncols>45) {fontsize <- .60}
-  
+
   labwidth <- eval(parse(text = paste('max(unlist(lapply(colnames(',
                            dataset, '), "nchar"))) + 2', sep="")))
   plot.cmd   <- paste('op <- par(mar = c(3, 4, 3, ',
@@ -3816,7 +3816,7 @@ executeExploreHiercor <- function(dataset)
   eval(parse(text=plot.cmd))
 
   # Report completion to the user through the Status Bar.
-  
+
   setStatusBar(Rtxt("Hierarchical cluster of correlations plotted."))
 
 }
@@ -3824,7 +3824,7 @@ executeExploreHiercor <- function(dataset)
 executeExplorePrcomp <- function(dataset)
 {
   TV <- "prcomp_textview"
-  
+
   if (is.null(dataset))
   {
     errorDialog(Rtxt("Principal components are only ipmlemented for numeric data.",
@@ -3834,11 +3834,11 @@ executeExplorePrcomp <- function(dataset)
   }
 
   # User interface options
-  
+
   svd <- theWidget("explore_prcomp_pr_radiobutton")$getActive()
-  
+
   # Construct the commands.
-  
+
   prcomp.cmd  <- sprintf(paste('pc <<- %s(na.omit(%s),',
                                'scale=TRUE, center=TRUE, tol=0)'),
                          ifelse(svd, "prcomp", "princomp"),
@@ -3861,7 +3861,7 @@ executeExplorePrcomp <- function(dataset)
 
   startLog()
   resetTextview(TV)
-  
+
   appendLog(Rtxt("Principal Components Analysis (on numerics only)."),
           gsub("<<-", "<-", prcomp.cmd))
   eval(parse(text=prcomp.cmd))
@@ -3877,7 +3877,7 @@ executeExplorePrcomp <- function(dataset)
 
   appendLog(Rtxt("Show the output of the analysis."), print.cmd)
   appendTextview(TV, collectOutput(print.cmd, TRUE))
-  
+
   appendLog(Rtxt("Summarise the importance of the components found."), summary.cmd)
   appendTextview(TV, collectOutput(summary.cmd, TRUE))
 
@@ -3885,14 +3885,14 @@ executeExplorePrcomp <- function(dataset)
   appendLog(Rtxt("Display a plot showing the relative importance of the components."),
           plot.cmd)
   eval(parse(text=plot.cmd))
-  
+
   newPlot(1)
   appendLog(Rtxt("Display a plot showing the two most principal components."),
           biplot.cmd)
   eval(parse(text=biplot.cmd))
-  
+
   ## Report completion to the user through the Status Bar.
-  
+
   setStatusBar(Rtxt("A principal components analysis has been completed."))
 
 }
@@ -3924,7 +3924,7 @@ executeExplorePrcomp <- function(dataset)
 ##   # default dataset to use. Nor how to extract from plot builder the
 ##   # actual ggplot2 command that is generated - would like to capture
 ##   # that and place it in the Log.
-  
+
 ##   if (! packageIsAvailable("Deducer", Rtxt("interactively develop a ggplot2 plot using Plot builder"))) return()
 
 ##   startLog(Rtxt("Use the Plot Builder dialog from the Deducer package."))
@@ -4023,50 +4023,10 @@ on_prcomp_radiobutton_toggled <- function(button)
 
 cat_toggled <- function(cell, path.str, model)
 {
-  ## A categoric variable's radio button has been toggled in the
-  ## Explore tab's Distribution option. Handle the choice.
-
-  ## The data passed in is the model used in the treeview.
-
-  RGtk2::checkPtrType(model, "GtkTreeModel")
-
-  ## Extract the column number of the model that has changed.
-
-  column <- cell$getData("column")
-
-  ## Get the current value of the corresponding flag
-  
-  path <- RGtk2::gtkTreePathNewFromString(path.str) # Current row
-  iter <- model$getIter(path)$iter           # Iter for the row
-  current <- model$get(iter, column)[[1]]    # Get data from specific column
-
-  ## Always invert
-  
-  model$set(iter, column, !current)
-
 }
 
 con_toggled <- function(cell, path.str, model)
 {
-  ## A continuous variable's radio button has been toggled in the
-  ## Explore tab's Distribution option. Handle the choice.
-
-  ## The data passed in is the model used in the treeview.
-
-  RGtk2::checkPtrType(model, "GtkTreeModel")
-
-  ## Extract the column number of the model that has changed.
-
-  column <- cell$getData("column")
-  
-  ## Get the current value of the corresponding flag
-  
-  path <- RGtk2::gtkTreePathNewFromString(path.str) # Current row
-  iter <- model$getIter(path)$iter           # Iter for the row
-  current <- model$get(iter, column)[[1]]    # Get data from specific column
-
-  model$set(iter, column, !current)
-
 }
 
 on_categorical_clear_button_clicked <- function(action, window)
@@ -4156,20 +4116,6 @@ on_viewdata_next_button_clicked <- function(window)
 
 summarySearch <- function(tv, search.str, start.iter)
 {
-  found <- start.iter$iter$forwardSearch(search.str, 0)
-  tvb <- tv$getBuffer()
-  if (found$retval)
-  {
-    tvb$selectRange(found$match.start, found$match.end)
-    last.search.pos <-tvb$createMark('last.search.pos', found$match.end)
-
-    tv$scrollToMark(last.search.pos, 0.2)
-    while(RGtk2::gtkEventsPending()) RGtk2::gtkMainIterationDo(blocking=FALSE)
-
-    setStatusBar(sprintf(Rtxt("The string '%s' was found."), search.str))
-  }
-  else
-    setStatusBar(sprintf(Rtxt("The string '%s' was not found."), search.str))
 }
 
 #-----------------------------------------------------------------------
@@ -4187,6 +4133,4 @@ on_explore_correlation_hier_checkbutton_toggled <- function(button)
     theWidget("explore_correlation_ordered_checkbutton")$setSensitive(TRUE)
     theWidget("explore_correlation_na_checkbutton")$setSensitive(TRUE)
   }
-}  
-
-
+}

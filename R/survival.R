@@ -1,6 +1,6 @@
 # Rattle Survival
 #
-# Time-stamp: <2017-09-10 10:23:43 Graham Williams>
+# Time-stamp: <Sunday 2026-02-08 11:24:20 +1100 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -86,7 +86,7 @@ buildModelSurvival <- function(formula, dataset, tv=NULL, method=c("para", "coxp
   if (gui) appendLog(Rtxt("Require the survival package."), lib.cmd)
   eval(parse(text=lib.cmd))
 
-  # Build a model. 
+  # Build a model.
 
   method <- ifelse(method=="para", "survreg", "coxph")
   model.cmd <- paste(method, "(", formula,
@@ -105,7 +105,7 @@ buildModelSurvival <- function(formula, dataset, tv=NULL, method=c("para", "coxp
   # reported to the log, but we return this value and in the outer
   # call we globally assign to crs$survival, at least in the context
   # of the Rattle GUI.
-  
+
   start.time <- Sys.time()
   crs$survival <- try(eval(parse(text=model.cmd)), silent=TRUE)
   time.taken <- Sys.time()-start.time
@@ -113,7 +113,7 @@ buildModelSurvival <- function(formula, dataset, tv=NULL, method=c("para", "coxp
   if (inherits(crs$survival, "try-error"))
   {
     msg <- errorMessageFun(method, crs$survival)
-    
+
     if (any(grep(Rtxt("Invalid survival times for this distribution"), crs$survival)))
     {
       errorDialog(Rtxt("The building of the survival model failed.",
@@ -168,7 +168,7 @@ buildModelSurvival <- function(formula, dataset, tv=NULL, method=c("para", "coxp
   }
 
   # Finish up.
-  
+
   if (gui)
   {
     time.msg <- sprintf("\nTime taken: %0.2f %s", time.taken,
@@ -186,7 +186,7 @@ showModelSurvivalExists <- function(state=!is.null(crs$survival))
   # buttons that require the model to exist. For the Survival model
   # this will be the plot functions.
 
-  if (state && class(crs$survival) == "coxph")
+  if (state && inherits(crs$survival, "coxph"))
   {
     theWidget("model_survival_plots_label")$setSensitive(TRUE)
     theWidget("model_survival_plot_survival_button")$setSensitive(TRUE)
@@ -194,9 +194,9 @@ showModelSurvivalExists <- function(state=!is.null(crs$survival))
   }
 
   theWidget("score_class_radiobutton")$
-  setActive(class(crs$survival) == "survreg")
+  setActive(inherits(crs$survival, "survreg"))
   theWidget("score_probability_radiobutton")$
-  setSensitive(class(crs$survival) == "coxph")
+  setSensitive(inherits(crs$survival, "coxph"))
 }
 
 plotSurvivalModel <- function()
@@ -218,7 +218,7 @@ plotResidualModels <- function()
   startLog(Rtxt("Survival model residuals plot."))
 
   # 100417 Use the max number per page count from the plots page.
-  
+
   pmax <- theWidget("plots_per_page_spinbutton")$getValue()
 
   plot.cmd <- paste('temp <- cox.zph(crs$survival)',
@@ -257,7 +257,7 @@ exportSurvivalModel <- function()
   ext <- tolower(get.extension(save.name))
 
   # Generate appropriate code.
-  
+
   pmml.cmd <- sprintf("pmml(crs$survival%s)",
                       ifelse(length(crs$transforms) > 0,
                              ", transforms=crs$transforms", ""))
@@ -268,7 +268,7 @@ exportSurvivalModel <- function()
               sprintf('saveXML(%s, "%s")', pmml.cmd, save.name))
     XML::saveXML(eval(parse(text=pmml.cmd)), save.name)
   }
-  
+
   setStatusBar("The", toupper(ext), "file", save.name, "has been written.")
 }
 
@@ -283,8 +283,8 @@ genPredictSurvival <- function(dataset)
   # this is somewhat convoluted until I generate the actual formula
   # that is used to calculate the median. This will also be needed to
   # convert to C code.
-  
-  is.coxph <- class(crs$survival) == "coxph"
+
+  is.coxph <- inherits(crs$survival, "coxph")
 
   if (is.coxph)
     cmd <- sprintf(paste("crs$pr <- survival:::survmean(survfit(crs$survival,",
@@ -299,7 +299,7 @@ genResponseSurvival <- function(dataset)
 {
   # Generate a command to obtain the response when applying the model
   # to new data.
-  
+
   return(genPredictSurvival(dataset))
 }
 
@@ -311,10 +311,9 @@ genProbabilitySurvival <- function(dataset)
   # greater than 1 has a higher risk that the average of the event
   # occuring, and below 1 has a lower risk of the event occuring than
   # the average.
-  
-  is.coxph <- class(crs$survival) == "coxph"
+
+  is.coxph <- inherits(crs$survival, "coxph")
 
   return(sprintf("crs$pr <- predict(crs$survival, %s%s)", dataset,
                  ifelse(is.coxph, ', type="risk"', "")))
 }
-

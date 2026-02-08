@@ -25,7 +25,7 @@ randomForest2Rules(model, models=NULL)
   converted.}
   
 }
-\references{Package home page: \url{https://rattle.togaware.com}}
+\references{Package home page: \url{https://togaware.com/projects/rattle/}}
 \author{\email{Graham.Williams@togaware.com}}
 \examples{
 ## Generate a ruleset for a specific model amongst the 500.

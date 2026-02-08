@@ -1,6 +1,6 @@
 # Gnome R Data Science: GNOME interface to R for Data Science
 #
-# Time-stamp: <Saturday 2022-03-05 21:27:08 +1100 Graham Williams>
+# Time-stamp: <Sunday 2026-02-08 14:46:29 +1100 Graham Williams>
 #
 # Implement hclust functionality.
 #
@@ -82,7 +82,7 @@ on_hclust_data_plot_button_clicked <- function(button)
   }
 
   # We can only plot if there is more than a single variable.
-  
+
   if (length(intersect(nums, indicies)) == 1)
   {
     infoDialog(Rtxt("A data plot can not be constructed",
@@ -141,7 +141,7 @@ on_hclust_discriminant_plot_button_clicked <- function(button)
   }
 
   # We can only plot if there is more than a single variable.
-  
+
   if (length(intersect(nums, indicies)) == 1)
   {
     infoDialog(Rtxt("A discriminant coordinates plot can not be constructed",
@@ -170,156 +170,16 @@ on_hclust_discriminant_plot_button_clicked <- function(button)
 
 executeClusterHClust <- function(include)
 {
-  # Initial setup. Ensure the textview is monospace for fixed width
-  # output of the centers and other information (so the columns line
-  # up).
-
-  TV <- "hclust_textview"
-  theWidget(TV)$modifyFont(RGtk2::pangoFontDescriptionFromString(crv$textview.font))
-  
-  # TODO : If data is large put up a question about wanting to
-  # continue?
-  
-  sampling  <- not.null(crs$train)
-
-  startLog(Rtxt("Hierarchical Cluster"))
-
-  # The amap library needs to be loaded for hcluster. Also note that
-  # hcluster takes about 0.33 seconds, compared to hclust taking 11
-  # seconds!
-
-  #lib.cmd <- "library(amap, quietly=TRUE)"
-  if (packageIsAvailable("amap", Rtxt("perform an efficient hierarchical clustering")))
-  {
-    amap.available <- TRUE
-    #appendLog(packageProvides("amap", "hclusterpar"), lib.cmd)
-    #eval(parse(text=lib.cmd))
-  }
-  else
-    amap.available <- FALSE
-  
-  # Obtain interface information. 100319 Need to account for
-  # transaltions in getting the function options.
-
-  dist <- theWidget("hclust_distance_combobox")$getActiveText()
-  Encoding(dist) <- "UTF-8"
-  dist.opts <- paste("euclidean", "maximum", "manhattan", "canberra",
-                     "binary", "pearson", "correlation", "spearman",
-                     sep="\n")
-  dist.rtxt <- Rtxt (dist.opts)
-  dist.opts <- strsplit(dist.opts, "\n")[[1]]
-  dist.rtxt <- strsplit(dist.rtxt, "\n")[[1]]
-  dist <- dist.opts[which(dist == dist.rtxt)]
-  
-  link <- theWidget("hclust_link_combobox")$getActiveText()
-  Encoding(link) <- "UTF-8"
-  link.opts <- paste("complete", "ward", "single", "average", "mcquitty",
-                     "median", "centroid", sep="\n")
-  link.rtxt <- Rtxt (link.opts)
-  link.opts <- strsplit(link.opts, "\n")[[1]]
-  link.rtxt <- strsplit(link.rtxt, "\n")[[1]]
-  link <- link.opts[which(link == link.rtxt)]
-  
-  nbproc <- theWidget("hclust_nbproc_spinbutton")$getValue()
-
-  # Check if user has requested more than a single processor, and if
-  # so but amap is not available, inform the user and exit.
-  
-  if (nbproc != 1 && ! amap.available)
-  {
-    errorDialog(Rtxt("The 'amap' package is not available and so the efficient",
-                     "and parallel hcluster is not available.",
-                     "Please set the number of processors to 1 to proceed",
-                     "with using the single processor hclust instead.",
-                     "Be aware that the 'amap' version is over 10 times faster.",
-                     "You may want to install the 'amap' package."))
-    return(FALSE)
-  }
-  
-  # Determine which hclust to use for clustering.
-
-  if (amap.available)
-  {
-    # Use the more efficient hcluster for clustering.
-  
-    hclust.cmd <- paste0('crs$dataset[',
-                         ifelse(sampling, 'crs$train', ''),
-                         ', ',
-                         include,
-                         '] %>%\n',
-
-                         # 20170725 Why na.omit()? This silently
-                         # removes rows from the dataset being
-                         # clustered and then returns fewer labels
-                         # than expected. Is that a concern? The
-                         # centers calculation then fails if there are
-                         # fewer rows in cutree().
-                         
-                         # '  na.omit() %>%\n',
-                         
-                         '  amap::hclusterpar(method="', dist,
-                         '", link="', link,
-                         '", nbproc=', nbproc, ') ->\n',
-                         'crs$hclust')
-  }
-  else
-  {
-    # Use the standard hclust for clustering.
-    
-    hclust.cmd <- paste("crs$hclust <- ",
-                        sprintf(paste('hclust(dist(crs$dataset[%s, %s],',
-                                      'method="%s"),',
-                                      'method="%s")'),
-                                ifelse(sampling, "crs$train", ""),
-                                include, dist, link),
-                        sep="")
-  }
-  
-  # Log the R command.
-
-  appendLog(Rtxt("Generate a hierarchical cluster from the numeric data."), hclust.cmd)
-  
-  # Perform the commands.
-
-  start.time <- Sys.time()
-  result <- try(eval(parse(text=hclust.cmd)), silent=TRUE)
-  time.taken <- Sys.time()-start.time
-  if (inherits(result, "try-error"))
-  {
-    if (any(grep("[cC]annot allocate (vector|memory)", result)))
-    {
-      errorDialog(Rtxt("The call to hclust appears to have failed.",
-                       "This is often due, as is the case here,",
-                       "to running out of memory",
-                       "as hclust is rather memory hungry.",
-                       "A quick solution is to sample the dataset, through the",
-                       "Data tab. On 32bit machines you may be limited to",
-                       "less than 2000 observations."))
-      setTextview(TV)
-    }
-    else
-      errorDialog(errorMessageFun("hclust", result))
-    return(FALSE)
-  }
-
-  setTextview(TV, Rtxt("Hierachical Cluster"), "\n", collectOutput("crs$hclust", TRUE))
-
-  showModelHClustExists()
-  
-  reportTimeTaken(TV, time.taken,
-                  msg=Rtxt("A hierarchical cluster has been generated."))
-  
-  return(TRUE)
 }
 
 centers.hclust <- function(x, object, nclust=10, use.median=FALSE)
 {
   # TODO 20170725 Does this actually work? Clearly needs work.
-  
+
   if (!inherits(object, "hclust")) { stop(Rtxt("Not a legitimate hclust object")) }
-    
+
   if (! "matrix" %in% class(x)) { x <- as.matrix(x) }
-  
+
   if (use.median)
   {
     centres <- round(tapply(x, list(rep(cutree(object, nclust), ncol(x)), col(x)), median))
@@ -345,7 +205,7 @@ plotDendrogram2 <- function()
   }
 
   startLog(Rtxt("Dendrogram Plot"))
-  
+
   # Load the required package into the library.
 
   lib.cmd <- "library(ggplot2, quietly=TRUE)"
@@ -362,7 +222,7 @@ plotDendrogram2 <- function()
 
   set.cursor("watch", Rtxt("Rendering the hierarchical cluster dendrogram...."))
   on.exit(set.cursor("left-ptr", ""))
-  
+
   ttl <- genPlotTitleCmd(Rtxt("Cluster Dendrogram"), crs$dataname, vector=TRUE)
   plot.cmd <- paste('ddata <- dendro_data(crs$hclust, type="rectangle")',
                     'g <- ggplot(segment(ddata))',
@@ -376,7 +236,7 @@ plotDendrogram2 <- function()
                     sep="\n")
 
   # Log the R command and execute.
-  
+
   appendLog(Rtxt("Generate the dendrogram plot."), plot.cmd)
   newPlot()
   eval(parse(text=plot.cmd))
@@ -417,7 +277,7 @@ plotDendrogram <- function()
 
   set.cursor("watch", Rtxt("Rendering the hierarchical cluster dendrogram...."))
   on.exit(set.cursor("left-ptr", ""))
-  
+
   # Generate the plot command to not print the xaxis labels if there
   # are too many observations.
 
@@ -431,7 +291,7 @@ plotDendrogram <- function()
                     sep="")
 
   # Log the R command and execute.
-  
+
   appendLog(Rtxt("Generate a dendrogram plot."), plot.cmd)
   newPlot()
   eval(parse(text=plot.cmd))
@@ -450,11 +310,11 @@ plotDendrogram <- function()
 displayHClustStats <- function()
 {
   # Initial setup.
-  
+
   TV <- "hclust_textview"
 
   # Make sure there is a cluster first.
-  
+
   if (is.null(crs$hclust))
   {
     errorDialog(Rtxt("No cluster to plot.",
@@ -464,7 +324,7 @@ displayHClustStats <- function()
   }
 
   # The fpc package is available for cluster.stats().
-  
+
   if (!packageIsAvailable("fpc", Rtxt("calculate cluster statistics"))) return()
   lib.cmd <- "library(fpc, quietly=TRUE)"
   appendLog(packageProvides("fpc", "cluster.stats"), lib.cmd)
@@ -496,7 +356,7 @@ displayHClustStats <- function()
 #  }
 
   include <- "crs$numeric" # 20110102 getNumericVariables()
-  
+
   # Cluster centers. 20180522 Remove the na.omit - it is crashing -
   # reported by Tony Nolan.
 
@@ -506,11 +366,11 @@ displayHClustStats <- function()
   appendLog(Rtxt("List the suggested cluster centers for each cluster"), centers.cmd)
   appendTextview(TV, Rtxt("Cluster means:"), "\n\n",
                  collectOutput(centers.cmd, use.print=TRUE))
-  
+
   # STATS: Log the R command and execute. 20170430 add
   # silhouette=FALSE since it is failing today with the error:
   #
-  # Error in silhouette.default(clustering, dmatrix = dmat) : 
+  # Error in silhouette.default(clustering, dmatrix = dmat) :
   # object 'sildist' not found
 
   # 20180522 Remove the na.omit - it is crashing - reported by Tony
@@ -548,7 +408,7 @@ displayHClustStats <- function()
 ##   if (! packageIsAvailable("cba", "generate a seriation plot")) return()
 ##   appendLog(packageProvides("cba", "Seriation"), lib.cmd)
 ##   eval(parse(text=lib.cmd))
-  
+
 ##   ## Some background information.
 
 ##   sampling  <- not.null(crs$train)
@@ -574,7 +434,7 @@ displayHClustStats <- function()
 ##   appendLog("Generate a seriation plot.", plot.cmd)
 ##   newPlot()
 ##   eval(parse(text=plot.cmd))
-  
+
 ##   setStatusBar("Seriation plot completed.")
 ## }
 
@@ -583,7 +443,7 @@ displayHClustStats <- function()
 showModelHClustExists <- function(state=!is.null(crs$hclust))
 {
   # If a model exists then make available the appropriate widgets.
-  
+
   theWidget("hclust_dendrogram_button")$setSensitive(TRUE)
   theWidget("hclust_clusters_label")$setSensitive(TRUE)
   theWidget("hclust_clusters_spinbutton")$setSensitive(TRUE)
@@ -599,7 +459,7 @@ showModelHClustExists <- function(state=!is.null(crs$hclust))
 exportHClustTab <- function()
 {
   # Make sure we have a model first!
-  
+
   if (noModelAvailable(crs$hclust, crv$HCLUST)) return(FALSE)
 
   # Get some required information
@@ -607,9 +467,9 @@ exportHClustTab <- function()
   sampling  <- not.null(crs$train)
   nclust <- theWidget("hclust_clusters_spinbutton")$getValue()
   include <- "crs$numeric" # 20110102 getNumericVariables()
-  
+
   startLog(paste(Rtxt("Export"), commonName(crv$HCLUST)))
-  
+
   save.name <- getExportSaveName(crv$HCLUST)
   if (is.null(save.name)) return(FALSE)
   ext <- tolower(get.extension(save.name))
@@ -636,11 +496,11 @@ exportHClustTab <- function()
   else if (ext == "c")
   {
     if (isWindows()) save.name <- tolower(save.name)
-    
+
     model.name <- sub("\\.c", "", basename(save.name))
 
     export.cmd <- generateExportPMMLtoC(model.name, save.name, "hclust_textview")
-    
+
     appendLog(sprintf(Rtxt("Export %s as a C routine."), commonName(crv$HCLUST)),
               sprintf('pmml.cmd <- "%s"\n\n', pmml.cmd),
               export.cmd)
@@ -648,7 +508,7 @@ exportHClustTab <- function()
     eval(parse(text=export.cmd))
 
   }
-  
+
   setStatusBar(sprintf(Rtxt("The model has been exported to '%s'."), save.name))
 
 }
@@ -683,9 +543,9 @@ predict.hclust <- function(object, nclust=10, newdata, x, ...)
 
   # Add centers to the model object and then use the kmeans version of
   # predict to calculate the nearest mean for each center/object.
-  
+
   object$centers <- centers.hclust(x, object, nclust=nclust, use.median=FALSE)
-  
+
   rownames(object$centers) <- seq_len(nclust)
   pr <- predict.kmeans(object, newdata) %>% as.integer
 
@@ -709,12 +569,12 @@ genPredictHclust <- function(dataset)
   # 20170725 HACK FOR NOW!!! The dataset should be numeric only.
 
   dataset %<>% sub('input', 'numeric', .)
-  
+
   pr.cmd <- sprintf("crs$pr <- predict(crs$hclust, nclust=%s, newdata=%s, x=%s)",
                     nclust,
                     dataset,
                     sub("validate", "train", dataset)) # 20170725 THIS IS HACK FOR NOW!
-  
+
   return(pr.cmd)
 }
 
@@ -722,7 +582,7 @@ genResponseHclust <- function(dataset)
 {
   # 081227 Generate a command to obtain the response when applying the
   # model to new data.
-  
+
   return(genPredictHclust(dataset))
 }
 
@@ -733,6 +593,6 @@ genProbabilityHclust <- function(dataset)
   # using the cluster label as the output, since it won't be a
   # probability or even look like it. Let's do it for now though -
   # should be okay.
-  
+
   return(genPredictHclust(dataset))
 }

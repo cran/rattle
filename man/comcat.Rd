@@ -18,7 +18,7 @@ comcat(x, ...)
   \item{...}{additional arguments passed on to format.}
 
 }
-\references{Package home page: \url{https://rattle.togaware.com}}
+\references{Package home page: \url{https://togaware.com/projects/rattle/}}
 \author{\email{Graham.Williams@togaware.com}}
 
 \examples{

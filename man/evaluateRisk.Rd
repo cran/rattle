@@ -25,7 +25,7 @@ evaluateRisk(predicted, actual, risks)
   associated with each entity that has a acutal of 1.}
 
 }
-\references{Package home page: \url{https://rattle.togaware.com}}
+\references{Package home page: \url{https://togaware.com/projects/rattle/}}
 \author{\email{Graham.Williams@togaware.com}}
 \seealso{\code{\link{plotRisk}}.}
 \examples{

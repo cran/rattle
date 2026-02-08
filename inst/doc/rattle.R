@@ -13,15 +13,8 @@
 
 
 ###################################################
-### code chunk number 3: start_up (eval = FALSE)
+### code chunk number 3: rattle.Rnw:146-147 (eval = FALSE)
 ###################################################
-## library(rattle)
-## rattle()
-
-
-###################################################
-### code chunk number 4: rattle.Rnw:149-150 (eval = FALSE)
-###################################################
-## source("~/weather_script.R")
+## source("~/script_weather.R")
 
 

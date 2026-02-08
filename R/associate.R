@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2017-09-10 10:07:44 Graham Williams>
+# Time-stamp: <Sunday 2026-02-08 14:41:04 +1100 Graham Williams>
 #
 # Implement associations functionality.
 #
@@ -114,11 +114,11 @@ executeAssociateTab <- function()
                      "transaction is uniquely identified using the Ident variable."))
     return()
   }
-      
+
   # Check that we have only categorical attributes.
 
   include <- getCategoricVariables("names")
-  
+
   if (!baskets && length(include) == 0)
   {
     errorDialog(Rtxt("Associations are calculated only for categoric data.",
@@ -158,13 +158,13 @@ executeAssociateTab <- function()
   lib.cmd <- "library(arules, quietly=TRUE)"
   appendLog(packageProvides("arules", "arules"), lib.cmd)
   eval(parse(text=lib.cmd))
- 
+
   # Initialise the textview.
-  
+
   TV <- "associate_textview"
-  
+
   # Required information.
-  
+
   sampling   <- not.null(crs$train)
   support    <- theWidget("associate_support_spinbutton")$getValue()
   confidence <- theWidget("associate_confidence_spinbutton")$getValue()
@@ -173,7 +173,7 @@ executeAssociateTab <- function()
   # Transform data into a transactions dataset for arules.
 
   include <- "crs$categoric" # 20110102 getCategoricVariables()
-  
+
   if (baskets)
     transaction.cmd <- paste("crs$transactions <- as(split(",
                              sprintf('crs$dataset[%s, %s],\n%*scrs$dataset[%s, %s]',
@@ -184,7 +184,7 @@ executeAssociateTab <- function()
                                      "crs$ident"),
                              '),',
                              sprintf('\n%*s"transactions")', 23, ""),
-                             sep="") 
+                             sep="")
   else
     transaction.cmd <- paste("crs$transactions <- as(",
                              sprintf('crs$dataset[%s, %s], "transactions")',
@@ -222,7 +222,7 @@ executeAssociateTab <- function()
   # Add a summary of the transactions and the rules.
 
   tr.summary.cmd <- "summary(crs$transactions)"
-  
+
   mysummary.cmd <- "generateAprioriSummary(crs$apriori)"
   appendLog(Rtxt("Summarise the resulting rule set."), mysummary.cmd)
   summary.cmd <- "summary(crs$apriori@quality)"
@@ -242,7 +242,7 @@ executeAssociateTab <- function()
               "\n",
               cmd.output,
               "\n")
-  
+
   reportTimeTaken(TV, time.taken, model=commonName("arules"))
 }
 
@@ -260,7 +260,7 @@ plotAssociateFrequencies <- function()
   ## Check if sampling needs executing.
 
   if (sampleNeedsExecute()) return()
-    
+
   baskets <- theWidget("associate_baskets_checkbutton")$getActive()
   if (baskets && length(crs$ident) != 1)
   {
@@ -302,9 +302,9 @@ plotAssociateFrequencies <- function()
   lib.cmd <- "library(arules, quietly=TRUE)"
   appendLog(Rtxt("Association rules are implemented in the 'arules' package."), lib.cmd)
   eval(parse(text=lib.cmd))
- 
+
   # Required information
-  
+
   sampling  <- not.null(crs$train)
   support <- theWidget("associate_support_spinbutton")$getValue()
 
@@ -312,7 +312,7 @@ plotAssociateFrequencies <- function()
 
   # TODO 080425 Note that aprior does "as(..., 'transactions')" so we
   # don't need this here do we?
-  
+
   if (baskets)
     transaction.cmd <- paste("crs$transactions <- as(split(",
                              sprintf('crs$dataset%s$%s, crs$dataset%s$%s',
@@ -347,7 +347,7 @@ plotAssociateRules <- function()
   if (noDatasetLoaded()) return()
 
   # Also make sure we have already generated the association rules.
-  
+
   if (is.null(crs$apriori))
   {
     errorDialog(Rtxt("You first need to generate the association rules.",
@@ -379,7 +379,7 @@ listAssociateRules <- function()
   if (noDatasetLoaded()) return()
 
   # Also make sure we have already generated the association rules.
-  
+
   if (is.null(crs$apriori))
   {
     errorDialog(Rtxt("You first need to generate the association rules.",
@@ -388,11 +388,11 @@ listAssociateRules <- function()
   }
 
   # Note the textview.
-  
+
   TV <- "associate_textview"
-  
+
   # Required information
-  
+
 #  lift    <- theWidget("associate_lift_spinbutton")$getValue()
 
 #  appendTextview(TV, "Top Rules\n\n",
@@ -416,7 +416,7 @@ listAssociateRules <- function()
                     sprintf('sort(crs$apriori, by="%s")', sby))
   summary1.cmd <- sprintf('inspect(%s)', sort.ds)
 
-  
+
 #  else
 #lift<-1
 #      summary1.cmd <- paste('sort(subset(crs$apriori, lift > ',
@@ -433,10 +433,10 @@ listAssociateRules <- function()
   ## Warning message:
   ## In is.na(x) : is.na() applied to non-(list or vector) of type 'S4'
   ##
-  ## Error in inspect(sort(crs$apriori, by = "confidence")) : 
+  ## Error in inspect(sort(crs$apriori, by = "confidence")) :
   ## error in evaluating the argument 'x' in selecting a method for
   ## function 'inspect': Error in
-  ## x[order(x, na.last = na.last, decreasing = decreasing)] : 
+  ## x[order(x, na.last = na.last, decreasing = decreasing)] :
   ## error in evaluating the argument 'i' in selecting a method for
   ## function '[': Error in slot(x, s)[i] : subscript out of bounds
   ##
@@ -450,8 +450,8 @@ listAssociateRules <- function()
   ## It did not dump an error, but produces no output until I added
   ## the paste. But then I'm back to this working when I source, but
   ## failing when I run it from the package.
-  
-  ## This 
+
+  ## This
 ##   zz <- textConnection("commandsink", "w", TRUE)
 ##   sink(zz)
 ##   cat(eval(parse(text=summary1.cmd)))
@@ -464,7 +464,7 @@ listAssociateRules <- function()
                  #"set the Lift to 0.0\n")
 #                 paste('inspect(sort(subset(crs$apriori, lift >',
 #                       lift, '), by="confidence"))'))
-  
+
   # This works but it lists all rules.
 
 #  summary.cmd <- 'inspect(sort(crs$apriori, by="confidence"))'
@@ -493,70 +493,4 @@ listAssociateRules <- function()
 
 exportAssociateTab <- function()
 {
-  # Make sure we have already done something in Rattle.
-  
-  if (noDatasetLoaded()) return()
-
-  # Make sure we have a model first!
-  
-  if (is.null(crs$apriori))
-  {
-    errorDialog(Rtxt("No association rules model is available. Be sure to build",
-                     "the model before trying to export it! You will need",
-                     "to press the Execute button (F2) in order to build the",
-                     "model."))
-    return()
-  }
-
-  # Require the pmml package
-  
-  lib.cmd <- "library(pmml, quietly=TRUE)"
-  if (! packageIsAvailable("pmml", Rtxt("export association rules"))) return(FALSE)
-  appendLog(Rtxt("Load the PMML package to export association rules."), lib.cmd)
-  # Load the package unless we already have a pmml defined (through source).
-  if (! exists("pmml")) eval(parse(text=lib.cmd))
-  
-  # Obtain filename to write the PMML to.
-  
-  dialog <- RGtk2::gtkFileChooserDialog(Rtxt("Export PMML"), NULL, "save",
-                                 "gtk-cancel", RGtk2::GtkResponseType["cancel"],
-                                 "gtk-save", RGtk2::GtkResponseType["accept"])
-  dialog$setDoOverwriteConfirmation(TRUE)
-
-  if(not.null(crs$dataname))
-    dialog$setCurrentName(paste(get.stem(crs$dataname), "_arules.xml", sep=""))
-
-  ff <- RGtk2::gtkFileFilterNew()
-  ff$setName(Rtxt("PMML Files"))
-  ff$addPattern("*.xml")
-  dialog$addFilter(ff)
-
-  ff <- RGtk2::gtkFileFilterNew()
-  ff$setName(Rtxt("All Files"))
-  ff$addPattern("*")
-  dialog$addFilter(ff)
-  
-  if (dialog$run() == RGtk2::GtkResponseType["accept"])
-  {
-    save.name <- dialog$getFilename()
-    dialog$destroy()
-  }
-  else
-  {
-    dialog$destroy()
-    return()
-  }
-
-  # if (get.extension(save.name) == "") save.name <- sprintf("%s.xml", save.name)
-    
-  # We can't pass "\" in a filename to the parse command in
-  # MS/Windows so we have to run the save/write command separately,
-  # i.e., not inside the string thaat is being parsed.
-
-  pmml.cmd <- 'pmml(crs$apriori)'
-  appendLog(Rtxt("Export association rules as PMML."),
-            sprintf('saveXML(%s, "%s")', pmml.cmd, save.name))
-  XML::saveXML(eval(parse(text=pmml.cmd)), save.name)
-
-  setStatusBar(sprintf(Rtxt("The PMML file '%s' has been written."), save.name))
 }

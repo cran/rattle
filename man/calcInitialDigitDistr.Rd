@@ -22,6 +22,6 @@ calcInitialDigitDistr(l, digit=1, len=1,
   \item{sp}{whether and how to split the digits.}
 
 }
-\references{Package home page: \url{https://rattle.togaware.com}}
+\references{Package home page: \url{https://togaware.com/projects/rattle/}}
 \author{\email{Graham.Williams@togaware.com}}
 \keyword{hplot}

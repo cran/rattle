@@ -17,7 +17,7 @@
          citecolor=blue,
          urlcolor=blue]
          {hyperref}
-\usepackage{Sweave}         
+\usepackage{Sweave}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -62,29 +62,27 @@
 \maketitle
 
 \thispagestyle{empty}
-	
+
 \section{Introduction}
 
 \Rattle (Williams, 2011) is a package written in R providing a
 graphical user interface to very many other R packages that provide
-functionality for data mining.
+functionality for data science, data mining, machine learning and AI.
 
 This quick start guide is under development. See
-\url{https://rattle.togaware.com} for extensive documentation
+\url{https://togaware.com/projects/rattle/} for extensive documentation
 
 \section{Requirements}
 
 \Rattle depends on over 40 other R packages and a couple of other
-software applications/libraries that are independent of R. The first
-thing to ensure is that you have installed the GTK+ libraries and the
-GGobi application. This is operating system dependent and full
-installation instructions are available from \url{https://rattle.togaware.com/}.
+software applications/libraries that are independent of R. Rattle V6
+implements the user interface using the Flutter cross platform
+framework. Operating system specific installation instructions are
+available from \url{https://togaware.com/projects/rattle/}.
 
 Only a couple of R packages are dependencies for \Rattle. Most are
-suggestions, but without them functionality is quite limited. At a
-minimum it is useful to ensure you have the
-\href{https://cran.r-project.org/package=RGtk2}{\pkg{RGtk2}} package
-installed. Others that you might like to install include:
+suggestions, but without them functionality is quite limited. You
+might like to install the following pacakges:
 \href{https://cran.r-project.org/package=ada}{\pkg{ada}},
 \href{https://cran.r-project.org/package=arules}{\pkg{arules}},
 \href{https://cran.r-project.org/package=doBy}{\pkg{doBy}},
@@ -110,45 +108,44 @@ The packages will usually be installed with the following command:
 
 <<install, eval=FALSE>>=
 install.packages("rattle", dependencies=c("Depends", "Suggests"))
-@ 
+@
 
-The latest beta version of rattle is available from
-\url{https://rattle.togaware.com/}:
+The latest version of rattle is available from
+\url{https://togaware.com/projects/rattle/}:
 
 <<install_togaware, eval=FALSE>>=
 install.packages("rattle", repos="https://rattle.togaware.com", type="source")
-@ 
+@
 
 \section{First Steps}
 
-Start up rattle:
-<<start_up, eval=FALSE>>=
-library(rattle)
-rattle()
-@ 
+Start up rattle from the Rattle icon or else in a terminal at the OS
+command prompt type `rattle`.
 
-\section{Sipmle Scenario: Build a Couple of Models}
+\section{Simple Scenario: Build a Couple of Models}
 
 \begin{enumerate}
-\item Click Execute
-\item Click Yes (load the sample weather dataset)
-\item Click the Model tab
-\item Click Execute (to build a decision tree)
-\item Click Draw to display the decision tree (loads other packages as required)
-\item Click the Forest radio button
-\item Click Execute (to build a random forest - loads packages as required)
-\item Click the Evaluate tab
-\item Click the Risk radio button (installs packages as required)
-\item Click Execute to display two Risk (Cummulative) performance plots
-\item Click the Log tab
-\item Click the Export button to save script to file weather\_script.R to home folder
+\item Tap Dataset
+\item Tap Weather (to load the sample weather dataset)
+\item Tap the Model function
+\item Tap the Tree feature
+\item Tap the Build Decision Tree button
+\item Tap the Right Arrow to display the decision tree
+\item Tap the Forest feature
+\item Tap the Build Random Forest button
+\item Tap the Evaluate function
+\item Tap the Evaluate button
+\item Tap the Right Arrown to display the performance plots and measures
+\item Tap the Script feature
+\item Tap the Save button to save the script to the file script\_weather.R
 \end{enumerate}
 
-Now exit from R (and rattle) and start R up again.
+Now separately start up R from a terminal and type (matching the
+filename as saved).
 
 <<eval=FALSE>>=
-source("~/weather_script.R")
-@ 
+source("~/script_weather.R")
+@
 
 This will rerun everything that was done in the GUI session but purely as a script.
 
@@ -157,11 +154,10 @@ This will rerun everything that was done in the GUI session but purely as a scri
 \begin{description}
 \item Williams, G. J. (2009). {\em Rattle: A Data Mining GUI for R}.
   The R Journal, 1(2), 45-55. URL:
-  \href{https://journal.r-project.org/archive/2009-2/RJournal_2009-2_Williams.pdf}
-  {https://journal.r-project.org/archive/2009-2/RJournal\_2009-2\_Williams.pdf}.
+  journal.r-project.org/news/RJ-2009-2-RJournal\_2009-2\_Williams/RJ-2009-2-RJournal\_2009-2\_Williams.pdf
 \item Williams, G. J. (2011). {\em Data Mining with Rattle and R: The
     Art of Excavating Data for Knowledge Discovery}. Use R!
-  series. Springer. \href{https://bit.ly/rattle_data_mining}{https://bit.ly/rattle\_data\_mining}.
+  series. Springer.
 \end{description}
 
 \end{document}

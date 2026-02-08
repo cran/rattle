@@ -1,6 +1,6 @@
 # Gnome R Data Miner: GNOME interface to R for Data Mining
 #
-# Time-stamp: <2014-09-07 05:23:16 gjw>
+# Time-stamp: <Sunday 2026-02-08 14:42:03 +1100 Graham Williams>
 #
 # Textview widget support
 #
@@ -47,7 +47,7 @@ allTextviews <- function()
   # because we don't want to reset it anytime, so that it is a
   # copmlete log. But then it's font is not being set to monospace
   # like all the rest. So that needs a special initialisation.
-  
+
   return(c("summary_textview", "interactive_textview",
            "correlation_textview",
            "prcomp_textview", "test_textview", "kmeans_textview",
@@ -65,7 +65,7 @@ getTextview <- function(tv)
   # object. This is usful internally in this file whilst we migrate
   # to not using the string to name the textview, but passing the
   # object itself.
-  
+
   wid <- FALSE
   if (inherits(tv, "GtkTextView"))
     wid <- tv
@@ -85,7 +85,7 @@ resetTextview <- function(tv, ..., sep="", tvsep=TRUE)
   # line, as the usual usage of resetTexview will be to clear the
   # textview and add a message, in one go. There are times when we
   # don't want the separator though.
-  
+
   if (is.null(wid <- getTextview(tv)))
   {
     errorDialog("E138: Should not be here.",
@@ -94,7 +94,6 @@ resetTextview <- function(tv, ..., sep="", tvsep=TRUE)
                 "We found a", class(tv)[1], crv$support.msg)
     return(FALSE)
   }
-  if (! isJapanese()) wid$modifyFont(RGtk2::pangoFontDescriptionFromString(crv$textview.font))
   msg <- paste(sep=sep, ...)
   if (length(msg) > 0)
   {
@@ -111,7 +110,7 @@ appendTextview <- function(tv, ..., sep="", tvsep=TRUE)
   # Append a message to the given textview. Optionally add a Rattle
   # separator to the textview. By default, paste the strings of the
   # message together without a speartor.
-  
+
   if (is.null(wid <- getTextview(tv)))
   {
     errorDialog("E140: Should not be here.",
@@ -140,7 +139,7 @@ getTextviewContent <- function(TV)
 {
   # Extract text contents of specified textview and return
   # it. Designed for use in saveProject.
-  
+
   log.buf <- theWidget(TV)$getBuffer()
   start <- log.buf$getStartIter()$iter
   end <- log.buf$getEndIter()$iter
@@ -184,7 +183,7 @@ addTextview <- function(tv, ..., sep="")
   loc <- tv.buf$getEndIter()$iter
   tv.buf$insert(loc, msg)
 }
-  
+
 setTextviewContents <- function(TV, text)
 {
   # Set the text contents of the specified textview to the supplied
@@ -203,14 +202,14 @@ resetTextviews <- function(tv=NULL)
   # 090202 Reset all text views to default content, as when Rattle
   # starts up or the user has selected New Project, or has loaded a
   # new dataset. The text for the texviews come from textviews.xml.
-  
+
   # 090214 I probably actually just want to go through a clear each of
   # the textviews first, and then populate with the text from
   # textviews.xml if there is one and XML package is available!
 
   if (is.null(tv))
     sapply(allTextviews(), resetTextview)
-  
+
   if (! packageIsAvailable("XML", "load textview texts"))
   {
     warning("The XML package is not available. Textview texts will not be available.")

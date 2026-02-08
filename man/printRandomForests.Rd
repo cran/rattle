@@ -29,7 +29,7 @@ printRandomForests(model, models=NULL, include.class=NULL, format="")
   \item{format}{possible values are "VB".}
 
 }
-\references{Package home page: \url{https://rattle.togaware.com}}
+\references{Package home page: \url{https://togaware.com/projects/rattle/}}
 \author{\email{Graham.Williams@togaware.com}}
 \examples{
 ## Display a ruleset for a specific model amongst the 500.

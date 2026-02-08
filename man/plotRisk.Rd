@@ -114,7 +114,7 @@ plotRisk(cl, pr, re, ri = NULL, title = NULL,
   (i.e., strike rate) is also plotted.
 
 }
-\references{Package home page: \url{https://rattle.togaware.com}}
+\references{Package home page: \url{https://togaware.com/projects/rattle/}}
 \author{\email{Graham.Williams@togaware.com}}
 \seealso{\code{\link{evaluateRisk}}, \code{\link{genPlotTitleCmd}}.}
 \examples{

@@ -32,7 +32,7 @@ fancyRpartPlot(model, main="", sub, caption, palettes, type=2, ...)
   \item{...}{additional arguments passed on to prp.}
 
 }
-\references{Package home page: \url{https://rattle.togaware.com}}
+\references{Package home page: \url{https://togaware.com/projects/rattle/}}
 \author{\email{Graham.Williams@togaware.com}}
 
 \examples{

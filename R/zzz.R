@@ -1,8 +1,8 @@
 # R Data Scientist: Gtk interface to R for Data Science
 #
-# Time-stamp: <Friday 2021-08-20 15:57:50 AEST Graham Williams>
+# Time-stamp: <Sunday 2026-02-08 14:36:43 +1100 Graham Williams>
 #
-# Copyright (c) 2009-2021 Togaware Pty Ltd
+# Copyright (c) 2009-2023 Togaware Pty Ltd
 
 # These could be in rattle.R
 
@@ -20,9 +20,6 @@ if (! exists("RATTLE.SCORE.OUT")) RATTLE.SCORE.OUT <- NULL
 
 on_aboutdialog_response <- function(object, ...)
 {
-  RGtk2::checkPtrType(object, "GtkWidget")
-  w <- RGtk2::.RGtkCall("S_gtk_widget_destroy", object, PACKAGE = "RGtk2")
-  return(invisible(w))
 }
 
 .onLoad <- function(libname, pkgname)
@@ -59,7 +56,7 @@ on_aboutdialog_response <- function(object, ...)
   # restoring an .RData file the package might get loaded on starting
   # up R and thus the .onLoad is executed then, but the ATTACH code
   # won't get loaded until we do library(rattle).
-  
+
   # 090315 Create the crs environment here. It is defined here and
   # then also reset in rattle() so that R CMD check would not complain
   # about knowing nothing of crs (after removing the crs <<-
@@ -72,7 +69,7 @@ on_aboutdialog_response <- function(object, ...)
   # the use of option.  It is defined here so that it is globally
   # known and so that plugins can override options. We generally
   # include here the options that can be overridden by a plugin.
-  
+
 #  crv <<- new.env() # 121212 Moved to top of file so not global
 
   # 100820 GtkBuilder update. Use GtkBuilder as default, except if R
@@ -104,7 +101,7 @@ on_aboutdialog_response <- function(object, ...)
   # (3) gtk 2.16.6 eis dated 2010-02-24.
   #
   # (4) This FAIL is expected: libglade is not loaded.
-  # 
+  #
   # The test version of R 2.12.0 was downloaded from
   #
   # https://cran.r-project.org/bin/windows/base/rtest.html
@@ -115,18 +112,18 @@ on_aboutdialog_response <- function(object, ...)
   # 20170624 Note if Microsoft R Server
 
   crv$mrs <- packageIsAvailable("RevoScaleR")
-  
+
   # 111204 Fix issue of Mac OS/X not ignoring warnings in the .ui
   # file, so use an alternative one for now until work out permanent
   # fix. 130309 No longer an issue since the ubuntu string is no
   # longer inserted into the .ui file. So use the standard .ui
   # file. 130402 Revert to using rattle_macosx.ui - rattle.ui does not
   # yet work?
-  
+
   crv$rattleUI <- "rattle.ui"
   # if (Sys.info()["sysname"] == "Darwin") crv$rattleUI <- "rattle_macosx.ui"
 
-  crv$log.intro <- paste0("# Rattle is Copyright (c) 2006-2021 Togaware Pty Ltd.",
+  crv$log.intro <- paste0("# Rattle is Copyright (c) 2006-2023 Togaware Pty Ltd.",
                           "\n# It is free (as in libre) open source software.",
                           "\n# It is licensed under the GNU General Public License,",
                           "\n# Version 2. Rattle comes with ABSOLUTELY NO WARRANTY.",
@@ -150,25 +147,25 @@ on_aboutdialog_response <- function(object, ...)
   # 160901 XDF Default number if rows for a preview.
 
   crv$xdf.preview <- 1e4
-  
+
   # Default seed to use
 
   crv$seed <- 42
-  
+
   # 091130 Use UTF-8 as the default encoding for files. This certainly
   # works okay on GNU/Linux. On Vista I see ISO8859-1 as the default
   # and Acken sees CP932 for Japanese.
-  
+
   crv$csv_encoding <- "UTF-8"
 
   # 100410 All monofonts come out vertically aligned in Japanese???
-  
+
   crv$textview.font <- "monospace 10" # Japanese vertically aligned - bad periods/commas
   # crv$textview.font <- "Courier New 10" # Okay but not found on MS/Windows
   # crv$textview.font <- "Bitstream Vera Sans Mono 10" # Better?
   # crv$textview.font <- "Andale Mono 10" # Not very nice
   # crv$textview.font <- "Sans Italic 12" # For fun.
-  
+
   crv$show.timestamp <- TRUE
   ## crv$tooltiphack <- FALSE
   crv$close <- "ask"
@@ -187,51 +184,51 @@ on_aboutdialog_response <- function(object, ...)
   # 101127 I originally turned toolbar text off since on GNU/Linux it
   # was chopping the text. But now on moving to GTK 2.20 it all looks
   # okay again, so include the text.
-  
+
   crv$toolbar.text <- TRUE
-  
+
   # 090525 Always load tooltips - now use Settings option to enable on
   # GNU/Linux. 090622 But on older installations we still get the
   # Invalid property error so for now on Unix do not support tooltips.
-  
+
   # 090601 Add the crv$load.tooltips option, so it can be turned off
   # on the command line before starting rattle, since older GTK
   # version has issue: Invalid property tooltip-text!
-  
+
   crv$load.tooltips <- TRUE
-  
+
 #100110 testing for Rtxt
 #  if (.Platform$OS.type == "unix")
 #    crv$load.tooltips <- FALSE # Not working in general on Linux
-  
+
   crv$verbose <- TRUE # Add sub titles to plots ...
 
   crv$max.categories <- 10 # Above which target assumed numeric, not categoric
   crv$max.vars.correlation <- 40 # Correlation slows down too much
   crv$export.to.c.available <- FALSE # No export to C implemented yet
   crv$show.warnings <- TRUE # 090207 Show test/train warning.
-  crv$project.extensions <- c("rattle", "rstat") # Extensions for projects  
+  crv$project.extensions <- c("rattle", "rstat") # Extensions for projects
   crv$ident.min.rows <- 300 # Unique factors/ints > than this are idents
   crv$default.train.percentage <- 70 # The default sample percentage value.
   crv$default.sample <- "70/15/15" # The default train/validate/test split.
 
   crv$log_width <- 70 # The wrap column for the log tab.
-  
+
   # Popup a warning above this many rows in the table being loaded via
   # ODBC
 
   crv$odbc.large <- 50000
-  
+
   # Log constants
 
   crv$start.log.comment <- "\n\n# "	# Assume paste with sep=""
   crv$end.log.comment   <- "\n\n"	# Assume paste with sep=""
 
   # Model defaults
-  
+
   crv$cluster.report.max.obs <- 4000
   crv$scatter.max.vars <- 5
-  
+
   crv$rpart.cp.default        <- 0.010
   crv$rpart.minsplit.default  <- 20
   crv$rpart.minbucket.default <- 7
@@ -249,22 +246,22 @@ on_aboutdialog_response <- function(object, ...)
   #.RATTLE.DATA <<- NULL
   #.RATTLE.SCORE.IN <<- NULL
   #.RATTLE.SCORE.OUT <<- NULL
-  
+
   # 090309 We set some other environment variables for convenience.
 
-  # 121212 No Longer required since using environments 
+  # 121212 No Longer required since using environments
   #crv$rattleGUI <- NULL
   #Global_.rattleGUI <<- NULL
   #viewdataGUI <- NULL
   #on_aboutdialog_response <<- NULL
-  
+
   # 090206 How to not display the welcome message if quietly=TRUE? A
   # user has the option to suppressPackageStartupMessages().
 
   # 091221 The Rtxt does not seem to work from the rattle.R file, so
   # do it here again.
-  
-  COPYRIGHT <- sprintf(Rtxt("Copyright (c) 2006-2021 %s."), "Togaware Pty Ltd")
+
+  COPYRIGHT <- sprintf(Rtxt("Copyright (c) 2006-2023 %s."), "Togaware Pty Ltd")
 
   msg <- paste(Rtxt("Rattle: A free graphical interface",
                     "for data science with R."), "\n",
@@ -274,7 +271,7 @@ on_aboutdialog_response <- function(object, ...)
                Rtxt("Type 'rattle()' to shake, rattle, and roll your data."),
                "\n",
                sep="")
-    
+
   if ("rattle" %in% getOption("defaultPackages"))
     rattle()
   else

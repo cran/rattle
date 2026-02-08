@@ -26,7 +26,7 @@ drawTreesAda(model, trees=0, title="")
   specified trees from an Ada model will be displayed.
 
 }
-\references{Package home page: \url{https://rattle.togaware.com}}
+\references{Package home page: \url{https://togaware.com/projects/rattle/}}
 \author{\email{Graham.Williams@togaware.com}}
 \examples{
 \dontrun{drawTreesAda(ds.ada)}
