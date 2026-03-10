@@ -64,7 +64,7 @@ S3method(importance, xgb.formula)
 S3method(xgboost, formula)
 S3method(predict, hclust)
 S3method(predict, kmeans)
-S3method(print.summary, nnet)
+S3method(print, summary.nnet)
 
 #import(RGtk2) # Not required but will be used if available.
 import(stats)
